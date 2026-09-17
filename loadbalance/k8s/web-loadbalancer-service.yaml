@@ -1,0 +1,16 @@
+# Optional learning manifest.
+# Apply this after k8s/web.yaml if you want the web Service to be a LoadBalancer.
+# In a local kind cluster, run cloud-provider-kind so an external address is assigned.
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-web
+  namespace: python-demo
+spec:
+  type: LoadBalancer
+  selector:
+    app: python-web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

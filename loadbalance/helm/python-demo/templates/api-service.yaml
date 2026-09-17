@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-api
+  namespace: {{ .Values.namespace }}
+spec:
+  type: {{ .Values.api.serviceType }}
+  selector:
+    app: python-api
+  ports:
+    - protocol: TCP
+      port: {{ .Values.api.servicePort }}
+      targetPort: {{ .Values.api.port }}

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-web
+  namespace: python-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: python-web}
+  template:
+    metadata:
+      labels: {app: python-web}
+    spec:
+      containers:
+        - name: web
+          image: python-demo-web:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 8080}]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-web
+  namespace: python-demo
+spec:
+  selector: {app: python-web}
+  ports:
+    - port: 80
+      targetPort: 8080

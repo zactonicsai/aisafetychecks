@@ -1,0 +1,6 @@
+apiVersion: v2
+name: python-demo
+description: Simple Python web and API demo for local Kubernetes
+version: 0.1.0
+appVersion: "1.0.0"
+type: application

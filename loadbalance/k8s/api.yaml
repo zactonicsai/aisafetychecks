@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-api
+  namespace: python-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: python-api}
+  template:
+    metadata:
+      labels: {app: python-api}
+    spec:
+      containers:
+        - name: api
+          image: python-demo-api:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 8080}]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-api
+  namespace: python-demo
+spec:
+  selector: {app: python-api}
+  ports:
+    - port: 80
+      targetPort: 8080

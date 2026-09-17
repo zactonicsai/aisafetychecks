@@ -1,0 +1,7 @@
+Web:
+  kubectl -n {{ .Values.namespace }} port-forward svc/python-web 8080:{{ .Values.web.servicePort }}
+  Open http://localhost:8080
+
+API:
+  kubectl -n {{ .Values.namespace }} port-forward svc/python-api 8081:{{ .Values.api.servicePort }}
+  curl http://localhost:8081/api/hello?name=Kubernetes

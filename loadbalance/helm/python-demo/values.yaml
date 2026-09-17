@@ -1,0 +1,18 @@
+namespace: python-demo
+
+web:
+  image: python-demo-web:1.0.0
+  replicas: 1
+  port: 8080
+  servicePort: 80
+  # Start with ClusterIP for the basic lesson.
+  # scripts/08-enable-loadbalancer.sh overrides this to LoadBalancer.
+  serviceType: ClusterIP
+
+api:
+  image: python-demo-api:1.0.0
+  replicas: 1
+  port: 8080
+  servicePort: 80
+  # Keep the API internal by default. The web tier is the public front door.
+  serviceType: ClusterIP
