@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lesson-settings
+  namespace: hands-on
+data:
+  classroom: kubernetes-lab
+  log-level: info

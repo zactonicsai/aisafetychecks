@@ -73,7 +73,7 @@ services:
         protocol: TCP
         expose: public                 # none | cluster | public
     config:                            # non-secret settings -> ConfigMap -> env vars
-      GREETING: "Welcome to the Grocery Store"
+      GREETING: "ZAC. Welcome to the Grocery Store"
       API_URL: "http://${name}-api"    # in-cluster DNS name of the api Service
       LOG_LEVEL: info
     secrets: []                        # web needs no secrets
