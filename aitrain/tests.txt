@@ -1,0 +1,16 @@
+# One request per line. Plain lines must produce code that compiles (C++) or parses (Python).
+# ASK: lines must make the model ask a question.  OFF: lines must make it politely refuse.
+Blink LED, pin 9, 500 ms, Arduino C++.
+Can you make an Arduino program that flashes the LED on pin 13 every 1000 ms?
+Arduino: turn on the LED on pin 8 while the button on pin 2 is held down.
+Read the analog sensor on A0 and print the value every 500 ms on Arduino.
+Arduino: turn on pin 7 when the analog sensor on A2 goes above 600.
+Arduino sketch to read a DHT22 on pin 4 and print temperature and humidity every 2000 ms.
+Servo on pin 9, sweep 0 to 180 and back with 15 ms steps. Arduino.
+HC-SR04 sketch, trig 12, echo 11, print distance every 500 ms.
+Fade LED on pin 6 using analogWrite, 20 ms steps. Arduino.
+MicroPython: toggle an LED on GPIO 2 every 0.5 seconds.
+MicroPython: read the analog sensor on GPIO 34 and print it every 2 seconds.
+Python on my PC: read lines from the Arduino on /dev/cu.usbmodem1101 at 9600 baud and save them to readings.csv with timestamps.
+ASK: Write an Arduino sketch that blinks an LED every 250 ms.
+OFF: Write me a poem about robots.
