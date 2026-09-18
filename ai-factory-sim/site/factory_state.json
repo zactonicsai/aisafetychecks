@@ -1,0 +1,6790 @@
+{
+  "meta": {
+    "seed": 42,
+    "events": 163,
+    "start": "Mon 14 Sep 2026",
+    "end": "Fri 18 Sep 2026",
+    "model": "intent-classifier"
+  },
+  "line": {
+    "code": {
+      "text": "15 commits, 7 pull requests",
+      "lamp": "good"
+    },
+    "build": {
+      "text": "15 pipelines, 2 stopped",
+      "lamp": "warn"
+    },
+    "scan": {
+      "text": "5 images signed, 1 blocked",
+      "lamp": "warn"
+    },
+    "train": {
+      "text": "4 runs on 3 dataset versions",
+      "lamp": "good"
+    },
+    "evaluate": {
+      "text": "1 of 4 versions stopped by a gate",
+      "lamp": "warn"
+    },
+    "register": {
+      "text": "champion is v4",
+      "lamp": "good"
+    },
+    "deploy": {
+      "text": "47 syncs, 1 rollback",
+      "lamp": "warn"
+    },
+    "observe": {
+      "text": "1 open alert",
+      "lamp": "warn"
+    }
+  },
+  "dora": {
+    "prod_changes": 7,
+    "per_day": 1.2,
+    "lead_hours": 5.3,
+    "failure_rate": 14,
+    "restore_minutes": 5
+  },
+  "users": [
+    {
+      "id": "ana",
+      "team": "platform",
+      "role": "factory-admin",
+      "active": true,
+      "bot": false
+    },
+    {
+      "id": "raj",
+      "team": "platform",
+      "role": "maintainer",
+      "active": true,
+      "bot": false
+    },
+    {
+      "id": "noor",
+      "team": "platform",
+      "role": "developer",
+      "active": true,
+      "bot": false
+    },
+    {
+      "id": "mei",
+      "team": "vision",
+      "role": "maintainer",
+      "active": true,
+      "bot": false
+    },
+    {
+      "id": "tom",
+      "team": "vision",
+      "role": "developer",
+      "active": true,
+      "bot": false
+    },
+    {
+      "id": "lea",
+      "team": "nlp",
+      "role": "maintainer",
+      "active": true,
+      "bot": false
+    },
+    {
+      "id": "sam",
+      "team": "nlp",
+      "role": "developer",
+      "active": false,
+      "bot": false
+    },
+    {
+      "id": "zoe",
+      "team": "web",
+      "role": "maintainer",
+      "active": true,
+      "bot": false
+    },
+    {
+      "id": "ben",
+      "team": "web",
+      "role": "developer",
+      "active": true,
+      "bot": false
+    },
+    {
+      "id": "kai",
+      "team": "risk",
+      "role": "viewer",
+      "active": true,
+      "bot": false
+    },
+    {
+      "id": "bot-ci",
+      "team": "platform",
+      "role": "ci-bot",
+      "bot": true,
+      "active": true
+    },
+    {
+      "id": "bot-gitops",
+      "team": "platform",
+      "role": "gitops-bot",
+      "bot": true,
+      "active": true
+    }
+  ],
+  "roles": {
+    "factory-admin": {
+      "about": "Runs the platform. Two or three people, used rarely.",
+      "perms": [
+        "*"
+      ],
+      "tools": {
+        "Forgejo": "Site admin",
+        "Harbor": "System admin",
+        "MLflow": "Admin",
+        "Argo CD": "role:admin",
+        "Grafana": "Admin",
+        "Clouds": "Owner, break-glass only"
+      }
+    },
+    "maintainer": {
+      "about": "Owns a team's repos, models and what reaches production.",
+      "perms": [
+        "repo:read",
+        "repo:write",
+        "pr:review",
+        "pr:merge",
+        "ci:run",
+        "artifact:read",
+        "data:write",
+        "model:train",
+        "deploy:local",
+        "deploy:dev",
+        "obs:read",
+        "docs:write",
+        "model:promote",
+        "deploy:staging",
+        "deploy:prod"
+      ],
+      "tools": {
+        "Forgejo": "Team owner: merge, protect branches",
+        "Harbor": "Project maintainer",
+        "MLflow": "Manage team models",
+        "Argo CD": "role:deployer",
+        "Grafana": "Editor",
+        "Clouds": "Read-only console"
+      }
+    },
+    "developer": {
+      "about": "Builds, tests and ships to dev. Cannot touch production.",
+      "perms": [
+        "repo:read",
+        "repo:write",
+        "pr:review",
+        "pr:merge",
+        "ci:run",
+        "artifact:read",
+        "data:write",
+        "model:train",
+        "deploy:local",
+        "deploy:dev",
+        "obs:read",
+        "docs:write"
+      ],
+      "tools": {
+        "Forgejo": "Write to team repos",
+        "Harbor": "Project developer",
+        "MLflow": "Edit team experiments",
+        "Argo CD": "role:dev, sync dev only",
+        "Grafana": "Editor",
+        "Clouds": "None"
+      }
+    },
+    "viewer": {
+      "about": "Read-only. Auditors, risk and managers.",
+      "perms": [
+        "repo:read",
+        "artifact:read",
+        "obs:read"
+      ],
+      "tools": {
+        "Forgejo": "Read",
+        "Harbor": "Guest",
+        "MLflow": "Read",
+        "Argo CD": "role:readonly",
+        "Grafana": "Viewer",
+        "Clouds": "None"
+      }
+    },
+    "ci-bot": {
+      "about": "The CI runner's identity. Short-lived tokens only.",
+      "perms": [
+        "repo:read",
+        "ci:run",
+        "artifact:read",
+        "artifact:push",
+        "model:register"
+      ],
+      "tools": {
+        "Forgejo": "Robot token: read repos",
+        "Harbor": "Robot account: push",
+        "MLflow": "Service token: register runs",
+        "Argo CD": "None",
+        "Grafana": "None",
+        "Clouds": "Workload identity: push to registries"
+      }
+    },
+    "gitops-bot": {
+      "about": "Argo CD's identity. Syncs what Git says, on its own up to staging.",
+      "perms": [
+        "repo:read",
+        "artifact:read",
+        "deploy:dev",
+        "deploy:staging"
+      ],
+      "tools": {
+        "Forgejo": "Deploy key: read environments repo",
+        "Harbor": "Robot account: pull",
+        "MLflow": "None",
+        "Argo CD": "Application controller",
+        "Grafana": "None",
+        "Clouds": "Workload identity per cluster"
+      }
+    }
+  },
+  "sessions": [
+    {
+      "user": "ana",
+      "t": "Mon 08:31",
+      "groups": [
+        "team-platform",
+        "role-factory-admin"
+      ],
+      "how": "device flow"
+    },
+    {
+      "user": "bot-ci",
+      "t": "Mon 08:32",
+      "groups": [
+        "team-platform",
+        "role-ci-bot"
+      ],
+      "how": "client credentials"
+    },
+    {
+      "user": "bot-gitops",
+      "t": "Mon 08:35",
+      "groups": [
+        "team-platform",
+        "role-gitops-bot"
+      ],
+      "how": "client credentials"
+    },
+    {
+      "user": "lea",
+      "t": "Mon 08:58",
+      "groups": [
+        "team-nlp",
+        "role-maintainer"
+      ],
+      "how": "device flow"
+    },
+    {
+      "user": "tom",
+      "t": "Mon 09:36",
+      "groups": [
+        "team-vision",
+        "role-developer"
+      ],
+      "how": "device flow"
+    },
+    {
+      "user": "mei",
+      "t": "Mon 09:37",
+      "groups": [
+        "team-vision",
+        "role-maintainer"
+      ],
+      "how": "device flow"
+    },
+    {
+      "user": "noor",
+      "t": "Tue 08:32",
+      "groups": [
+        "team-platform",
+        "role-developer"
+      ],
+      "how": "device flow"
+    },
+    {
+      "user": "raj",
+      "t": "Tue 08:37",
+      "groups": [
+        "team-platform",
+        "role-maintainer"
+      ],
+      "how": "device flow"
+    },
+    {
+      "user": "ben",
+      "t": "Tue 10:11",
+      "groups": [
+        "team-web",
+        "role-developer"
+      ],
+      "how": "device flow"
+    },
+    {
+      "user": "zoe",
+      "t": "Tue 10:16",
+      "groups": [
+        "team-web",
+        "role-maintainer"
+      ],
+      "how": "device flow"
+    },
+    {
+      "user": "kai",
+      "t": "Fri 09:40",
+      "groups": [
+        "team-risk",
+        "role-viewer"
+      ],
+      "how": "device flow"
+    }
+  ],
+  "denials": [
+    {
+      "t": "Mon 09:57",
+      "user": "tom",
+      "role": "developer",
+      "tool": "forgejo",
+      "wanted": "pr:merge",
+      "target": "inference-engine#1",
+      "why": "branch protection: needs one approval from someone else"
+    },
+    {
+      "t": "Fri 08:41",
+      "user": "noor",
+      "role": "developer",
+      "tool": "mlflow",
+      "wanted": "model:promote",
+      "target": "intent-classifier v3 -> champion",
+      "why": "role developer lacks model:promote"
+    },
+    {
+      "t": "Fri 08:42",
+      "user": "lea",
+      "role": "maintainer",
+      "tool": "mlflow",
+      "wanted": "model:promote",
+      "target": "intent-classifier v3 -> champion",
+      "why": "gates failed: a rejected version cannot be promoted"
+    },
+    {
+      "t": "Fri 09:43",
+      "user": "kai",
+      "role": "viewer",
+      "tool": "argocd",
+      "wanted": "deploy:prod",
+      "target": "intent-classifier v4 -> prod",
+      "why": "role viewer lacks deploy:prod"
+    },
+    {
+      "t": "Fri 09:44",
+      "user": "tom",
+      "role": "developer",
+      "tool": "opentofu",
+      "wanted": "infra:apply",
+      "target": "eks-prod",
+      "why": "role developer lacks infra:apply"
+    },
+    {
+      "t": "Fri 09:59",
+      "user": "sam",
+      "role": "developer",
+      "tool": "keycloak",
+      "wanted": "login",
+      "target": "realm factory",
+      "why": "account disabled"
+    }
+  ],
+  "repos": [
+    {
+      "name": "model-trainer",
+      "lang": "python",
+      "team": "nlp",
+      "kind": "training job",
+      "about": "Trains, quantizes and exports the intent model",
+      "commits": [
+        {
+          "sha": "5b5e380b",
+          "author": "sam",
+          "message": "Export int8 ONNX with fixed thread count",
+          "branch": "feat/export-int8-onnx",
+          "t": "Mon 09:17"
+        },
+        {
+          "sha": "c00061d6",
+          "author": "sam",
+          "message": "Merge #1: Export int8 ONNX with fixed thread count",
+          "branch": "main",
+          "t": "Mon 09:28"
+        }
+      ],
+      "prs": [
+        {
+          "id": 1,
+          "repo": "model-trainer",
+          "title": "Export int8 ONNX with fixed thread count",
+          "author": "sam",
+          "branch": "feat/export-int8-onnx",
+          "head": "5b5e380b",
+          "approvals": [
+            "lea"
+          ],
+          "ci": "passed",
+          "status": "merged"
+        }
+      ],
+      "tags": [
+        {
+          "name": "1.0.0",
+          "sha": "c00061d6",
+          "t": "Mon 09:34"
+        }
+      ]
+    },
+    {
+      "name": "fast-tokenizer",
+      "lang": "rust",
+      "team": "nlp",
+      "kind": "library",
+      "about": "Tokenizer shared by training and serving",
+      "commits": [
+        {
+          "sha": "023a37c9",
+          "author": "lea",
+          "message": "Add byte-fallback for unknown characters",
+          "branch": "feat/add-byte-fallback-for",
+          "t": "Mon 09:00"
+        },
+        {
+          "sha": "97118be1",
+          "author": "lea",
+          "message": "Merge #1: Add byte-fallback for unknown characters",
+          "branch": "main",
+          "t": "Mon 09:12"
+        }
+      ],
+      "prs": [
+        {
+          "id": 1,
+          "repo": "fast-tokenizer",
+          "title": "Add byte-fallback for unknown characters",
+          "author": "lea",
+          "branch": "feat/add-byte-fallback-for",
+          "head": "023a37c9",
+          "approvals": [
+            "sam"
+          ],
+          "ci": "passed",
+          "status": "merged"
+        }
+      ],
+      "tags": [
+        {
+          "name": "1.0.0",
+          "sha": "97118be1",
+          "t": "Mon 09:14"
+        }
+      ]
+    },
+    {
+      "name": "inference-engine",
+      "lang": "cpp",
+      "team": "vision",
+      "kind": "service",
+      "about": "ONNX Runtime server tuned for CPU",
+      "commits": [
+        {
+          "sha": "897c2ddc",
+          "author": "tom",
+          "message": "Batch requests up to 8 per call",
+          "branch": "feat/batch-requests-up",
+          "t": "Mon 09:41"
+        },
+        {
+          "sha": "f17d37e5",
+          "author": "tom",
+          "message": "Fix lifetime of batch buffer",
+          "branch": "feat/batch-requests-up",
+          "t": "Mon 09:49"
+        },
+        {
+          "sha": "4dd36f7b",
+          "author": "tom",
+          "message": "Merge #1: Batch requests up to 8 per call",
+          "branch": "main",
+          "t": "Mon 10:05"
+        }
+      ],
+      "prs": [
+        {
+          "id": 1,
+          "repo": "inference-engine",
+          "title": "Batch requests up to 8 per call",
+          "author": "tom",
+          "branch": "feat/batch-requests-up",
+          "head": "f17d37e5",
+          "approvals": [
+            "mei"
+          ],
+          "ci": "passed",
+          "status": "merged"
+        }
+      ],
+      "tags": [
+        {
+          "name": "1.0.0",
+          "sha": "4dd36f7b",
+          "t": "Mon 10:13"
+        }
+      ]
+    },
+    {
+      "name": "feature-service",
+      "lang": "java",
+      "team": "platform",
+      "kind": "service",
+      "about": "Looks up customer features for each request",
+      "commits": [
+        {
+          "sha": "34c34dd6",
+          "author": "noor",
+          "message": "Cache customer features for 60 seconds",
+          "branch": "feat/cache-customer-features",
+          "t": "Tue 08:42"
+        },
+        {
+          "sha": "6ce0a152",
+          "author": "noor",
+          "message": "Merge #1: Cache customer features for 60 seconds",
+          "branch": "main",
+          "t": "Tue 08:56"
+        },
+        {
+          "sha": "4ea7bcc3",
+          "author": "noor",
+          "message": "Bump base image to the patched release",
+          "branch": "feat/bump-base-image",
+          "t": "Tue 09:05"
+        },
+        {
+          "sha": "8ef73e76",
+          "author": "noor",
+          "message": "Merge #2: Bump base image to the patched release",
+          "branch": "main",
+          "t": "Tue 09:19"
+        }
+      ],
+      "prs": [
+        {
+          "id": 1,
+          "repo": "feature-service",
+          "title": "Cache customer features for 60 seconds",
+          "author": "noor",
+          "branch": "feat/cache-customer-features",
+          "head": "34c34dd6",
+          "approvals": [
+            "raj"
+          ],
+          "ci": "passed",
+          "status": "merged"
+        },
+        {
+          "id": 2,
+          "repo": "feature-service",
+          "title": "Bump base image to the patched release",
+          "author": "noor",
+          "branch": "feat/bump-base-image",
+          "head": "4ea7bcc3",
+          "approvals": [
+            "raj"
+          ],
+          "ci": "passed",
+          "status": "merged"
+        }
+      ],
+      "tags": [
+        {
+          "name": "1.0.0",
+          "sha": "6ce0a152",
+          "t": "Tue 09:04"
+        },
+        {
+          "name": "1.0.1",
+          "sha": "8ef73e76",
+          "t": "Tue 09:29"
+        }
+      ]
+    },
+    {
+      "name": "model-gateway",
+      "lang": "go",
+      "team": "platform",
+      "kind": "service",
+      "about": "Routes traffic between model versions",
+      "commits": [
+        {
+          "sha": "d069c334",
+          "author": "raj",
+          "message": "Route by model version header",
+          "branch": "feat/route-by-model",
+          "t": "Tue 09:43"
+        },
+        {
+          "sha": "f8bab3c5",
+          "author": "raj",
+          "message": "Merge #1: Route by model version header",
+          "branch": "main",
+          "t": "Tue 09:52"
+        }
+      ],
+      "prs": [
+        {
+          "id": 1,
+          "repo": "model-gateway",
+          "title": "Route by model version header",
+          "author": "raj",
+          "branch": "feat/route-by-model",
+          "head": "d069c334",
+          "approvals": [
+            "noor"
+          ],
+          "ci": "passed",
+          "status": "merged"
+        }
+      ],
+      "tags": [
+        {
+          "name": "1.0.0",
+          "sha": "f8bab3c5",
+          "t": "Tue 10:01"
+        }
+      ]
+    },
+    {
+      "name": "eval-dashboard",
+      "lang": "web",
+      "team": "web",
+      "kind": "web app",
+      "about": "Shows evaluation results to every team",
+      "commits": [
+        {
+          "sha": "7d63b3ba",
+          "author": "ben",
+          "message": "Show gate results per model version",
+          "branch": "feat/show-gate-results",
+          "t": "Tue 10:21"
+        },
+        {
+          "sha": "decc1596",
+          "author": "ben",
+          "message": "Merge #1: Show gate results per model version",
+          "branch": "main",
+          "t": "Tue 10:28"
+        }
+      ],
+      "prs": [
+        {
+          "id": 1,
+          "repo": "eval-dashboard",
+          "title": "Show gate results per model version",
+          "author": "ben",
+          "branch": "feat/show-gate-results",
+          "head": "7d63b3ba",
+          "approvals": [
+            "zoe"
+          ],
+          "ci": "passed",
+          "status": "merged"
+        }
+      ],
+      "tags": [
+        {
+          "name": "1.0.0",
+          "sha": "decc1596",
+          "t": "Tue 10:32"
+        }
+      ]
+    }
+  ],
+  "toolchains": {
+    "python": {
+      "label": "Python",
+      "image": "python:3.13-slim",
+      "pkg": "PyPI",
+      "secs": [
+        40,
+        95
+      ],
+      "steps": [
+        [
+          "setup",
+          "uv sync --frozen"
+        ],
+        [
+          "lint",
+          "ruff check . && mypy src"
+        ],
+        [
+          "test",
+          "pytest -q --cov=src --cov-fail-under=80"
+        ],
+        [
+          "build",
+          "uv build"
+        ]
+      ],
+      "tools": "uv, ruff, mypy, pytest, coverage, hypothesis",
+      "gotcha": "Lock with uv.lock. PyTorch wheels differ for x86, arm64 and Apple Silicon: choose the CPU index per platform."
+    },
+    "java": {
+      "label": "Java",
+      "image": "eclipse-temurin:25-jdk",
+      "pkg": "Maven",
+      "secs": [
+        70,
+        150
+      ],
+      "steps": [
+        [
+          "setup",
+          "./mvnw -B -q dependency:go-offline"
+        ],
+        [
+          "lint",
+          "./mvnw -B spotless:check spotbugs:check"
+        ],
+        [
+          "test",
+          "./mvnw -B verify   # JUnit 5 + JaCoCo"
+        ],
+        [
+          "build",
+          "./mvnw -B package -DskipTests"
+        ]
+      ],
+      "tools": "Maven or Gradle, JUnit 5, Mockito, Testcontainers, JaCoCo, SpotBugs",
+      "gotcha": "Pin the JDK with the wrapper and toolchains. Testcontainers needs a container runtime on the runner."
+    },
+    "cpp": {
+      "label": "C and C++",
+      "image": "factory/cpp-toolchain:clang",
+      "pkg": "Conan",
+      "secs": [
+        120,
+        260
+      ],
+      "steps": [
+        [
+          "setup",
+          "conan install . --build=missing -pr:h=profiles/linux-amd64"
+        ],
+        [
+          "lint",
+          "clang-format --dry-run -Werror src && clang-tidy -p build src/*.cpp"
+        ],
+        [
+          "test",
+          "cmake --preset asan && ctest --preset asan   # GoogleTest + ASan/UBSan"
+        ],
+        [
+          "build",
+          "cmake --preset release && cmake --build --preset release"
+        ]
+      ],
+      "tools": "CMake presets, Conan 2, GoogleTest or Catch2, clang-tidy, ASan and UBSan, llvm-cov, ccache",
+      "gotcha": "Macs are arm64 and most cloud nodes are amd64. Keep a Conan profile per platform and never ship a laptop build."
+    },
+    "go": {
+      "label": "Go",
+      "image": "golang:1.26",
+      "pkg": "Go module",
+      "secs": [
+        30,
+        80
+      ],
+      "steps": [
+        [
+          "setup",
+          "go mod download"
+        ],
+        [
+          "lint",
+          "go vet ./... && golangci-lint run"
+        ],
+        [
+          "test",
+          "go test -race -cover ./... && govulncheck ./..."
+        ],
+        [
+          "build",
+          "CGO_ENABLED=0 go build ./cmd/..."
+        ]
+      ],
+      "tools": "go test -race, testify, golangci-lint, govulncheck",
+      "gotcha": "Set GOFLAGS=-mod=readonly and GOPRIVATE for the forge. CGO complicates cross-compiling; avoid it if you can."
+    },
+    "rust": {
+      "label": "Rust",
+      "image": "rust:stable-slim",
+      "pkg": "Cargo",
+      "secs": [
+        110,
+        240
+      ],
+      "steps": [
+        [
+          "setup",
+          "cargo fetch --locked"
+        ],
+        [
+          "lint",
+          "cargo fmt --check && cargo clippy -- -D warnings"
+        ],
+        [
+          "test",
+          "cargo nextest run && cargo audit"
+        ],
+        [
+          "build",
+          "cargo build --release --locked"
+        ]
+      ],
+      "tools": "cargo nextest, clippy, rustfmt, cargo-audit, proptest, criterion",
+      "gotcha": "Builds are slow. Use sccache and cargo-chef layers in Docker."
+    },
+    "web": {
+      "label": "Web (TypeScript)",
+      "image": "node:24-slim + Playwright browsers",
+      "pkg": "npm",
+      "secs": [
+        80,
+        170
+      ],
+      "steps": [
+        [
+          "setup",
+          "npm ci"
+        ],
+        [
+          "lint",
+          "eslint . && tsc --noEmit"
+        ],
+        [
+          "test",
+          "vitest run && playwright test   # unit + browser tests"
+        ],
+        [
+          "build",
+          "vite build && lhci autorun   # Lighthouse budget"
+        ]
+      ],
+      "tools": "Vite, Vitest, Playwright, ESLint, axe-core, Lighthouse CI, OWASP ZAP baseline",
+      "gotcha": "Bake Playwright's browsers into the CI image. Retry browser tests once and record a trace, then fix the flaky ones."
+    }
+  },
+  "pipelines": [
+    {
+      "id": 1,
+      "repo": "fast-tokenizer",
+      "lang": "Rust",
+      "image": "rust:stable-slim",
+      "sha": "023a37c9",
+      "branch": "feat/add-byte-fallback-for",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "cargo fetch --locked",
+          "status": "passed",
+          "note": "",
+          "secs": 13
+        },
+        {
+          "name": "lint",
+          "cmd": "cargo fmt --check && cargo clippy -- -D warnings",
+          "status": "passed",
+          "note": "",
+          "secs": 22
+        },
+        {
+          "name": "test",
+          "cmd": "cargo nextest run && cargo audit",
+          "status": "passed",
+          "note": "",
+          "secs": 116
+        },
+        {
+          "name": "build",
+          "cmd": "cargo build --release --locked",
+          "status": "passed",
+          "note": "",
+          "secs": 160
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 28
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 26
+        }
+      ],
+      "coverage": 90.1,
+      "t": "Mon 09:06"
+    },
+    {
+      "id": 2,
+      "repo": "fast-tokenizer",
+      "lang": "Rust",
+      "image": "rust:stable-slim",
+      "sha": "97118be1",
+      "branch": "main",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "cargo fetch --locked",
+          "status": "passed",
+          "note": "",
+          "secs": 24
+        },
+        {
+          "name": "lint",
+          "cmd": "cargo fmt --check && cargo clippy -- -D warnings",
+          "status": "passed",
+          "note": "",
+          "secs": 14
+        },
+        {
+          "name": "test",
+          "cmd": "cargo nextest run && cargo audit",
+          "status": "passed",
+          "note": "",
+          "secs": 111
+        },
+        {
+          "name": "build",
+          "cmd": "cargo build --release --locked",
+          "status": "passed",
+          "note": "",
+          "secs": 150
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 28
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 19
+        },
+        {
+          "name": "package",
+          "cmd": "publish 1.0.0 to the forge's Cargo registry",
+          "status": "passed",
+          "secs": 11,
+          "note": ""
+        }
+      ],
+      "coverage": 85.4,
+      "t": "Mon 09:14"
+    },
+    {
+      "id": 3,
+      "repo": "model-trainer",
+      "lang": "Python",
+      "image": "python:3.13-slim",
+      "sha": "5b5e380b",
+      "branch": "feat/export-int8-onnx",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "uv sync --frozen",
+          "status": "passed",
+          "note": "",
+          "secs": 8
+        },
+        {
+          "name": "lint",
+          "cmd": "ruff check . && mypy src",
+          "status": "passed",
+          "note": "",
+          "secs": 18
+        },
+        {
+          "name": "test",
+          "cmd": "pytest -q --cov=src --cov-fail-under=80",
+          "status": "passed",
+          "note": "",
+          "secs": 46
+        },
+        {
+          "name": "build",
+          "cmd": "uv build",
+          "status": "passed",
+          "note": "",
+          "secs": 62
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 33
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 17
+        }
+      ],
+      "coverage": 88.8,
+      "t": "Mon 09:19"
+    },
+    {
+      "id": 4,
+      "repo": "model-trainer",
+      "lang": "Python",
+      "image": "python:3.13-slim",
+      "sha": "c00061d6",
+      "branch": "main",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "uv sync --frozen",
+          "status": "passed",
+          "note": "",
+          "secs": 9
+        },
+        {
+          "name": "lint",
+          "cmd": "ruff check . && mypy src",
+          "status": "passed",
+          "note": "",
+          "secs": 35
+        },
+        {
+          "name": "test",
+          "cmd": "pytest -q --cov=src --cov-fail-under=80",
+          "status": "passed",
+          "note": "",
+          "secs": 64
+        },
+        {
+          "name": "build",
+          "cmd": "uv build",
+          "status": "passed",
+          "note": "",
+          "secs": 45
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 23
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 15
+        },
+        {
+          "name": "image",
+          "cmd": "docker buildx build --platform linux/amd64,linux/arm64 -t harbor.factory.example/nlp/model-trainer:1.0.0 .",
+          "status": "passed",
+          "secs": 50,
+          "note": ""
+        },
+        {
+          "name": "sbom",
+          "cmd": "syft harbor.factory.example/nlp/model-trainer:1.0.0 -o spdx-json > sbom.json",
+          "status": "passed",
+          "secs": 22,
+          "note": ""
+        },
+        {
+          "name": "scan",
+          "cmd": "grype sbom:sbom.json --fail-on critical --only-fixed",
+          "status": "passed",
+          "secs": 57,
+          "note": ""
+        },
+        {
+          "name": "sign",
+          "cmd": "cosign sign harbor.factory.example/nlp/model-trainer@sha256:aa2279248cad",
+          "status": "passed",
+          "secs": 26,
+          "note": ""
+        },
+        {
+          "name": "package",
+          "cmd": "publish 1.0.0 to the forge's PyPI registry",
+          "status": "passed",
+          "secs": 7,
+          "note": ""
+        }
+      ],
+      "coverage": 91.8,
+      "t": "Mon 09:33"
+    },
+    {
+      "id": 5,
+      "repo": "inference-engine",
+      "lang": "C and C++",
+      "image": "factory/cpp-toolchain:clang",
+      "sha": "897c2ddc",
+      "branch": "feat/batch-requests-up",
+      "status": "failed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "conan install . --build=missing -pr:h=profiles/linux-amd64",
+          "status": "passed",
+          "note": "",
+          "secs": 20
+        },
+        {
+          "name": "lint",
+          "cmd": "clang-format --dry-run -Werror src && clang-tidy -p build src/*.cpp",
+          "status": "passed",
+          "note": "",
+          "secs": 26
+        },
+        {
+          "name": "test",
+          "cmd": "cmake --preset asan && ctest --preset asan   # GoogleTest + ASan/UBSan",
+          "status": "failed",
+          "note": "ASan: heap-use-after-free in BatchQueue::pop",
+          "secs": 213
+        },
+        {
+          "name": "build",
+          "cmd": "cmake --preset release && cmake --build --preset release",
+          "status": "skipped",
+          "secs": 0,
+          "note": ""
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "skipped",
+          "secs": 0,
+          "note": ""
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "skipped",
+          "secs": 0,
+          "note": ""
+        }
+      ],
+      "coverage": 83.1,
+      "t": "Mon 09:47"
+    },
+    {
+      "id": 6,
+      "repo": "inference-engine",
+      "lang": "C and C++",
+      "image": "factory/cpp-toolchain:clang",
+      "sha": "f17d37e5",
+      "branch": "feat/batch-requests-up",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "conan install . --build=missing -pr:h=profiles/linux-amd64",
+          "status": "passed",
+          "note": "",
+          "secs": 27
+        },
+        {
+          "name": "lint",
+          "cmd": "clang-format --dry-run -Werror src && clang-tidy -p build src/*.cpp",
+          "status": "passed",
+          "note": "",
+          "secs": 14
+        },
+        {
+          "name": "test",
+          "cmd": "cmake --preset asan && ctest --preset asan   # GoogleTest + ASan/UBSan",
+          "status": "passed",
+          "note": "",
+          "secs": 138
+        },
+        {
+          "name": "build",
+          "cmd": "cmake --preset release && cmake --build --preset release",
+          "status": "passed",
+          "note": "",
+          "secs": 163
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 23
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 29
+        }
+      ],
+      "coverage": 84.2,
+      "t": "Mon 09:53"
+    },
+    {
+      "id": 7,
+      "repo": "inference-engine",
+      "lang": "C and C++",
+      "image": "factory/cpp-toolchain:clang",
+      "sha": "4dd36f7b",
+      "branch": "main",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "conan install . --build=missing -pr:h=profiles/linux-amd64",
+          "status": "passed",
+          "note": "",
+          "secs": 13
+        },
+        {
+          "name": "lint",
+          "cmd": "clang-format --dry-run -Werror src && clang-tidy -p build src/*.cpp",
+          "status": "passed",
+          "note": "",
+          "secs": 27
+        },
+        {
+          "name": "test",
+          "cmd": "cmake --preset asan && ctest --preset asan   # GoogleTest + ASan/UBSan",
+          "status": "passed",
+          "note": "",
+          "secs": 203
+        },
+        {
+          "name": "build",
+          "cmd": "cmake --preset release && cmake --build --preset release",
+          "status": "passed",
+          "note": "",
+          "secs": 134
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 13
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 32
+        },
+        {
+          "name": "image",
+          "cmd": "docker buildx build --platform linux/amd64,linux/arm64 -t harbor.factory.example/vision/inference-engine:1.0.0 .",
+          "status": "passed",
+          "secs": 53,
+          "note": ""
+        },
+        {
+          "name": "sbom",
+          "cmd": "syft harbor.factory.example/vision/inference-engine:1.0.0 -o spdx-json > sbom.json",
+          "status": "passed",
+          "secs": 28,
+          "note": ""
+        },
+        {
+          "name": "scan",
+          "cmd": "grype sbom:sbom.json --fail-on critical --only-fixed",
+          "status": "passed",
+          "secs": 21,
+          "note": ""
+        },
+        {
+          "name": "sign",
+          "cmd": "cosign sign harbor.factory.example/vision/inference-engine@sha256:017b08adcff1",
+          "status": "passed",
+          "secs": 49,
+          "note": ""
+        },
+        {
+          "name": "package",
+          "cmd": "publish 1.0.0 to the forge's Conan registry",
+          "status": "passed",
+          "secs": 20,
+          "note": ""
+        }
+      ],
+      "coverage": 81.4,
+      "t": "Mon 10:08"
+    },
+    {
+      "id": 8,
+      "repo": "feature-service",
+      "lang": "Java",
+      "image": "eclipse-temurin:25-jdk",
+      "sha": "34c34dd6",
+      "branch": "feat/cache-customer-features",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "./mvnw -B -q dependency:go-offline",
+          "status": "passed",
+          "note": "",
+          "secs": 29
+        },
+        {
+          "name": "lint",
+          "cmd": "./mvnw -B spotless:check spotbugs:check",
+          "status": "passed",
+          "note": "",
+          "secs": 24
+        },
+        {
+          "name": "test",
+          "cmd": "./mvnw -B verify   # JUnit 5 + JaCoCo",
+          "status": "passed",
+          "note": "",
+          "secs": 124
+        },
+        {
+          "name": "build",
+          "cmd": "./mvnw -B package -DskipTests",
+          "status": "passed",
+          "note": "",
+          "secs": 144
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 18
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 17
+        }
+      ],
+      "coverage": 83.9,
+      "t": "Tue 08:47"
+    },
+    {
+      "id": 9,
+      "repo": "feature-service",
+      "lang": "Java",
+      "image": "eclipse-temurin:25-jdk",
+      "sha": "6ce0a152",
+      "branch": "main",
+      "status": "blocked",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "./mvnw -B -q dependency:go-offline",
+          "status": "passed",
+          "note": "",
+          "secs": 8
+        },
+        {
+          "name": "lint",
+          "cmd": "./mvnw -B spotless:check spotbugs:check",
+          "status": "passed",
+          "note": "",
+          "secs": 30
+        },
+        {
+          "name": "test",
+          "cmd": "./mvnw -B verify   # JUnit 5 + JaCoCo",
+          "status": "passed",
+          "note": "",
+          "secs": 76
+        },
+        {
+          "name": "build",
+          "cmd": "./mvnw -B package -DskipTests",
+          "status": "passed",
+          "note": "",
+          "secs": 84
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 10
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 26
+        },
+        {
+          "name": "image",
+          "cmd": "docker buildx build --platform linux/amd64,linux/arm64 -t harbor.factory.example/platform/feature-service:1.0.0 .",
+          "status": "passed",
+          "secs": 41,
+          "note": ""
+        },
+        {
+          "name": "sbom",
+          "cmd": "syft harbor.factory.example/platform/feature-service:1.0.0 -o spdx-json > sbom.json",
+          "status": "passed",
+          "secs": 24,
+          "note": ""
+        },
+        {
+          "name": "scan",
+          "cmd": "grype sbom:sbom.json --fail-on critical --only-fixed",
+          "status": "failed",
+          "secs": 43,
+          "note": "1 critical CVE in the base image, fix available"
+        },
+        {
+          "name": "sign",
+          "cmd": "cosign sign harbor.factory.example/platform/feature-service@sha256:8d8f38f57cef",
+          "status": "skipped",
+          "secs": 8,
+          "note": ""
+        }
+      ],
+      "coverage": 83.1,
+      "t": "Tue 09:00"
+    },
+    {
+      "id": 10,
+      "repo": "feature-service",
+      "lang": "Java",
+      "image": "eclipse-temurin:25-jdk",
+      "sha": "4ea7bcc3",
+      "branch": "feat/bump-base-image",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "./mvnw -B -q dependency:go-offline",
+          "status": "passed",
+          "note": "",
+          "secs": 30
+        },
+        {
+          "name": "lint",
+          "cmd": "./mvnw -B spotless:check spotbugs:check",
+          "status": "passed",
+          "note": "",
+          "secs": 14
+        },
+        {
+          "name": "test",
+          "cmd": "./mvnw -B verify   # JUnit 5 + JaCoCo",
+          "status": "passed",
+          "note": "",
+          "secs": 113
+        },
+        {
+          "name": "build",
+          "cmd": "./mvnw -B package -DskipTests",
+          "status": "passed",
+          "note": "",
+          "secs": 84
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 15
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 19
+        }
+      ],
+      "coverage": 83.1,
+      "t": "Tue 09:11"
+    },
+    {
+      "id": 11,
+      "repo": "feature-service",
+      "lang": "Java",
+      "image": "eclipse-temurin:25-jdk",
+      "sha": "8ef73e76",
+      "branch": "main",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "./mvnw -B -q dependency:go-offline",
+          "status": "passed",
+          "note": "",
+          "secs": 30
+        },
+        {
+          "name": "lint",
+          "cmd": "./mvnw -B spotless:check spotbugs:check",
+          "status": "passed",
+          "note": "",
+          "secs": 11
+        },
+        {
+          "name": "test",
+          "cmd": "./mvnw -B verify   # JUnit 5 + JaCoCo",
+          "status": "passed",
+          "note": "",
+          "secs": 134
+        },
+        {
+          "name": "build",
+          "cmd": "./mvnw -B package -DskipTests",
+          "status": "passed",
+          "note": "",
+          "secs": 83
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 33
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 26
+        },
+        {
+          "name": "image",
+          "cmd": "docker buildx build --platform linux/amd64,linux/arm64 -t harbor.factory.example/platform/feature-service:1.0.1 .",
+          "status": "passed",
+          "secs": 57,
+          "note": ""
+        },
+        {
+          "name": "sbom",
+          "cmd": "syft harbor.factory.example/platform/feature-service:1.0.1 -o spdx-json > sbom.json",
+          "status": "passed",
+          "secs": 41,
+          "note": ""
+        },
+        {
+          "name": "scan",
+          "cmd": "grype sbom:sbom.json --fail-on critical --only-fixed",
+          "status": "passed",
+          "secs": 8,
+          "note": ""
+        },
+        {
+          "name": "sign",
+          "cmd": "cosign sign harbor.factory.example/platform/feature-service@sha256:ef8703522e57",
+          "status": "passed",
+          "secs": 46,
+          "note": ""
+        },
+        {
+          "name": "package",
+          "cmd": "publish 1.0.1 to the forge's Maven registry",
+          "status": "passed",
+          "secs": 15,
+          "note": ""
+        }
+      ],
+      "coverage": 84.9,
+      "t": "Tue 09:24"
+    },
+    {
+      "id": 12,
+      "repo": "model-gateway",
+      "lang": "Go",
+      "image": "golang:1.26",
+      "sha": "d069c334",
+      "branch": "feat/route-by-model",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "go mod download",
+          "status": "passed",
+          "note": "",
+          "secs": 13
+        },
+        {
+          "name": "lint",
+          "cmd": "go vet ./... && golangci-lint run",
+          "status": "passed",
+          "note": "",
+          "secs": 34
+        },
+        {
+          "name": "test",
+          "cmd": "go test -race -cover ./... && govulncheck ./...",
+          "status": "passed",
+          "note": "",
+          "secs": 66
+        },
+        {
+          "name": "build",
+          "cmd": "CGO_ENABLED=0 go build ./cmd/...",
+          "status": "passed",
+          "note": "",
+          "secs": 35
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 8
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 29
+        }
+      ],
+      "coverage": 87.3,
+      "t": "Tue 09:45"
+    },
+    {
+      "id": 13,
+      "repo": "model-gateway",
+      "lang": "Go",
+      "image": "golang:1.26",
+      "sha": "f8bab3c5",
+      "branch": "main",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "go mod download",
+          "status": "passed",
+          "note": "",
+          "secs": 10
+        },
+        {
+          "name": "lint",
+          "cmd": "go vet ./... && golangci-lint run",
+          "status": "passed",
+          "note": "",
+          "secs": 27
+        },
+        {
+          "name": "test",
+          "cmd": "go test -race -cover ./... && govulncheck ./...",
+          "status": "passed",
+          "note": "",
+          "secs": 60
+        },
+        {
+          "name": "build",
+          "cmd": "CGO_ENABLED=0 go build ./cmd/...",
+          "status": "passed",
+          "note": "",
+          "secs": 65
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 11
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 14
+        },
+        {
+          "name": "image",
+          "cmd": "docker buildx build --platform linux/amd64,linux/arm64 -t harbor.factory.example/platform/model-gateway:1.0.0 .",
+          "status": "passed",
+          "secs": 50,
+          "note": ""
+        },
+        {
+          "name": "sbom",
+          "cmd": "syft harbor.factory.example/platform/model-gateway:1.0.0 -o spdx-json > sbom.json",
+          "status": "passed",
+          "secs": 49,
+          "note": ""
+        },
+        {
+          "name": "scan",
+          "cmd": "grype sbom:sbom.json --fail-on critical --only-fixed",
+          "status": "passed",
+          "secs": 31,
+          "note": ""
+        },
+        {
+          "name": "sign",
+          "cmd": "cosign sign harbor.factory.example/platform/model-gateway@sha256:0dd33a969151",
+          "status": "passed",
+          "secs": 36,
+          "note": ""
+        },
+        {
+          "name": "package",
+          "cmd": "publish 1.0.0 to the forge's Go module registry",
+          "status": "passed",
+          "secs": 19,
+          "note": ""
+        }
+      ],
+      "coverage": 87.9,
+      "t": "Tue 09:57"
+    },
+    {
+      "id": 14,
+      "repo": "eval-dashboard",
+      "lang": "Web (TypeScript)",
+      "image": "node:24-slim + Playwright browsers",
+      "sha": "7d63b3ba",
+      "branch": "feat/show-gate-results",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "npm ci",
+          "status": "passed",
+          "note": "",
+          "secs": 24
+        },
+        {
+          "name": "lint",
+          "cmd": "eslint . && tsc --noEmit",
+          "status": "passed",
+          "note": "",
+          "secs": 13
+        },
+        {
+          "name": "test",
+          "cmd": "vitest run && playwright test   # unit + browser tests",
+          "status": "flaky",
+          "note": "playwright: 'filters by version' passed on retry",
+          "secs": 80
+        },
+        {
+          "name": "build",
+          "cmd": "vite build && lhci autorun   # Lighthouse budget",
+          "status": "passed",
+          "note": "",
+          "secs": 89
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 28
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 26
+        }
+      ],
+      "coverage": 81.8,
+      "t": "Tue 10:24"
+    },
+    {
+      "id": 15,
+      "repo": "eval-dashboard",
+      "lang": "Web (TypeScript)",
+      "image": "node:24-slim + Playwright browsers",
+      "sha": "decc1596",
+      "branch": "main",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "setup",
+          "cmd": "npm ci",
+          "status": "passed",
+          "note": "",
+          "secs": 8
+        },
+        {
+          "name": "lint",
+          "cmd": "eslint . && tsc --noEmit",
+          "status": "passed",
+          "note": "",
+          "secs": 22
+        },
+        {
+          "name": "test",
+          "cmd": "vitest run && playwright test   # unit + browser tests",
+          "status": "passed",
+          "note": "",
+          "secs": 110
+        },
+        {
+          "name": "build",
+          "cmd": "vite build && lhci autorun   # Lighthouse budget",
+          "status": "passed",
+          "note": "",
+          "secs": 115
+        },
+        {
+          "name": "secrets",
+          "cmd": "gitleaks detect --redact",
+          "status": "passed",
+          "note": "",
+          "secs": 27
+        },
+        {
+          "name": "sast",
+          "cmd": "opengrep scan --config policies/sast",
+          "status": "passed",
+          "note": "",
+          "secs": 21
+        },
+        {
+          "name": "image",
+          "cmd": "docker buildx build --platform linux/amd64,linux/arm64 -t harbor.factory.example/web/eval-dashboard:1.0.0 .",
+          "status": "passed",
+          "secs": 14,
+          "note": ""
+        },
+        {
+          "name": "sbom",
+          "cmd": "syft harbor.factory.example/web/eval-dashboard:1.0.0 -o spdx-json > sbom.json",
+          "status": "passed",
+          "secs": 14,
+          "note": ""
+        },
+        {
+          "name": "scan",
+          "cmd": "grype sbom:sbom.json --fail-on critical --only-fixed",
+          "status": "passed",
+          "secs": 50,
+          "note": ""
+        },
+        {
+          "name": "sign",
+          "cmd": "cosign sign harbor.factory.example/web/eval-dashboard@sha256:709b0d34a4d5",
+          "status": "passed",
+          "secs": 35,
+          "note": ""
+        },
+        {
+          "name": "package",
+          "cmd": "publish 1.0.0 to the forge's npm registry",
+          "status": "passed",
+          "secs": 16,
+          "note": ""
+        }
+      ],
+      "coverage": 83.8,
+      "t": "Tue 10:30"
+    }
+  ],
+  "images": [
+    {
+      "repo": "model-trainer",
+      "tag": "1.0.0",
+      "git": "c00061d6",
+      "digest": "sha256:aa2279248cade576",
+      "arch": "amd64 + arm64",
+      "size_mb": 130,
+      "sbom": 355,
+      "vulns": {
+        "critical": 0,
+        "high": 1,
+        "medium": 3
+      },
+      "signed": true,
+      "status": "pushed",
+      "replicated": "ACR, Artifact Registry, ECR",
+      "t": "Mon 09:34"
+    },
+    {
+      "repo": "inference-engine",
+      "tag": "1.0.0",
+      "git": "4dd36f7b",
+      "digest": "sha256:017b08adcff1c90d",
+      "arch": "amd64 + arm64",
+      "size_mb": 140,
+      "sbom": 197,
+      "vulns": {
+        "critical": 0,
+        "high": 0,
+        "medium": 5
+      },
+      "signed": true,
+      "status": "pushed",
+      "replicated": "ACR, Artifact Registry, ECR",
+      "t": "Mon 10:13"
+    },
+    {
+      "repo": "feature-service",
+      "tag": "1.0.0",
+      "git": "6ce0a152",
+      "digest": "sha256:8d8f38f57cef0dba",
+      "arch": "amd64 + arm64",
+      "size_mb": 54,
+      "sbom": 257,
+      "vulns": {
+        "critical": 1,
+        "high": 3,
+        "medium": 11
+      },
+      "signed": false,
+      "status": "blocked",
+      "replicated": "none",
+      "t": "Tue 09:04"
+    },
+    {
+      "repo": "feature-service",
+      "tag": "1.0.1",
+      "git": "8ef73e76",
+      "digest": "sha256:ef8703522e57eb6f",
+      "arch": "amd64 + arm64",
+      "size_mb": 88,
+      "sbom": 138,
+      "vulns": {
+        "critical": 0,
+        "high": 2,
+        "medium": 4
+      },
+      "signed": true,
+      "status": "pushed",
+      "replicated": "ACR, Artifact Registry, ECR",
+      "t": "Tue 09:29"
+    },
+    {
+      "repo": "model-gateway",
+      "tag": "1.0.0",
+      "git": "f8bab3c5",
+      "digest": "sha256:0dd33a969151fa7a",
+      "arch": "amd64 + arm64",
+      "size_mb": 146,
+      "sbom": 168,
+      "vulns": {
+        "critical": 0,
+        "high": 1,
+        "medium": 6
+      },
+      "signed": true,
+      "status": "pushed",
+      "replicated": "ACR, Artifact Registry, ECR",
+      "t": "Tue 10:01"
+    },
+    {
+      "repo": "eval-dashboard",
+      "tag": "1.0.0",
+      "git": "decc1596",
+      "digest": "sha256:709b0d34a4d50d17",
+      "arch": "amd64 + arm64",
+      "size_mb": 159,
+      "sbom": 184,
+      "vulns": {
+        "critical": 0,
+        "high": 3,
+        "medium": 8
+      },
+      "signed": true,
+      "status": "pushed",
+      "replicated": "ACR, Artifact Registry, ECR",
+      "t": "Tue 10:32"
+    }
+  ],
+  "packages": [
+    {
+      "name": "fast-tokenizer",
+      "type": "Cargo",
+      "version": "1.0.0",
+      "t": "Mon 09:14"
+    },
+    {
+      "name": "model-trainer",
+      "type": "PyPI",
+      "version": "1.0.0",
+      "t": "Mon 09:34"
+    },
+    {
+      "name": "inference-engine",
+      "type": "Conan",
+      "version": "1.0.0",
+      "t": "Mon 10:13"
+    },
+    {
+      "name": "feature-service",
+      "type": "Maven",
+      "version": "1.0.1",
+      "t": "Tue 09:29"
+    },
+    {
+      "name": "model-gateway",
+      "type": "Go module",
+      "version": "1.0.0",
+      "t": "Tue 10:01"
+    },
+    {
+      "name": "eval-dashboard",
+      "type": "npm",
+      "version": "1.0.0",
+      "t": "Tue 10:32"
+    }
+  ],
+  "datasets": [
+    {
+      "name": "support-tickets",
+      "version": "1.0",
+      "rows": 48000,
+      "note": "First labelled export",
+      "by": "sam",
+      "hash": "md5:eec1f634bf97",
+      "t": "Wed 08:33"
+    },
+    {
+      "name": "support-tickets",
+      "version": "1.1",
+      "rows": 61000,
+      "note": "Adds chat transcripts",
+      "by": "sam",
+      "hash": "md5:861225c3ba59",
+      "t": "Thu 08:35"
+    },
+    {
+      "name": "support-tickets",
+      "version": "1.2",
+      "rows": 66000,
+      "note": "Rebalanced across customer groups",
+      "by": "lea",
+      "hash": "md5:469e3034ffc5",
+      "t": "Fri 08:46"
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "4ee686b574",
+      "tag": "v1",
+      "why": "Baseline.",
+      "dataset": "support-tickets:1.0",
+      "data_hash": "md5:eec1f634bf97",
+      "git": "c00061d6",
+      "params": {
+        "base": "MiniLM-L6, 22M params",
+        "epochs": 3,
+        "lr": "3e-5",
+        "export": "ONNX int8, 1 thread per CPU"
+      },
+      "metrics": {
+        "f1_macro": 0.902,
+        "f1_perturbed": 0.844,
+        "subgroup_gap": 0.028,
+        "safety_pass": 0.972,
+        "p95_ms": 86,
+        "drift": 0.072,
+        "delta_f1": 0.0
+      },
+      "size_mb": 24,
+      "by": "sam",
+      "minutes": 42,
+      "t": "Wed 08:38"
+    },
+    {
+      "run_id": "44c568e4a3",
+      "tag": "v2",
+      "why": "Bigger model for better quality.",
+      "dataset": "support-tickets:1.1",
+      "data_hash": "md5:861225c3ba59",
+      "git": "c00061d6",
+      "params": {
+        "base": "MiniLM-L12, 33M params",
+        "epochs": 4,
+        "lr": "2e-5",
+        "export": "ONNX int8, 1 thread per CPU"
+      },
+      "metrics": {
+        "f1_macro": 0.918,
+        "f1_perturbed": 0.862,
+        "subgroup_gap": 0.033,
+        "safety_pass": 0.971,
+        "p95_ms": 109,
+        "drift": 0.091,
+        "delta_f1": 0.016
+      },
+      "size_mb": 35,
+      "by": "sam",
+      "minutes": 23,
+      "t": "Thu 08:40"
+    },
+    {
+      "run_id": "bbe91a2361",
+      "tag": "v3",
+      "why": "Distil v2 back into the small architecture.",
+      "dataset": "support-tickets:1.1",
+      "data_hash": "md5:861225c3ba59",
+      "git": "c00061d6",
+      "params": {
+        "base": "MiniLM-L6 distilled from v2",
+        "epochs": 5,
+        "lr": "3e-5",
+        "export": "ONNX int8, 1 thread per CPU"
+      },
+      "metrics": {
+        "f1_macro": 0.917,
+        "f1_perturbed": 0.855,
+        "subgroup_gap": 0.086,
+        "safety_pass": 0.97,
+        "p95_ms": 77,
+        "drift": 0.098,
+        "delta_f1": 0.015
+      },
+      "size_mb": 24,
+      "by": "lea",
+      "minutes": 43,
+      "t": "Fri 08:33"
+    },
+    {
+      "run_id": "733b583073",
+      "tag": "v4",
+      "why": "Same recipe as v3 on rebalanced data.",
+      "dataset": "support-tickets:1.2",
+      "data_hash": "md5:469e3034ffc5",
+      "git": "c00061d6",
+      "params": {
+        "base": "MiniLM-L6 distilled from v2",
+        "epochs": 5,
+        "lr": "3e-5",
+        "export": "ONNX int8, 1 thread per CPU"
+      },
+      "metrics": {
+        "f1_macro": 0.92,
+        "f1_perturbed": 0.862,
+        "subgroup_gap": 0.032,
+        "safety_pass": 0.972,
+        "p95_ms": 81,
+        "drift": 0.063,
+        "delta_f1": 0.018
+      },
+      "size_mb": 24,
+      "by": "lea",
+      "minutes": 33,
+      "t": "Fri 08:47"
+    }
+  ],
+  "versions": [
+    {
+      "version": "v1",
+      "run_id": "4ee686b574",
+      "status": "previous",
+      "gates": [
+        {
+          "suite": "Quality",
+          "metric": "f1_macro",
+          "value": 0.902,
+          "op": ">=",
+          "limit": 0.88,
+          "passed": true
+        },
+        {
+          "suite": "Regression",
+          "metric": "delta_f1",
+          "value": 0.0,
+          "op": ">=",
+          "limit": -0.01,
+          "passed": true
+        },
+        {
+          "suite": "Robustness",
+          "metric": "f1_perturbed",
+          "value": 0.844,
+          "op": ">=",
+          "limit": 0.8,
+          "passed": true
+        },
+        {
+          "suite": "Fairness",
+          "metric": "subgroup_gap",
+          "value": 0.028,
+          "op": "<=",
+          "limit": 0.05,
+          "passed": true
+        },
+        {
+          "suite": "Safety",
+          "metric": "safety_pass",
+          "value": 0.972,
+          "op": ">=",
+          "limit": 0.95,
+          "passed": true
+        },
+        {
+          "suite": "Speed",
+          "metric": "p95_ms",
+          "value": 86,
+          "op": "<=",
+          "limit": 120,
+          "passed": true
+        },
+        {
+          "suite": "Data",
+          "metric": "drift",
+          "value": 0.072,
+          "op": "<=",
+          "limit": 0.2,
+          "passed": true
+        }
+      ],
+      "metrics": {
+        "f1_macro": 0.902,
+        "f1_perturbed": 0.844,
+        "subgroup_gap": 0.028,
+        "safety_pass": 0.972,
+        "p95_ms": 86,
+        "drift": 0.072,
+        "delta_f1": 0.0
+      },
+      "size_mb": 24,
+      "format": "ONNX int8",
+      "by": "sam",
+      "note": "",
+      "lineage": {
+        "git": "c00061d6",
+        "data": "md5:eec1f634bf97",
+        "dataset": "support-tickets:1.0",
+        "artifact": "sha256:5a36cd5ea56f9ddf"
+      },
+      "t": "Wed 08:40"
+    },
+    {
+      "version": "v2",
+      "run_id": "44c568e4a3",
+      "status": "rolled back",
+      "gates": [
+        {
+          "suite": "Quality",
+          "metric": "f1_macro",
+          "value": 0.918,
+          "op": ">=",
+          "limit": 0.88,
+          "passed": true
+        },
+        {
+          "suite": "Regression",
+          "metric": "delta_f1",
+          "value": 0.016,
+          "op": ">=",
+          "limit": -0.01,
+          "passed": true
+        },
+        {
+          "suite": "Robustness",
+          "metric": "f1_perturbed",
+          "value": 0.862,
+          "op": ">=",
+          "limit": 0.8,
+          "passed": true
+        },
+        {
+          "suite": "Fairness",
+          "metric": "subgroup_gap",
+          "value": 0.033,
+          "op": "<=",
+          "limit": 0.05,
+          "passed": true
+        },
+        {
+          "suite": "Safety",
+          "metric": "safety_pass",
+          "value": 0.971,
+          "op": ">=",
+          "limit": 0.95,
+          "passed": true
+        },
+        {
+          "suite": "Speed",
+          "metric": "p95_ms",
+          "value": 109,
+          "op": "<=",
+          "limit": 120,
+          "passed": true
+        },
+        {
+          "suite": "Data",
+          "metric": "drift",
+          "value": 0.091,
+          "op": "<=",
+          "limit": 0.2,
+          "passed": true
+        }
+      ],
+      "metrics": {
+        "f1_macro": 0.918,
+        "f1_perturbed": 0.862,
+        "subgroup_gap": 0.033,
+        "safety_pass": 0.971,
+        "p95_ms": 109,
+        "drift": 0.091,
+        "delta_f1": 0.016
+      },
+      "size_mb": 35,
+      "format": "ONNX int8",
+      "by": "sam",
+      "note": "Passed every offline gate, then failed the production canary under real concurrency.",
+      "lineage": {
+        "git": "c00061d6",
+        "data": "md5:861225c3ba59",
+        "dataset": "support-tickets:1.1",
+        "artifact": "sha256:c1d013cf0b267226"
+      },
+      "t": "Thu 08:43"
+    },
+    {
+      "version": "v3",
+      "run_id": "bbe91a2361",
+      "status": "rejected",
+      "gates": [
+        {
+          "suite": "Quality",
+          "metric": "f1_macro",
+          "value": 0.917,
+          "op": ">=",
+          "limit": 0.88,
+          "passed": true
+        },
+        {
+          "suite": "Regression",
+          "metric": "delta_f1",
+          "value": 0.015,
+          "op": ">=",
+          "limit": -0.01,
+          "passed": true
+        },
+        {
+          "suite": "Robustness",
+          "metric": "f1_perturbed",
+          "value": 0.855,
+          "op": ">=",
+          "limit": 0.8,
+          "passed": true
+        },
+        {
+          "suite": "Fairness",
+          "metric": "subgroup_gap",
+          "value": 0.086,
+          "op": "<=",
+          "limit": 0.05,
+          "passed": false
+        },
+        {
+          "suite": "Safety",
+          "metric": "safety_pass",
+          "value": 0.97,
+          "op": ">=",
+          "limit": 0.95,
+          "passed": true
+        },
+        {
+          "suite": "Speed",
+          "metric": "p95_ms",
+          "value": 77,
+          "op": "<=",
+          "limit": 120,
+          "passed": true
+        },
+        {
+          "suite": "Data",
+          "metric": "drift",
+          "value": 0.098,
+          "op": "<=",
+          "limit": 0.2,
+          "passed": true
+        }
+      ],
+      "metrics": {
+        "f1_macro": 0.917,
+        "f1_perturbed": 0.855,
+        "subgroup_gap": 0.086,
+        "safety_pass": 0.97,
+        "p95_ms": 77,
+        "drift": 0.098,
+        "delta_f1": 0.015
+      },
+      "size_mb": 24,
+      "format": "ONNX int8",
+      "by": "lea",
+      "note": "Stopped at the Fairness gate: subgroup_gap 0.086, limit 0.05.",
+      "lineage": {
+        "git": "c00061d6",
+        "data": "md5:861225c3ba59",
+        "dataset": "support-tickets:1.1",
+        "artifact": "sha256:634974bd35b6c5a1"
+      },
+      "t": "Fri 08:40"
+    },
+    {
+      "version": "v4",
+      "run_id": "733b583073",
+      "status": "champion",
+      "gates": [
+        {
+          "suite": "Quality",
+          "metric": "f1_macro",
+          "value": 0.92,
+          "op": ">=",
+          "limit": 0.88,
+          "passed": true
+        },
+        {
+          "suite": "Regression",
+          "metric": "delta_f1",
+          "value": 0.018,
+          "op": ">=",
+          "limit": -0.01,
+          "passed": true
+        },
+        {
+          "suite": "Robustness",
+          "metric": "f1_perturbed",
+          "value": 0.862,
+          "op": ">=",
+          "limit": 0.8,
+          "passed": true
+        },
+        {
+          "suite": "Fairness",
+          "metric": "subgroup_gap",
+          "value": 0.032,
+          "op": "<=",
+          "limit": 0.05,
+          "passed": true
+        },
+        {
+          "suite": "Safety",
+          "metric": "safety_pass",
+          "value": 0.972,
+          "op": ">=",
+          "limit": 0.95,
+          "passed": true
+        },
+        {
+          "suite": "Speed",
+          "metric": "p95_ms",
+          "value": 81,
+          "op": "<=",
+          "limit": 120,
+          "passed": true
+        },
+        {
+          "suite": "Data",
+          "metric": "drift",
+          "value": 0.063,
+          "op": "<=",
+          "limit": 0.2,
+          "passed": true
+        }
+      ],
+      "metrics": {
+        "f1_macro": 0.92,
+        "f1_perturbed": 0.862,
+        "subgroup_gap": 0.032,
+        "safety_pass": 0.972,
+        "p95_ms": 81,
+        "drift": 0.063,
+        "delta_f1": 0.018
+      },
+      "size_mb": 24,
+      "format": "ONNX int8",
+      "by": "lea",
+      "note": "",
+      "lineage": {
+        "git": "c00061d6",
+        "data": "md5:469e3034ffc5",
+        "dataset": "support-tickets:1.2",
+        "artifact": "sha256:9ffb964f68dbbb9f"
+      },
+      "t": "Fri 08:52"
+    }
+  ],
+  "champion": "v4",
+  "gates": [
+    {
+      "suite": "Quality",
+      "metric": "f1_macro",
+      "op": ">=",
+      "limit": 0.88,
+      "tool": "pytest golden set, MLflow evaluate",
+      "why": "Score on a held-out golden set the model never trained on."
+    },
+    {
+      "suite": "Regression",
+      "metric": "delta_f1",
+      "op": ">=",
+      "limit": -0.01,
+      "tool": "compare with the champion",
+      "why": "A new model may not be meaningfully worse than the one in production."
+    },
+    {
+      "suite": "Robustness",
+      "metric": "f1_perturbed",
+      "op": ">=",
+      "limit": 0.8,
+      "tool": "typo and paraphrase perturbations",
+      "why": "Score when the input has typos, slang and rephrasing."
+    },
+    {
+      "suite": "Fairness",
+      "metric": "subgroup_gap",
+      "op": "<=",
+      "limit": 0.05,
+      "tool": "Fairlearn",
+      "why": "Largest score gap between customer groups."
+    },
+    {
+      "suite": "Safety",
+      "metric": "safety_pass",
+      "op": ">=",
+      "limit": 0.95,
+      "tool": "garak and Inspect probes",
+      "why": "Share of adversarial and prompt-injection probes handled correctly."
+    },
+    {
+      "suite": "Speed",
+      "metric": "p95_ms",
+      "op": "<=",
+      "limit": 120,
+      "tool": "k6 on a 2-CPU reference pod",
+      "why": "95th percentile latency of the int8 ONNX file on CPU."
+    },
+    {
+      "suite": "Data",
+      "metric": "drift",
+      "op": "<=",
+      "limit": 0.2,
+      "tool": "Evidently, Great Expectations",
+      "why": "Schema is valid and evaluation data still looks like training data."
+    }
+  ],
+  "speed_checks": [
+    {
+      "version": "v1",
+      "target": "aks-staging",
+      "cpu": "amd64, AVX-512",
+      "p95_ms": 90,
+      "passed": true
+    },
+    {
+      "version": "v1",
+      "target": "gke-staging",
+      "cpu": "amd64, AMX",
+      "p95_ms": 85,
+      "passed": true
+    },
+    {
+      "version": "v1",
+      "target": "eks-staging",
+      "cpu": "arm64, Graviton",
+      "p95_ms": 86,
+      "passed": true
+    },
+    {
+      "version": "v2",
+      "target": "aks-staging",
+      "cpu": "amd64, AVX-512",
+      "p95_ms": 115,
+      "passed": true
+    },
+    {
+      "version": "v2",
+      "target": "gke-staging",
+      "cpu": "amd64, AMX",
+      "p95_ms": 105,
+      "passed": true
+    },
+    {
+      "version": "v2",
+      "target": "eks-staging",
+      "cpu": "arm64, Graviton",
+      "p95_ms": 109,
+      "passed": true
+    },
+    {
+      "version": "v4",
+      "target": "aks-staging",
+      "cpu": "amd64, AVX-512",
+      "p95_ms": 86,
+      "passed": true
+    },
+    {
+      "version": "v4",
+      "target": "gke-staging",
+      "cpu": "amd64, AMX",
+      "p95_ms": 79,
+      "passed": true
+    },
+    {
+      "version": "v4",
+      "target": "eks-staging",
+      "cpu": "arm64, Graviton",
+      "p95_ms": 80,
+      "passed": true
+    }
+  ],
+  "canary_limits": {
+    "p95_ms": 120,
+    "error_rate": 1.0
+  },
+  "targets": [
+    {
+      "id": "mac-kind",
+      "env": "local",
+      "cloud": "macOS",
+      "where": "kind on Colima, on the developer's laptop",
+      "cpu": "arm64, Apple Silicon",
+      "factor": 0.9,
+      "cmds": [
+        "brew bundle --file Brewfile",
+        "mise install",
+        "colima start --cpu 4 --memory 8",
+        "kind create cluster --name factory --config local/kind.yaml",
+        "tilt up"
+      ],
+      "note": "Same manifests as the clouds, but no real load balancer, storage classes or IAM. Force device='cpu' so tests skip MPS.",
+      "state": {
+        "status": "ready",
+        "by": "ana",
+        "t": "Mon 08:37",
+        "tool": "ansible"
+      }
+    },
+    {
+      "id": "docker-dev",
+      "env": "dev",
+      "cloud": "Docker",
+      "where": "Docker Compose on the shared dev host",
+      "cpu": "amd64",
+      "factor": 1.0,
+      "cmds": [
+        "ansible-playbook -i ansible/inventories/dev ansible/docker_host.yml",
+        "docker compose -p factory -f deploy/compose.yaml up -d --wait"
+      ],
+      "note": "Fast feedback without Kubernetes. Good for service tests, not for rollout or scaling tests.",
+      "state": {
+        "status": "ready",
+        "by": "ana",
+        "t": "Mon 08:39",
+        "tool": "ansible"
+      }
+    },
+    {
+      "id": "aks-staging",
+      "env": "staging",
+      "cloud": "Azure",
+      "cpu": "amd64, AVX-512",
+      "factor": 1.05,
+      "note": "kubectl needs kubelogin. Pods reach Azure through Workload Identity (Entra federated credentials).",
+      "where": "AKS, Kubernetes 1.35, 3 general nodes, CPU only",
+      "cmds": [
+        "tofu -chdir=infra/live/azure/staging init",
+        "tofu -chdir=infra/live/azure/staging plan -out plan.bin",
+        "tofu -chdir=infra/live/azure/staging apply plan.bin",
+        "az aks get-credentials -g rg-factory-staging -n aks-factory-staging && kubelogin convert-kubeconfig -l azurecli",
+        "helm upgrade --install argocd argo/argo-cd -n argocd --create-namespace -f platform/argocd/values.yaml",
+        "kubectl apply -f environments/staging/root-app.yaml"
+      ],
+      "state": {
+        "status": "ready",
+        "by": "ana",
+        "t": "Mon 08:41",
+        "tool": "opentofu"
+      }
+    },
+    {
+      "id": "gke-staging",
+      "env": "staging",
+      "cloud": "Google Cloud",
+      "cpu": "amd64, AMX",
+      "factor": 0.97,
+      "note": "kubectl needs gke-gcloud-auth-plugin. Pods use Workload Identity Federation. Autopilot restricts privileged DaemonSets.",
+      "where": "GKE, Kubernetes 1.35, 3 general nodes, CPU only",
+      "cmds": [
+        "tofu -chdir=infra/live/gcp/staging init",
+        "tofu -chdir=infra/live/gcp/staging plan -out plan.bin",
+        "tofu -chdir=infra/live/gcp/staging apply plan.bin",
+        "gcloud container clusters get-credentials gke-factory-staging --region europe-west4",
+        "helm upgrade --install argocd argo/argo-cd -n argocd --create-namespace -f platform/argocd/values.yaml",
+        "kubectl apply -f environments/staging/root-app.yaml"
+      ],
+      "state": {
+        "status": "ready",
+        "by": "ana",
+        "t": "Mon 08:42",
+        "tool": "opentofu"
+      }
+    },
+    {
+      "id": "eks-staging",
+      "env": "staging",
+      "cloud": "AWS",
+      "cpu": "arm64, Graviton",
+      "factor": 1.01,
+      "note": "Access entries replace the old aws-auth ConfigMap. Pods use EKS Pod Identity. arm64 nodes match Apple Silicon and cost less.",
+      "where": "EKS, Kubernetes 1.35, 3 general nodes, CPU only",
+      "cmds": [
+        "tofu -chdir=infra/live/aws/staging init",
+        "tofu -chdir=infra/live/aws/staging plan -out plan.bin",
+        "tofu -chdir=infra/live/aws/staging apply plan.bin",
+        "aws eks update-kubeconfig --name eks-factory-staging --region eu-west-1",
+        "helm upgrade --install argocd argo/argo-cd -n argocd --create-namespace -f platform/argocd/values.yaml",
+        "kubectl apply -f environments/staging/root-app.yaml"
+      ],
+      "state": {
+        "status": "ready",
+        "by": "ana",
+        "t": "Mon 08:47",
+        "tool": "opentofu"
+      }
+    },
+    {
+      "id": "aks-prod",
+      "env": "prod",
+      "cloud": "Azure",
+      "cpu": "amd64, AVX-512",
+      "factor": 1.05,
+      "note": "kubectl needs kubelogin. Pods reach Azure through Workload Identity (Entra federated credentials).",
+      "where": "AKS, Kubernetes 1.35, 3 general nodes, CPU only",
+      "cmds": [
+        "tofu -chdir=infra/live/azure/prod init",
+        "tofu -chdir=infra/live/azure/prod plan -out plan.bin",
+        "tofu -chdir=infra/live/azure/prod apply plan.bin",
+        "az aks get-credentials -g rg-factory-prod -n aks-factory-prod && kubelogin convert-kubeconfig -l azurecli",
+        "helm upgrade --install argocd argo/argo-cd -n argocd --create-namespace -f platform/argocd/values.yaml",
+        "kubectl apply -f environments/prod/root-app.yaml"
+      ],
+      "state": {
+        "status": "ready",
+        "by": "ana",
+        "t": "Mon 08:48",
+        "tool": "opentofu"
+      }
+    },
+    {
+      "id": "gke-prod",
+      "env": "prod",
+      "cloud": "Google Cloud",
+      "cpu": "amd64, AMX",
+      "factor": 0.97,
+      "note": "kubectl needs gke-gcloud-auth-plugin. Pods use Workload Identity Federation. Autopilot restricts privileged DaemonSets.",
+      "where": "GKE, Kubernetes 1.35, 3 general nodes, CPU only",
+      "cmds": [
+        "tofu -chdir=infra/live/gcp/prod init",
+        "tofu -chdir=infra/live/gcp/prod plan -out plan.bin",
+        "tofu -chdir=infra/live/gcp/prod apply plan.bin",
+        "gcloud container clusters get-credentials gke-factory-prod --region europe-west4",
+        "helm upgrade --install argocd argo/argo-cd -n argocd --create-namespace -f platform/argocd/values.yaml",
+        "kubectl apply -f environments/prod/root-app.yaml"
+      ],
+      "state": {
+        "status": "ready",
+        "by": "ana",
+        "t": "Mon 08:53",
+        "tool": "opentofu"
+      }
+    },
+    {
+      "id": "eks-prod",
+      "env": "prod",
+      "cloud": "AWS",
+      "cpu": "arm64, Graviton",
+      "factor": 1.01,
+      "note": "Access entries replace the old aws-auth ConfigMap. Pods use EKS Pod Identity. arm64 nodes match Apple Silicon and cost less.",
+      "where": "EKS, Kubernetes 1.35, 3 general nodes, CPU only",
+      "cmds": [
+        "tofu -chdir=infra/live/aws/prod init",
+        "tofu -chdir=infra/live/aws/prod plan -out plan.bin",
+        "tofu -chdir=infra/live/aws/prod apply plan.bin",
+        "aws eks update-kubeconfig --name eks-factory-prod --region eu-west-1",
+        "helm upgrade --install argocd argo/argo-cd -n argocd --create-namespace -f platform/argocd/values.yaml",
+        "kubectl apply -f environments/prod/root-app.yaml"
+      ],
+      "state": {
+        "status": "ready",
+        "by": "ana",
+        "t": "Mon 08:57",
+        "tool": "opentofu"
+      }
+    }
+  ],
+  "live": {
+    "mac-kind": {
+      "inference-engine": {
+        "version": "1.0.0",
+        "digest": "sha256:017b08adcff1c90d",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Mon 10:17"
+      },
+      "feature-service": {
+        "version": "1.0.1",
+        "digest": "sha256:ef8703522e57eb6f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 09:33"
+      },
+      "model-gateway": {
+        "version": "1.0.0",
+        "digest": "sha256:0dd33a969151fa7a",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:02"
+      },
+      "eval-dashboard": {
+        "version": "1.0.0",
+        "digest": "sha256:709b0d34a4d50d17",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:36"
+      }
+    },
+    "docker-dev": {
+      "inference-engine": {
+        "version": "1.0.0",
+        "digest": "sha256:017b08adcff1c90d",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Mon 10:21"
+      },
+      "feature-service": {
+        "version": "1.0.1",
+        "digest": "sha256:ef8703522e57eb6f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 09:34"
+      },
+      "model-gateway": {
+        "version": "1.0.0",
+        "digest": "sha256:0dd33a969151fa7a",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:04"
+      },
+      "eval-dashboard": {
+        "version": "1.0.0",
+        "digest": "sha256:709b0d34a4d50d17",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:40"
+      }
+    },
+    "aks-staging": {
+      "inference-engine": {
+        "version": "1.0.0",
+        "digest": "sha256:017b08adcff1c90d",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Mon 10:23"
+      },
+      "feature-service": {
+        "version": "1.0.1",
+        "digest": "sha256:ef8703522e57eb6f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 09:35"
+      },
+      "model-gateway": {
+        "version": "1.0.0",
+        "digest": "sha256:0dd33a969151fa7a",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:06"
+      },
+      "eval-dashboard": {
+        "version": "1.0.0",
+        "digest": "sha256:709b0d34a4d50d17",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:44"
+      },
+      "intent-classifier": {
+        "version": "v4",
+        "digest": "sha256:9ffb964f68dbbb9f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Fri 08:55"
+      }
+    },
+    "gke-staging": {
+      "inference-engine": {
+        "version": "1.0.0",
+        "digest": "sha256:017b08adcff1c90d",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Mon 10:26"
+      },
+      "feature-service": {
+        "version": "1.0.1",
+        "digest": "sha256:ef8703522e57eb6f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 09:38"
+      },
+      "model-gateway": {
+        "version": "1.0.0",
+        "digest": "sha256:0dd33a969151fa7a",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:07"
+      },
+      "eval-dashboard": {
+        "version": "1.0.0",
+        "digest": "sha256:709b0d34a4d50d17",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:45"
+      },
+      "intent-classifier": {
+        "version": "v4",
+        "digest": "sha256:9ffb964f68dbbb9f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Fri 08:57"
+      }
+    },
+    "eks-staging": {
+      "inference-engine": {
+        "version": "1.0.0",
+        "digest": "sha256:017b08adcff1c90d",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Mon 10:28"
+      },
+      "feature-service": {
+        "version": "1.0.1",
+        "digest": "sha256:ef8703522e57eb6f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 09:41"
+      },
+      "model-gateway": {
+        "version": "1.0.0",
+        "digest": "sha256:0dd33a969151fa7a",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:10"
+      },
+      "eval-dashboard": {
+        "version": "1.0.0",
+        "digest": "sha256:709b0d34a4d50d17",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:46"
+      },
+      "intent-classifier": {
+        "version": "v4",
+        "digest": "sha256:9ffb964f68dbbb9f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Fri 09:01"
+      }
+    },
+    "aks-prod": {
+      "inference-engine": {
+        "version": "1.0.0",
+        "digest": "sha256:017b08adcff1c90d",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:47"
+      },
+      "feature-service": {
+        "version": "1.0.1",
+        "digest": "sha256:ef8703522e57eb6f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:55"
+      },
+      "model-gateway": {
+        "version": "1.0.0",
+        "digest": "sha256:0dd33a969151fa7a",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 11:01"
+      },
+      "eval-dashboard": {
+        "version": "1.0.0",
+        "digest": "sha256:709b0d34a4d50d17",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 11:12"
+      },
+      "intent-classifier": {
+        "version": "v4",
+        "digest": "sha256:9ffb964f68dbbb9f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Fri 09:28"
+      }
+    },
+    "gke-prod": {
+      "inference-engine": {
+        "version": "1.0.0",
+        "digest": "sha256:017b08adcff1c90d",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:51"
+      },
+      "feature-service": {
+        "version": "1.0.1",
+        "digest": "sha256:ef8703522e57eb6f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:57"
+      },
+      "model-gateway": {
+        "version": "1.0.0",
+        "digest": "sha256:0dd33a969151fa7a",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 11:06"
+      },
+      "eval-dashboard": {
+        "version": "1.0.0",
+        "digest": "sha256:709b0d34a4d50d17",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 11:16"
+      },
+      "intent-classifier": {
+        "version": "v4",
+        "digest": "sha256:9ffb964f68dbbb9f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Fri 09:31"
+      }
+    },
+    "eks-prod": {
+      "inference-engine": {
+        "version": "1.0.0",
+        "digest": "sha256:017b08adcff1c90d",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:54"
+      },
+      "feature-service": {
+        "version": "1.0.1",
+        "digest": "sha256:ef8703522e57eb6f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 10:59"
+      },
+      "model-gateway": {
+        "version": "1.0.0",
+        "digest": "sha256:0dd33a969151fa7a",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 11:10"
+      },
+      "eval-dashboard": {
+        "version": "1.0.0",
+        "digest": "sha256:709b0d34a4d50d17",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Tue 11:18"
+      },
+      "intent-classifier": {
+        "version": "v4",
+        "digest": "sha256:9ffb964f68dbbb9f",
+        "health": "Healthy",
+        "sync": "Synced",
+        "since": "Fri 09:26"
+      }
+    }
+  },
+  "env_commits": [
+    {
+      "sha": "1e0a096c",
+      "path": "environments/local/mac-kind/inference-engine.yaml",
+      "change": "none -> 1.0.0",
+      "by": "tom",
+      "t": "Mon 10:17"
+    },
+    {
+      "sha": "b2ff2e9f",
+      "path": "environments/dev/docker-dev/inference-engine.yaml",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "t": "Mon 10:21"
+    },
+    {
+      "sha": "42632611",
+      "path": "environments/staging/aks-staging/inference-engine.yaml",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "t": "Mon 10:23"
+    },
+    {
+      "sha": "7ec67217",
+      "path": "environments/staging/gke-staging/inference-engine.yaml",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "t": "Mon 10:26"
+    },
+    {
+      "sha": "162e643c",
+      "path": "environments/staging/eks-staging/inference-engine.yaml",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "t": "Mon 10:28"
+    },
+    {
+      "sha": "fe54146b",
+      "path": "environments/local/mac-kind/feature-service.yaml",
+      "change": "none -> 1.0.1",
+      "by": "noor",
+      "t": "Tue 09:33"
+    },
+    {
+      "sha": "dd996df8",
+      "path": "environments/dev/docker-dev/feature-service.yaml",
+      "change": "none -> 1.0.1",
+      "by": "bot-gitops",
+      "t": "Tue 09:34"
+    },
+    {
+      "sha": "9638f04b",
+      "path": "environments/staging/aks-staging/feature-service.yaml",
+      "change": "none -> 1.0.1",
+      "by": "bot-gitops",
+      "t": "Tue 09:35"
+    },
+    {
+      "sha": "6f43cae8",
+      "path": "environments/staging/gke-staging/feature-service.yaml",
+      "change": "none -> 1.0.1",
+      "by": "bot-gitops",
+      "t": "Tue 09:38"
+    },
+    {
+      "sha": "559ae857",
+      "path": "environments/staging/eks-staging/feature-service.yaml",
+      "change": "none -> 1.0.1",
+      "by": "bot-gitops",
+      "t": "Tue 09:41"
+    },
+    {
+      "sha": "93d951ec",
+      "path": "environments/local/mac-kind/model-gateway.yaml",
+      "change": "none -> 1.0.0",
+      "by": "raj",
+      "t": "Tue 10:02"
+    },
+    {
+      "sha": "e337ad00",
+      "path": "environments/dev/docker-dev/model-gateway.yaml",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "t": "Tue 10:04"
+    },
+    {
+      "sha": "e2184f55",
+      "path": "environments/staging/aks-staging/model-gateway.yaml",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "t": "Tue 10:06"
+    },
+    {
+      "sha": "c587c88f",
+      "path": "environments/staging/gke-staging/model-gateway.yaml",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "t": "Tue 10:07"
+    },
+    {
+      "sha": "67faaab7",
+      "path": "environments/staging/eks-staging/model-gateway.yaml",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "t": "Tue 10:10"
+    },
+    {
+      "sha": "3cf742ab",
+      "path": "environments/local/mac-kind/eval-dashboard.yaml",
+      "change": "none -> 1.0.0",
+      "by": "ben",
+      "t": "Tue 10:36"
+    },
+    {
+      "sha": "4aa43d38",
+      "path": "environments/dev/docker-dev/eval-dashboard.yaml",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "t": "Tue 10:40"
+    },
+    {
+      "sha": "020a0808",
+      "path": "environments/staging/aks-staging/eval-dashboard.yaml",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "t": "Tue 10:44"
+    },
+    {
+      "sha": "52230d09",
+      "path": "environments/staging/gke-staging/eval-dashboard.yaml",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "t": "Tue 10:45"
+    },
+    {
+      "sha": "16351167",
+      "path": "environments/staging/eks-staging/eval-dashboard.yaml",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "t": "Tue 10:46"
+    },
+    {
+      "sha": "30ab7c11",
+      "path": "environments/prod/aks-prod/inference-engine.yaml",
+      "change": "none -> 1.0.0",
+      "by": "mei",
+      "t": "Tue 10:47"
+    },
+    {
+      "sha": "e22edf0c",
+      "path": "environments/prod/gke-prod/inference-engine.yaml",
+      "change": "none -> 1.0.0",
+      "by": "mei",
+      "t": "Tue 10:51"
+    },
+    {
+      "sha": "3cac2410",
+      "path": "environments/prod/eks-prod/inference-engine.yaml",
+      "change": "none -> 1.0.0",
+      "by": "mei",
+      "t": "Tue 10:54"
+    },
+    {
+      "sha": "8b6ab2f9",
+      "path": "environments/prod/aks-prod/feature-service.yaml",
+      "change": "none -> 1.0.1",
+      "by": "raj",
+      "t": "Tue 10:55"
+    },
+    {
+      "sha": "5f39bf4f",
+      "path": "environments/prod/gke-prod/feature-service.yaml",
+      "change": "none -> 1.0.1",
+      "by": "raj",
+      "t": "Tue 10:57"
+    },
+    {
+      "sha": "3680663f",
+      "path": "environments/prod/eks-prod/feature-service.yaml",
+      "change": "none -> 1.0.1",
+      "by": "raj",
+      "t": "Tue 10:59"
+    },
+    {
+      "sha": "1d5523c0",
+      "path": "environments/prod/aks-prod/model-gateway.yaml",
+      "change": "none -> 1.0.0",
+      "by": "raj",
+      "t": "Tue 11:01"
+    },
+    {
+      "sha": "fa7afa51",
+      "path": "environments/prod/gke-prod/model-gateway.yaml",
+      "change": "none -> 1.0.0",
+      "by": "raj",
+      "t": "Tue 11:06"
+    },
+    {
+      "sha": "b469fdbe",
+      "path": "environments/prod/eks-prod/model-gateway.yaml",
+      "change": "none -> 1.0.0",
+      "by": "raj",
+      "t": "Tue 11:10"
+    },
+    {
+      "sha": "1e169f88",
+      "path": "environments/prod/aks-prod/eval-dashboard.yaml",
+      "change": "none -> 1.0.0",
+      "by": "zoe",
+      "t": "Tue 11:12"
+    },
+    {
+      "sha": "01866d89",
+      "path": "environments/prod/gke-prod/eval-dashboard.yaml",
+      "change": "none -> 1.0.0",
+      "by": "zoe",
+      "t": "Tue 11:16"
+    },
+    {
+      "sha": "da852f4d",
+      "path": "environments/prod/eks-prod/eval-dashboard.yaml",
+      "change": "none -> 1.0.0",
+      "by": "zoe",
+      "t": "Tue 11:18"
+    },
+    {
+      "sha": "925765b4",
+      "path": "environments/staging/aks-staging/intent-classifier.yaml",
+      "change": "none -> v1",
+      "by": "bot-gitops",
+      "t": "Wed 08:42"
+    },
+    {
+      "sha": "316e8cfd",
+      "path": "environments/staging/gke-staging/intent-classifier.yaml",
+      "change": "none -> v1",
+      "by": "bot-gitops",
+      "t": "Wed 08:44"
+    },
+    {
+      "sha": "83970cbb",
+      "path": "environments/staging/eks-staging/intent-classifier.yaml",
+      "change": "none -> v1",
+      "by": "bot-gitops",
+      "t": "Wed 08:48"
+    },
+    {
+      "sha": "29fe2be5",
+      "path": "environments/prod/eks-prod/intent-classifier.yaml",
+      "change": "none -> v1",
+      "by": "lea",
+      "t": "Wed 09:06"
+    },
+    {
+      "sha": "306524c7",
+      "path": "environments/prod/aks-prod/intent-classifier.yaml",
+      "change": "none -> v1",
+      "by": "lea",
+      "t": "Wed 09:08"
+    },
+    {
+      "sha": "207f5c36",
+      "path": "environments/prod/gke-prod/intent-classifier.yaml",
+      "change": "none -> v1",
+      "by": "lea",
+      "t": "Wed 09:09"
+    },
+    {
+      "sha": "f1dfb053",
+      "path": "environments/staging/aks-staging/intent-classifier.yaml",
+      "change": "v1 -> v2",
+      "by": "bot-gitops",
+      "t": "Thu 08:44"
+    },
+    {
+      "sha": "43e145c5",
+      "path": "environments/staging/gke-staging/intent-classifier.yaml",
+      "change": "v1 -> v2",
+      "by": "bot-gitops",
+      "t": "Thu 08:49"
+    },
+    {
+      "sha": "63f72fe4",
+      "path": "environments/staging/eks-staging/intent-classifier.yaml",
+      "change": "v1 -> v2",
+      "by": "bot-gitops",
+      "t": "Thu 08:50"
+    },
+    {
+      "sha": "18cc1f65",
+      "path": "environments/prod/eks-prod/intent-classifier.yaml",
+      "change": "revert: v1 -> v1",
+      "by": "argo-rollouts",
+      "t": "Thu 09:12"
+    },
+    {
+      "sha": "ee787a39",
+      "path": "environments/staging/aks-staging/intent-classifier.yaml",
+      "change": "v2 -> v4",
+      "by": "bot-gitops",
+      "t": "Fri 08:55"
+    },
+    {
+      "sha": "2def98d4",
+      "path": "environments/staging/gke-staging/intent-classifier.yaml",
+      "change": "v2 -> v4",
+      "by": "bot-gitops",
+      "t": "Fri 08:57"
+    },
+    {
+      "sha": "214049db",
+      "path": "environments/staging/eks-staging/intent-classifier.yaml",
+      "change": "v2 -> v4",
+      "by": "bot-gitops",
+      "t": "Fri 09:01"
+    },
+    {
+      "sha": "702c33f5",
+      "path": "environments/prod/eks-prod/intent-classifier.yaml",
+      "change": "v1 -> v4",
+      "by": "lea",
+      "t": "Fri 09:26"
+    },
+    {
+      "sha": "11b768a0",
+      "path": "environments/prod/aks-prod/intent-classifier.yaml",
+      "change": "v1 -> v4",
+      "by": "lea",
+      "t": "Fri 09:28"
+    },
+    {
+      "sha": "7b34a836",
+      "path": "environments/prod/gke-prod/intent-classifier.yaml",
+      "change": "v1 -> v4",
+      "by": "lea",
+      "t": "Fri 09:31"
+    }
+  ],
+  "history": [
+    {
+      "t": "Mon 10:17",
+      "app": "inference-engine",
+      "target": "mac-kind",
+      "env": "local",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "tom",
+      "commit": "1e0a096c"
+    },
+    {
+      "t": "Mon 10:21",
+      "app": "inference-engine",
+      "target": "docker-dev",
+      "env": "dev",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "commit": "b2ff2e9f"
+    },
+    {
+      "t": "Mon 10:23",
+      "app": "inference-engine",
+      "target": "aks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "commit": "42632611"
+    },
+    {
+      "t": "Mon 10:26",
+      "app": "inference-engine",
+      "target": "gke-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "commit": "7ec67217"
+    },
+    {
+      "t": "Mon 10:28",
+      "app": "inference-engine",
+      "target": "eks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "commit": "162e643c"
+    },
+    {
+      "t": "Tue 09:33",
+      "app": "feature-service",
+      "target": "mac-kind",
+      "env": "local",
+      "kind": "deploy",
+      "change": "none -> 1.0.1",
+      "by": "noor",
+      "commit": "fe54146b"
+    },
+    {
+      "t": "Tue 09:34",
+      "app": "feature-service",
+      "target": "docker-dev",
+      "env": "dev",
+      "kind": "deploy",
+      "change": "none -> 1.0.1",
+      "by": "bot-gitops",
+      "commit": "dd996df8"
+    },
+    {
+      "t": "Tue 09:35",
+      "app": "feature-service",
+      "target": "aks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> 1.0.1",
+      "by": "bot-gitops",
+      "commit": "9638f04b"
+    },
+    {
+      "t": "Tue 09:38",
+      "app": "feature-service",
+      "target": "gke-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> 1.0.1",
+      "by": "bot-gitops",
+      "commit": "6f43cae8"
+    },
+    {
+      "t": "Tue 09:41",
+      "app": "feature-service",
+      "target": "eks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> 1.0.1",
+      "by": "bot-gitops",
+      "commit": "559ae857"
+    },
+    {
+      "t": "Tue 10:02",
+      "app": "model-gateway",
+      "target": "mac-kind",
+      "env": "local",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "raj",
+      "commit": "93d951ec"
+    },
+    {
+      "t": "Tue 10:04",
+      "app": "model-gateway",
+      "target": "docker-dev",
+      "env": "dev",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "commit": "e337ad00"
+    },
+    {
+      "t": "Tue 10:06",
+      "app": "model-gateway",
+      "target": "aks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "commit": "e2184f55"
+    },
+    {
+      "t": "Tue 10:07",
+      "app": "model-gateway",
+      "target": "gke-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "commit": "c587c88f"
+    },
+    {
+      "t": "Tue 10:10",
+      "app": "model-gateway",
+      "target": "eks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "commit": "67faaab7"
+    },
+    {
+      "t": "Tue 10:36",
+      "app": "eval-dashboard",
+      "target": "mac-kind",
+      "env": "local",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "ben",
+      "commit": "3cf742ab"
+    },
+    {
+      "t": "Tue 10:40",
+      "app": "eval-dashboard",
+      "target": "docker-dev",
+      "env": "dev",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "commit": "4aa43d38"
+    },
+    {
+      "t": "Tue 10:44",
+      "app": "eval-dashboard",
+      "target": "aks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "commit": "020a0808"
+    },
+    {
+      "t": "Tue 10:45",
+      "app": "eval-dashboard",
+      "target": "gke-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "commit": "52230d09"
+    },
+    {
+      "t": "Tue 10:46",
+      "app": "eval-dashboard",
+      "target": "eks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "bot-gitops",
+      "commit": "16351167"
+    },
+    {
+      "t": "Tue 10:47",
+      "app": "inference-engine",
+      "target": "aks-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "mei",
+      "commit": "30ab7c11"
+    },
+    {
+      "t": "Tue 10:51",
+      "app": "inference-engine",
+      "target": "gke-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "mei",
+      "commit": "e22edf0c"
+    },
+    {
+      "t": "Tue 10:54",
+      "app": "inference-engine",
+      "target": "eks-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "mei",
+      "commit": "3cac2410"
+    },
+    {
+      "t": "Tue 10:55",
+      "app": "feature-service",
+      "target": "aks-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> 1.0.1",
+      "by": "raj",
+      "commit": "8b6ab2f9"
+    },
+    {
+      "t": "Tue 10:57",
+      "app": "feature-service",
+      "target": "gke-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> 1.0.1",
+      "by": "raj",
+      "commit": "5f39bf4f"
+    },
+    {
+      "t": "Tue 10:59",
+      "app": "feature-service",
+      "target": "eks-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> 1.0.1",
+      "by": "raj",
+      "commit": "3680663f"
+    },
+    {
+      "t": "Tue 11:01",
+      "app": "model-gateway",
+      "target": "aks-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "raj",
+      "commit": "1d5523c0"
+    },
+    {
+      "t": "Tue 11:06",
+      "app": "model-gateway",
+      "target": "gke-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "raj",
+      "commit": "fa7afa51"
+    },
+    {
+      "t": "Tue 11:10",
+      "app": "model-gateway",
+      "target": "eks-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "raj",
+      "commit": "b469fdbe"
+    },
+    {
+      "t": "Tue 11:12",
+      "app": "eval-dashboard",
+      "target": "aks-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "zoe",
+      "commit": "1e169f88"
+    },
+    {
+      "t": "Tue 11:16",
+      "app": "eval-dashboard",
+      "target": "gke-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "zoe",
+      "commit": "01866d89"
+    },
+    {
+      "t": "Tue 11:18",
+      "app": "eval-dashboard",
+      "target": "eks-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> 1.0.0",
+      "by": "zoe",
+      "commit": "da852f4d"
+    },
+    {
+      "t": "Wed 08:42",
+      "app": "intent-classifier",
+      "target": "aks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> v1",
+      "by": "bot-gitops",
+      "commit": "925765b4"
+    },
+    {
+      "t": "Wed 08:44",
+      "app": "intent-classifier",
+      "target": "gke-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> v1",
+      "by": "bot-gitops",
+      "commit": "316e8cfd"
+    },
+    {
+      "t": "Wed 08:48",
+      "app": "intent-classifier",
+      "target": "eks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "none -> v1",
+      "by": "bot-gitops",
+      "commit": "83970cbb"
+    },
+    {
+      "t": "Wed 09:06",
+      "app": "intent-classifier",
+      "target": "eks-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> v1",
+      "by": "lea",
+      "commit": "29fe2be5"
+    },
+    {
+      "t": "Wed 09:08",
+      "app": "intent-classifier",
+      "target": "aks-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> v1",
+      "by": "lea",
+      "commit": "306524c7"
+    },
+    {
+      "t": "Wed 09:09",
+      "app": "intent-classifier",
+      "target": "gke-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "none -> v1",
+      "by": "lea",
+      "commit": "207f5c36"
+    },
+    {
+      "t": "Thu 08:44",
+      "app": "intent-classifier",
+      "target": "aks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "v1 -> v2",
+      "by": "bot-gitops",
+      "commit": "f1dfb053"
+    },
+    {
+      "t": "Thu 08:49",
+      "app": "intent-classifier",
+      "target": "gke-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "v1 -> v2",
+      "by": "bot-gitops",
+      "commit": "43e145c5"
+    },
+    {
+      "t": "Thu 08:50",
+      "app": "intent-classifier",
+      "target": "eks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "v1 -> v2",
+      "by": "bot-gitops",
+      "commit": "63f72fe4"
+    },
+    {
+      "t": "Thu 09:12",
+      "app": "intent-classifier",
+      "target": "eks-prod",
+      "env": "prod",
+      "kind": "rollback",
+      "change": "v1 -> v1",
+      "by": "argo-rollouts",
+      "commit": "18cc1f65"
+    },
+    {
+      "t": "Fri 08:55",
+      "app": "intent-classifier",
+      "target": "aks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "v2 -> v4",
+      "by": "bot-gitops",
+      "commit": "ee787a39"
+    },
+    {
+      "t": "Fri 08:57",
+      "app": "intent-classifier",
+      "target": "gke-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "v2 -> v4",
+      "by": "bot-gitops",
+      "commit": "2def98d4"
+    },
+    {
+      "t": "Fri 09:01",
+      "app": "intent-classifier",
+      "target": "eks-staging",
+      "env": "staging",
+      "kind": "deploy",
+      "change": "v2 -> v4",
+      "by": "bot-gitops",
+      "commit": "214049db"
+    },
+    {
+      "t": "Fri 09:26",
+      "app": "intent-classifier",
+      "target": "eks-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "v1 -> v4",
+      "by": "lea",
+      "commit": "702c33f5"
+    },
+    {
+      "t": "Fri 09:28",
+      "app": "intent-classifier",
+      "target": "aks-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "v1 -> v4",
+      "by": "lea",
+      "commit": "11b768a0"
+    },
+    {
+      "t": "Fri 09:31",
+      "app": "intent-classifier",
+      "target": "gke-prod",
+      "env": "prod",
+      "kind": "deploy",
+      "change": "v1 -> v4",
+      "by": "lea",
+      "commit": "7b34a836"
+    }
+  ],
+  "rollouts": [
+    {
+      "app": "intent-classifier",
+      "version": "v1",
+      "target": "eks-prod",
+      "approved_by": "lea",
+      "steps": [
+        {
+          "weight": 10,
+          "p95_ms": 88,
+          "error_rate": 0.18,
+          "passed": true,
+          "t": "Wed 08:56"
+        },
+        {
+          "weight": 50,
+          "p95_ms": 87,
+          "error_rate": 0.32,
+          "passed": true,
+          "t": "Wed 09:01"
+        },
+        {
+          "weight": 100,
+          "p95_ms": 88,
+          "error_rate": 0.2,
+          "passed": true,
+          "t": "Wed 09:03"
+        }
+      ],
+      "result": "promoted"
+    },
+    {
+      "app": "intent-classifier",
+      "version": "v2",
+      "target": "eks-prod",
+      "approved_by": "lea",
+      "steps": [
+        {
+          "weight": 10,
+          "p95_ms": 169,
+          "error_rate": 2.36,
+          "passed": false,
+          "t": "Thu 09:07"
+        }
+      ],
+      "result": "aborted",
+      "restored_minutes": 5
+    },
+    {
+      "app": "intent-classifier",
+      "version": "v4",
+      "target": "eks-prod",
+      "approved_by": "lea",
+      "steps": [
+        {
+          "weight": 10,
+          "p95_ms": 82,
+          "error_rate": 0.22,
+          "passed": true,
+          "t": "Fri 09:16"
+        },
+        {
+          "weight": 50,
+          "p95_ms": 83,
+          "error_rate": 0.24,
+          "passed": true,
+          "t": "Fri 09:21"
+        },
+        {
+          "weight": 100,
+          "p95_ms": 81,
+          "error_rate": 0.18,
+          "passed": true,
+          "t": "Fri 09:23"
+        }
+      ],
+      "result": "promoted"
+    }
+  ],
+  "series": {
+    "aks-prod": {
+      "p95_ms": [
+        91.1,
+        91.9,
+        89.4,
+        86.6,
+        93.2,
+        92.7,
+        87.2,
+        88.5,
+        92.4,
+        93.2,
+        88.0,
+        92.2,
+        89.3,
+        87.2,
+        92.9,
+        92.5,
+        86.2,
+        88.7,
+        92.4,
+        92.5,
+        92.3,
+        93.0,
+        87.8,
+        89.7,
+        92.4,
+        86.2,
+        88.6,
+        93.7,
+        91.1,
+        93.8,
+        93.5,
+        93.8,
+        93.7,
+        86.9,
+        91.8,
+        90.8,
+        84.1,
+        83.0,
+        81.0,
+        85.3,
+        86.9,
+        83.9,
+        86.3,
+        83.5,
+        86.8,
+        83.5,
+        84.2,
+        82.0
+      ],
+      "error_rate": [
+        0.21,
+        0.27,
+        0.15,
+        0.34,
+        0.27,
+        0.28,
+        0.18,
+        0.35,
+        0.34,
+        0.2,
+        0.17,
+        0.34,
+        0.29,
+        0.35,
+        0.36,
+        0.34,
+        0.31,
+        0.35,
+        0.34,
+        0.21,
+        0.17,
+        0.34,
+        0.33,
+        0.22,
+        0.2,
+        0.19,
+        0.34,
+        0.21,
+        0.24,
+        0.27,
+        0.18,
+        0.19,
+        0.21,
+        0.25,
+        0.22,
+        0.26,
+        0.28,
+        0.31,
+        0.35,
+        0.31,
+        0.3,
+        0.17,
+        0.22,
+        0.34,
+        0.22,
+        0.24,
+        0.22,
+        0.24
+      ],
+      "marks": [
+        {
+          "i": 36,
+          "label": "v4"
+        }
+      ],
+      "limit": 120
+    },
+    "gke-prod": {
+      "p95_ms": [
+        86.5,
+        86.2,
+        81.4,
+        79.0,
+        82.4,
+        84.2,
+        82.5,
+        82.8,
+        85.4,
+        79.7,
+        84.1,
+        85.5,
+        84.4,
+        80.6,
+        81.0,
+        85.8,
+        82.3,
+        80.6,
+        83.0,
+        84.2,
+        85.0,
+        79.9,
+        80.4,
+        83.1,
+        81.0,
+        82.7,
+        84.3,
+        83.8,
+        86.1,
+        84.8,
+        85.6,
+        86.2,
+        82.8,
+        81.0,
+        85.1,
+        84.0,
+        74.6,
+        76.2,
+        78.3,
+        75.9,
+        79.7,
+        77.3,
+        77.3,
+        77.4,
+        78.7,
+        80.9,
+        77.0,
+        76.8
+      ],
+      "error_rate": [
+        0.3,
+        0.29,
+        0.27,
+        0.21,
+        0.28,
+        0.25,
+        0.2,
+        0.35,
+        0.19,
+        0.26,
+        0.22,
+        0.32,
+        0.2,
+        0.16,
+        0.25,
+        0.17,
+        0.29,
+        0.3,
+        0.2,
+        0.15,
+        0.32,
+        0.24,
+        0.36,
+        0.16,
+        0.34,
+        0.33,
+        0.37,
+        0.36,
+        0.28,
+        0.26,
+        0.27,
+        0.31,
+        0.21,
+        0.29,
+        0.26,
+        0.21,
+        0.21,
+        0.22,
+        0.18,
+        0.3,
+        0.16,
+        0.27,
+        0.2,
+        0.35,
+        0.3,
+        0.32,
+        0.15,
+        0.32
+      ],
+      "marks": [
+        {
+          "i": 36,
+          "label": "v4"
+        }
+      ],
+      "limit": 120
+    },
+    "eks-prod": {
+      "p95_ms": [
+        88.8,
+        85.4,
+        86.4,
+        83.8,
+        85.5,
+        84.7,
+        85.2,
+        85.7,
+        87.0,
+        85.2,
+        82.2,
+        83.1,
+        82.4,
+        83.7,
+        88.1,
+        88.0,
+        84.0,
+        82.2,
+        90.0,
+        87.2,
+        173.7,
+        154.9,
+        83.0,
+        86.5,
+        87.6,
+        83.3,
+        88.0,
+        88.6,
+        82.9,
+        84.5,
+        89.7,
+        87.7,
+        87.5,
+        82.8,
+        88.8,
+        83.0,
+        83.3,
+        80.4,
+        81.0,
+        83.8,
+        77.8,
+        82.1,
+        82.7,
+        82.9,
+        79.2,
+        81.3,
+        80.5,
+        79.1
+      ],
+      "error_rate": [
+        0.36,
+        0.31,
+        0.28,
+        0.2,
+        0.16,
+        0.3,
+        0.19,
+        0.18,
+        0.16,
+        0.27,
+        0.29,
+        0.25,
+        0.23,
+        0.22,
+        0.23,
+        0.33,
+        0.17,
+        0.27,
+        0.23,
+        0.32,
+        2.4,
+        1.7,
+        0.3,
+        0.2,
+        0.32,
+        0.28,
+        0.18,
+        0.36,
+        0.16,
+        0.3,
+        0.24,
+        0.17,
+        0.29,
+        0.32,
+        0.28,
+        0.37,
+        0.23,
+        0.23,
+        0.23,
+        0.33,
+        0.36,
+        0.33,
+        0.25,
+        0.36,
+        0.33,
+        0.26,
+        0.31,
+        0.34
+      ],
+      "marks": [
+        {
+          "i": 20,
+          "label": "v2 canary"
+        },
+        {
+          "i": 22,
+          "label": "rollback"
+        },
+        {
+          "i": 36,
+          "label": "v4"
+        }
+      ],
+      "limit": 120
+    },
+    "drift": {
+      "values": [
+        0.075,
+        0.065,
+        0.08,
+        0.072,
+        0.077,
+        0.082,
+        0.08,
+        0.076,
+        0.092,
+        0.083,
+        0.085,
+        0.097,
+        0.091,
+        0.102,
+        0.101,
+        0.096,
+        0.094,
+        0.111,
+        0.099,
+        0.112,
+        0.11,
+        0.116,
+        0.117,
+        0.118,
+        0.118,
+        0.125,
+        0.115,
+        0.12,
+        0.129,
+        0.125,
+        0.131,
+        0.132,
+        0.134,
+        0.135,
+        0.142,
+        0.137,
+        0.145,
+        0.14,
+        0.142,
+        0.142,
+        0.145,
+        0.146,
+        0.155,
+        0.16,
+        0.153,
+        0.155,
+        0.162,
+        0.168
+      ],
+      "limit": 0.2
+    }
+  },
+  "alerts": [
+    {
+      "t": "Thu 09:07",
+      "name": "ModelLatencyHigh",
+      "severity": "critical",
+      "target": "eks-prod",
+      "status": "resolved",
+      "detail": "p95 169 ms and 2.4% errors during the v2 canary. Rolled back automatically in 5 minutes."
+    },
+    {
+      "t": "Fri 09:59",
+      "name": "InputDriftRising",
+      "severity": "warning",
+      "target": "all prod",
+      "status": "open",
+      "detail": "Drift score 0.16, limit 0.20. New ticket categories are appearing: plan a data refresh."
+    }
+  ],
+  "components": [
+    {
+      "name": "model-trainer",
+      "team": "nlp",
+      "lang": "Python",
+      "kind": "training job",
+      "about": "Trains, quantizes and exports the intent model",
+      "version": "1.0.0",
+      "checks": {
+        "owner": true,
+        "ci_green": true,
+        "coverage": true,
+        "sbom": true,
+        "signed": true,
+        "docs": true
+      }
+    },
+    {
+      "name": "fast-tokenizer",
+      "team": "nlp",
+      "lang": "Rust",
+      "kind": "library",
+      "about": "Tokenizer shared by training and serving",
+      "version": "1.0.0",
+      "checks": {
+        "owner": true,
+        "ci_green": true,
+        "coverage": true,
+        "sbom": true,
+        "signed": true,
+        "docs": true
+      }
+    },
+    {
+      "name": "inference-engine",
+      "team": "vision",
+      "lang": "C and C++",
+      "kind": "service",
+      "about": "ONNX Runtime server tuned for CPU",
+      "version": "1.0.0",
+      "checks": {
+        "owner": true,
+        "ci_green": true,
+        "coverage": true,
+        "sbom": true,
+        "signed": true,
+        "docs": true
+      }
+    },
+    {
+      "name": "feature-service",
+      "team": "platform",
+      "lang": "Java",
+      "kind": "service",
+      "about": "Looks up customer features for each request",
+      "version": "1.0.1",
+      "checks": {
+        "owner": true,
+        "ci_green": true,
+        "coverage": true,
+        "sbom": true,
+        "signed": true,
+        "docs": true
+      }
+    },
+    {
+      "name": "model-gateway",
+      "team": "platform",
+      "lang": "Go",
+      "kind": "service",
+      "about": "Routes traffic between model versions",
+      "version": "1.0.0",
+      "checks": {
+        "owner": true,
+        "ci_green": true,
+        "coverage": true,
+        "sbom": true,
+        "signed": true,
+        "docs": true
+      }
+    },
+    {
+      "name": "eval-dashboard",
+      "team": "web",
+      "lang": "Web (TypeScript)",
+      "kind": "web app",
+      "about": "Shows evaluation results to every team",
+      "version": "1.0.0",
+      "checks": {
+        "owner": true,
+        "ci_green": true,
+        "coverage": true,
+        "sbom": true,
+        "signed": true,
+        "docs": true
+      }
+    }
+  ],
+  "adrs": [
+    {
+      "id": "ADR-001",
+      "title": "Git is the source of truth for code, policy, access and deployments",
+      "status": "accepted",
+      "why": "Every change is a pull request, so every change has an author, a reviewer and an undo."
+    },
+    {
+      "id": "ADR-002",
+      "title": "OpenTofu instead of Terraform",
+      "status": "accepted",
+      "why": "Terraform's BSL licence is not open source. OpenTofu runs the same code."
+    },
+    {
+      "id": "ADR-003",
+      "title": "One pipeline contract for every language",
+      "status": "accepted",
+      "why": "Each repo offers make setup, lint, test and build. CI only calls make, so a Mac and CI behave the same."
+    },
+    {
+      "id": "ADR-004",
+      "title": "Build once, promote by digest",
+      "status": "accepted",
+      "why": "The image tested in staging is byte for byte the image in production."
+    },
+    {
+      "id": "ADR-005",
+      "title": "Keycloak groups drive every tool's roles",
+      "status": "accepted",
+      "why": "Access is one YAML file. Onboarding is a pull request and offboarding is one script."
+    },
+    {
+      "id": "ADR-006",
+      "title": "Model gates live in Git",
+      "status": "accepted",
+      "why": "Thresholds change by reviewed pull request, never by editing a dashboard."
+    },
+    {
+      "id": "ADR-007",
+      "title": "One Argo CD per cluster, pulling from Git",
+      "status": "accepted",
+      "why": "No central hub holds credentials for every cloud."
+    },
+    {
+      "id": "ADR-008",
+      "title": "CPU only, small models, shipped inside the image",
+      "status": "accepted",
+      "why": "One digest rolls back code and model together. No GPU pools, drivers or quota to manage."
+    },
+    {
+      "id": "ADR-009",
+      "title": "The speed gate replays production traffic",
+      "status": "accepted after the v2 rollback",
+      "why": "A one-request-at-a-time latency test passed a model that failed under real concurrency on 2-CPU pods."
+    }
+  ],
+  "chat": [
+    {
+      "t": "Mon 08:57",
+      "channel": "#platform",
+      "text": "All eight targets are ready: mac-kind, docker-dev, and staging plus prod on AKS, GKE and EKS."
+    },
+    {
+      "t": "Mon 09:47",
+      "channel": "#vision",
+      "text": "inference-engine: CI caught 'ASan: heap-use-after-free in BatchQueue::pop' before review. tom pushed a fix."
+    },
+    {
+      "t": "Tue 09:04",
+      "channel": "#security",
+      "text": "feature-service 1.0.0 blocked: critical CVE in the base image. Nothing was pushed."
+    },
+    {
+      "t": "Tue 10:24",
+      "channel": "#web",
+      "text": "eval-dashboard: a browser test passed only on retry. Logged as flaky with a trace attached."
+    },
+    {
+      "t": "Wed 09:14",
+      "channel": "#releases",
+      "text": "intent-classifier v1 is the new champion on AKS, GKE and EKS."
+    },
+    {
+      "t": "Thu 09:12",
+      "channel": "#releases",
+      "text": "intent-classifier v2 canary aborted on eks-prod at 10% traffic. Argo Rollouts reverted to v1. No one was paged twice."
+    },
+    {
+      "t": "Thu 09:12",
+      "channel": "#nlp",
+      "text": "Gate change merged: Speed now replays 40 requests per second with the production thread settings."
+    },
+    {
+      "t": "Fri 08:40",
+      "channel": "#nlp",
+      "text": "intent-classifier v3 stopped at the Fairness gate (subgroup_gap = 0.086, limit 0.05). It never left the registry."
+    },
+    {
+      "t": "Fri 09:36",
+      "channel": "#releases",
+      "text": "intent-classifier v4 is the new champion on AKS, GKE and EKS."
+    },
+    {
+      "t": "Fri 09:59",
+      "channel": "#platform",
+      "text": "sam offboarded: account, SSH keys, tokens and cloud bindings removed in one run of factoryctl offboard."
+    }
+  ],
+  "audit": [
+    {
+      "n": 1,
+      "t": "Mon 08:31",
+      "tool": "keycloak",
+      "actor": "ana",
+      "action": "login",
+      "target": "realm factory",
+      "result": "ok",
+      "detail": "OIDC token, groups: team-platform, role-factory-admin"
+    },
+    {
+      "n": 2,
+      "t": "Mon 08:32",
+      "tool": "keycloak",
+      "actor": "bot-ci",
+      "action": "login",
+      "target": "realm factory",
+      "result": "ok",
+      "detail": "OIDC token, groups: team-platform, role-ci-bot"
+    },
+    {
+      "n": 3,
+      "t": "Mon 08:35",
+      "tool": "keycloak",
+      "actor": "bot-gitops",
+      "action": "login",
+      "target": "realm factory",
+      "result": "ok",
+      "detail": "OIDC token, groups: team-platform, role-gitops-bot"
+    },
+    {
+      "n": 4,
+      "t": "Mon 08:37",
+      "tool": "ansible",
+      "actor": "ana",
+      "action": "apply",
+      "target": "mac-kind",
+      "result": "ok",
+      "detail": "brew bundle --file Brewfile"
+    },
+    {
+      "n": 5,
+      "t": "Mon 08:39",
+      "tool": "ansible",
+      "actor": "ana",
+      "action": "apply",
+      "target": "docker-dev",
+      "result": "ok",
+      "detail": "ansible-playbook -i ansible/inventories/dev ansible/docker_host.yml"
+    },
+    {
+      "n": 6,
+      "t": "Mon 08:41",
+      "tool": "opentofu",
+      "actor": "ana",
+      "action": "apply",
+      "target": "aks-staging",
+      "result": "ok",
+      "detail": "tofu -chdir=infra/live/azure/staging init"
+    },
+    {
+      "n": 7,
+      "t": "Mon 08:42",
+      "tool": "opentofu",
+      "actor": "ana",
+      "action": "apply",
+      "target": "gke-staging",
+      "result": "ok",
+      "detail": "tofu -chdir=infra/live/gcp/staging init"
+    },
+    {
+      "n": 8,
+      "t": "Mon 08:47",
+      "tool": "opentofu",
+      "actor": "ana",
+      "action": "apply",
+      "target": "eks-staging",
+      "result": "ok",
+      "detail": "tofu -chdir=infra/live/aws/staging init"
+    },
+    {
+      "n": 9,
+      "t": "Mon 08:48",
+      "tool": "opentofu",
+      "actor": "ana",
+      "action": "apply",
+      "target": "aks-prod",
+      "result": "ok",
+      "detail": "tofu -chdir=infra/live/azure/prod init"
+    },
+    {
+      "n": 10,
+      "t": "Mon 08:53",
+      "tool": "opentofu",
+      "actor": "ana",
+      "action": "apply",
+      "target": "gke-prod",
+      "result": "ok",
+      "detail": "tofu -chdir=infra/live/gcp/prod init"
+    },
+    {
+      "n": 11,
+      "t": "Mon 08:57",
+      "tool": "opentofu",
+      "actor": "ana",
+      "action": "apply",
+      "target": "eks-prod",
+      "result": "ok",
+      "detail": "tofu -chdir=infra/live/aws/prod init"
+    },
+    {
+      "n": 12,
+      "t": "Mon 08:58",
+      "tool": "keycloak",
+      "actor": "lea",
+      "action": "login",
+      "target": "realm factory",
+      "result": "ok",
+      "detail": "OIDC token, groups: team-nlp, role-maintainer"
+    },
+    {
+      "n": 13,
+      "t": "Mon 08:59",
+      "tool": "keycloak",
+      "actor": "sam",
+      "action": "login",
+      "target": "realm factory",
+      "result": "ok",
+      "detail": "OIDC token, groups: team-nlp, role-developer"
+    },
+    {
+      "n": 14,
+      "t": "Mon 09:00",
+      "tool": "forgejo",
+      "actor": "lea",
+      "action": "push",
+      "target": "fast-tokenizer@feat/add-byte-fallback-for",
+      "result": "ok",
+      "detail": "023a37c9 Add byte-fallback for unknown characters"
+    },
+    {
+      "n": 15,
+      "t": "Mon 09:02",
+      "tool": "forgejo",
+      "actor": "lea",
+      "action": "open PR",
+      "target": "fast-tokenizer#1",
+      "result": "ok",
+      "detail": "Add byte-fallback for unknown characters"
+    },
+    {
+      "n": 16,
+      "t": "Mon 09:06",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "fast-tokenizer@023a37c9",
+      "result": "passed",
+      "detail": "coverage 90.1%"
+    },
+    {
+      "n": 17,
+      "t": "Mon 09:08",
+      "tool": "forgejo",
+      "actor": "sam",
+      "action": "approve",
+      "target": "fast-tokenizer#1",
+      "result": "ok",
+      "detail": ""
+    },
+    {
+      "n": 18,
+      "t": "Mon 09:12",
+      "tool": "forgejo",
+      "actor": "lea",
+      "action": "push",
+      "target": "fast-tokenizer@main",
+      "result": "ok",
+      "detail": "97118be1 Merge #1: Add byte-fallback for unknown characters"
+    },
+    {
+      "n": 19,
+      "t": "Mon 09:14",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "fast-tokenizer@97118be1",
+      "result": "passed",
+      "detail": "coverage 85.4%"
+    },
+    {
+      "n": 20,
+      "t": "Mon 09:17",
+      "tool": "forgejo",
+      "actor": "sam",
+      "action": "push",
+      "target": "model-trainer@feat/export-int8-onnx",
+      "result": "ok",
+      "detail": "5b5e380b Export int8 ONNX with fixed thread count"
+    },
+    {
+      "n": 21,
+      "t": "Mon 09:18",
+      "tool": "forgejo",
+      "actor": "sam",
+      "action": "open PR",
+      "target": "model-trainer#1",
+      "result": "ok",
+      "detail": "Export int8 ONNX with fixed thread count"
+    },
+    {
+      "n": 22,
+      "t": "Mon 09:19",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "model-trainer@5b5e380b",
+      "result": "passed",
+      "detail": "coverage 88.8%"
+    },
+    {
+      "n": 23,
+      "t": "Mon 09:23",
+      "tool": "forgejo",
+      "actor": "lea",
+      "action": "approve",
+      "target": "model-trainer#1",
+      "result": "ok",
+      "detail": ""
+    },
+    {
+      "n": 24,
+      "t": "Mon 09:28",
+      "tool": "forgejo",
+      "actor": "sam",
+      "action": "push",
+      "target": "model-trainer@main",
+      "result": "ok",
+      "detail": "c00061d6 Merge #1: Export int8 ONNX with fixed thread count"
+    },
+    {
+      "n": 25,
+      "t": "Mon 09:33",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "model-trainer@c00061d6",
+      "result": "passed",
+      "detail": "coverage 91.8%"
+    },
+    {
+      "n": 26,
+      "t": "Mon 09:34",
+      "tool": "harbor",
+      "actor": "bot-ci",
+      "action": "push image",
+      "target": "model-trainer:1.0.0",
+      "result": "pushed",
+      "detail": "signed sha256:aa2279248cad"
+    },
+    {
+      "n": 27,
+      "t": "Mon 09:36",
+      "tool": "keycloak",
+      "actor": "tom",
+      "action": "login",
+      "target": "realm factory",
+      "result": "ok",
+      "detail": "OIDC token, groups: team-vision, role-developer"
+    },
+    {
+      "n": 28,
+      "t": "Mon 09:37",
+      "tool": "keycloak",
+      "actor": "mei",
+      "action": "login",
+      "target": "realm factory",
+      "result": "ok",
+      "detail": "OIDC token, groups: team-vision, role-maintainer"
+    },
+    {
+      "n": 29,
+      "t": "Mon 09:41",
+      "tool": "forgejo",
+      "actor": "tom",
+      "action": "push",
+      "target": "inference-engine@feat/batch-requests-up",
+      "result": "ok",
+      "detail": "897c2ddc Batch requests up to 8 per call"
+    },
+    {
+      "n": 30,
+      "t": "Mon 09:44",
+      "tool": "forgejo",
+      "actor": "tom",
+      "action": "open PR",
+      "target": "inference-engine#1",
+      "result": "ok",
+      "detail": "Batch requests up to 8 per call"
+    },
+    {
+      "n": 31,
+      "t": "Mon 09:47",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "inference-engine@897c2ddc",
+      "result": "failed",
+      "detail": "test: ASan: heap-use-after-free in BatchQueue::pop"
+    },
+    {
+      "n": 32,
+      "t": "Mon 09:49",
+      "tool": "forgejo",
+      "actor": "tom",
+      "action": "push",
+      "target": "inference-engine@feat/batch-requests-up",
+      "result": "ok",
+      "detail": "f17d37e5 Fix lifetime of batch buffer"
+    },
+    {
+      "n": 33,
+      "t": "Mon 09:53",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "inference-engine@f17d37e5",
+      "result": "passed",
+      "detail": "coverage 84.2%"
+    },
+    {
+      "n": 34,
+      "t": "Mon 09:57",
+      "tool": "forgejo",
+      "actor": "tom",
+      "action": "pr:merge",
+      "target": "inference-engine#1",
+      "result": "denied",
+      "detail": "branch protection: needs one approval from someone else"
+    },
+    {
+      "n": 35,
+      "t": "Mon 10:00",
+      "tool": "forgejo",
+      "actor": "mei",
+      "action": "approve",
+      "target": "inference-engine#1",
+      "result": "ok",
+      "detail": ""
+    },
+    {
+      "n": 36,
+      "t": "Mon 10:05",
+      "tool": "forgejo",
+      "actor": "tom",
+      "action": "push",
+      "target": "inference-engine@main",
+      "result": "ok",
+      "detail": "4dd36f7b Merge #1: Batch requests up to 8 per call"
+    },
+    {
+      "n": 37,
+      "t": "Mon 10:08",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "inference-engine@4dd36f7b",
+      "result": "passed",
+      "detail": "coverage 81.4%"
+    },
+    {
+      "n": 38,
+      "t": "Mon 10:13",
+      "tool": "harbor",
+      "actor": "bot-ci",
+      "action": "push image",
+      "target": "inference-engine:1.0.0",
+      "result": "pushed",
+      "detail": "signed sha256:017b08adcff1"
+    },
+    {
+      "n": 39,
+      "t": "Mon 10:17",
+      "tool": "argocd",
+      "actor": "tom",
+      "action": "sync",
+      "target": "inference-engine 1.0.0 -> mac-kind",
+      "result": "ok",
+      "detail": "environments@1e0a096c, sha256:017b08adcff1"
+    },
+    {
+      "n": 40,
+      "t": "Mon 10:21",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "inference-engine 1.0.0 -> docker-dev",
+      "result": "ok",
+      "detail": "environments@b2ff2e9f, sha256:017b08adcff1"
+    },
+    {
+      "n": 41,
+      "t": "Mon 10:23",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "inference-engine 1.0.0 -> aks-staging",
+      "result": "ok",
+      "detail": "environments@42632611, sha256:017b08adcff1"
+    },
+    {
+      "n": 42,
+      "t": "Mon 10:26",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "inference-engine 1.0.0 -> gke-staging",
+      "result": "ok",
+      "detail": "environments@7ec67217, sha256:017b08adcff1"
+    },
+    {
+      "n": 43,
+      "t": "Mon 10:28",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "inference-engine 1.0.0 -> eks-staging",
+      "result": "ok",
+      "detail": "environments@162e643c, sha256:017b08adcff1"
+    },
+    {
+      "n": 44,
+      "t": "Tue 08:32",
+      "tool": "keycloak",
+      "actor": "noor",
+      "action": "login",
+      "target": "realm factory",
+      "result": "ok",
+      "detail": "OIDC token, groups: team-platform, role-developer"
+    },
+    {
+      "n": 45,
+      "t": "Tue 08:37",
+      "tool": "keycloak",
+      "actor": "raj",
+      "action": "login",
+      "target": "realm factory",
+      "result": "ok",
+      "detail": "OIDC token, groups: team-platform, role-maintainer"
+    },
+    {
+      "n": 46,
+      "t": "Tue 08:42",
+      "tool": "forgejo",
+      "actor": "noor",
+      "action": "push",
+      "target": "feature-service@feat/cache-customer-features",
+      "result": "ok",
+      "detail": "34c34dd6 Cache customer features for 60 seconds"
+    },
+    {
+      "n": 47,
+      "t": "Tue 08:45",
+      "tool": "forgejo",
+      "actor": "noor",
+      "action": "open PR",
+      "target": "feature-service#1",
+      "result": "ok",
+      "detail": "Cache customer features for 60 seconds"
+    },
+    {
+      "n": 48,
+      "t": "Tue 08:47",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "feature-service@34c34dd6",
+      "result": "passed",
+      "detail": "coverage 83.9%"
+    },
+    {
+      "n": 49,
+      "t": "Tue 08:52",
+      "tool": "forgejo",
+      "actor": "raj",
+      "action": "approve",
+      "target": "feature-service#1",
+      "result": "ok",
+      "detail": ""
+    },
+    {
+      "n": 50,
+      "t": "Tue 08:56",
+      "tool": "forgejo",
+      "actor": "noor",
+      "action": "push",
+      "target": "feature-service@main",
+      "result": "ok",
+      "detail": "6ce0a152 Merge #1: Cache customer features for 60 seconds"
+    },
+    {
+      "n": 51,
+      "t": "Tue 09:00",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "feature-service@6ce0a152",
+      "result": "passed",
+      "detail": "coverage 83.1%"
+    },
+    {
+      "n": 52,
+      "t": "Tue 09:04",
+      "tool": "harbor",
+      "actor": "bot-ci",
+      "action": "push image",
+      "target": "feature-service:1.0.0",
+      "result": "blocked",
+      "detail": "critical CVE with a fix available: policy blocks the push"
+    },
+    {
+      "n": 53,
+      "t": "Tue 09:05",
+      "tool": "forgejo",
+      "actor": "noor",
+      "action": "push",
+      "target": "feature-service@feat/bump-base-image",
+      "result": "ok",
+      "detail": "4ea7bcc3 Bump base image to the patched release"
+    },
+    {
+      "n": 54,
+      "t": "Tue 09:10",
+      "tool": "forgejo",
+      "actor": "noor",
+      "action": "open PR",
+      "target": "feature-service#2",
+      "result": "ok",
+      "detail": "Bump base image to the patched release"
+    },
+    {
+      "n": 55,
+      "t": "Tue 09:11",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "feature-service@4ea7bcc3",
+      "result": "passed",
+      "detail": "coverage 83.1%"
+    },
+    {
+      "n": 56,
+      "t": "Tue 09:14",
+      "tool": "forgejo",
+      "actor": "raj",
+      "action": "approve",
+      "target": "feature-service#2",
+      "result": "ok",
+      "detail": ""
+    },
+    {
+      "n": 57,
+      "t": "Tue 09:19",
+      "tool": "forgejo",
+      "actor": "noor",
+      "action": "push",
+      "target": "feature-service@main",
+      "result": "ok",
+      "detail": "8ef73e76 Merge #2: Bump base image to the patched release"
+    },
+    {
+      "n": 58,
+      "t": "Tue 09:24",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "feature-service@8ef73e76",
+      "result": "passed",
+      "detail": "coverage 84.9%"
+    },
+    {
+      "n": 59,
+      "t": "Tue 09:29",
+      "tool": "harbor",
+      "actor": "bot-ci",
+      "action": "push image",
+      "target": "feature-service:1.0.1",
+      "result": "pushed",
+      "detail": "signed sha256:ef8703522e57"
+    },
+    {
+      "n": 60,
+      "t": "Tue 09:33",
+      "tool": "argocd",
+      "actor": "noor",
+      "action": "sync",
+      "target": "feature-service 1.0.1 -> mac-kind",
+      "result": "ok",
+      "detail": "environments@fe54146b, sha256:ef8703522e57"
+    },
+    {
+      "n": 61,
+      "t": "Tue 09:34",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "feature-service 1.0.1 -> docker-dev",
+      "result": "ok",
+      "detail": "environments@dd996df8, sha256:ef8703522e57"
+    },
+    {
+      "n": 62,
+      "t": "Tue 09:35",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "feature-service 1.0.1 -> aks-staging",
+      "result": "ok",
+      "detail": "environments@9638f04b, sha256:ef8703522e57"
+    },
+    {
+      "n": 63,
+      "t": "Tue 09:38",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "feature-service 1.0.1 -> gke-staging",
+      "result": "ok",
+      "detail": "environments@6f43cae8, sha256:ef8703522e57"
+    },
+    {
+      "n": 64,
+      "t": "Tue 09:41",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "feature-service 1.0.1 -> eks-staging",
+      "result": "ok",
+      "detail": "environments@559ae857, sha256:ef8703522e57"
+    },
+    {
+      "n": 65,
+      "t": "Tue 09:43",
+      "tool": "forgejo",
+      "actor": "raj",
+      "action": "push",
+      "target": "model-gateway@feat/route-by-model",
+      "result": "ok",
+      "detail": "d069c334 Route by model version header"
+    },
+    {
+      "n": 66,
+      "t": "Tue 09:44",
+      "tool": "forgejo",
+      "actor": "raj",
+      "action": "open PR",
+      "target": "model-gateway#1",
+      "result": "ok",
+      "detail": "Route by model version header"
+    },
+    {
+      "n": 67,
+      "t": "Tue 09:45",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "model-gateway@d069c334",
+      "result": "passed",
+      "detail": "coverage 87.3%"
+    },
+    {
+      "n": 68,
+      "t": "Tue 09:50",
+      "tool": "forgejo",
+      "actor": "noor",
+      "action": "approve",
+      "target": "model-gateway#1",
+      "result": "ok",
+      "detail": ""
+    },
+    {
+      "n": 69,
+      "t": "Tue 09:52",
+      "tool": "forgejo",
+      "actor": "raj",
+      "action": "push",
+      "target": "model-gateway@main",
+      "result": "ok",
+      "detail": "f8bab3c5 Merge #1: Route by model version header"
+    },
+    {
+      "n": 70,
+      "t": "Tue 09:57",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "model-gateway@f8bab3c5",
+      "result": "passed",
+      "detail": "coverage 87.9%"
+    },
+    {
+      "n": 71,
+      "t": "Tue 10:01",
+      "tool": "harbor",
+      "actor": "bot-ci",
+      "action": "push image",
+      "target": "model-gateway:1.0.0",
+      "result": "pushed",
+      "detail": "signed sha256:0dd33a969151"
+    },
+    {
+      "n": 72,
+      "t": "Tue 10:02",
+      "tool": "argocd",
+      "actor": "raj",
+      "action": "sync",
+      "target": "model-gateway 1.0.0 -> mac-kind",
+      "result": "ok",
+      "detail": "environments@93d951ec, sha256:0dd33a969151"
+    },
+    {
+      "n": 73,
+      "t": "Tue 10:04",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "model-gateway 1.0.0 -> docker-dev",
+      "result": "ok",
+      "detail": "environments@e337ad00, sha256:0dd33a969151"
+    },
+    {
+      "n": 74,
+      "t": "Tue 10:06",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "model-gateway 1.0.0 -> aks-staging",
+      "result": "ok",
+      "detail": "environments@e2184f55, sha256:0dd33a969151"
+    },
+    {
+      "n": 75,
+      "t": "Tue 10:07",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "model-gateway 1.0.0 -> gke-staging",
+      "result": "ok",
+      "detail": "environments@c587c88f, sha256:0dd33a969151"
+    },
+    {
+      "n": 76,
+      "t": "Tue 10:10",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "model-gateway 1.0.0 -> eks-staging",
+      "result": "ok",
+      "detail": "environments@67faaab7, sha256:0dd33a969151"
+    },
+    {
+      "n": 77,
+      "t": "Tue 10:11",
+      "tool": "keycloak",
+      "actor": "ben",
+      "action": "login",
+      "target": "realm factory",
+      "result": "ok",
+      "detail": "OIDC token, groups: team-web, role-developer"
+    },
+    {
+      "n": 78,
+      "t": "Tue 10:16",
+      "tool": "keycloak",
+      "actor": "zoe",
+      "action": "login",
+      "target": "realm factory",
+      "result": "ok",
+      "detail": "OIDC token, groups: team-web, role-maintainer"
+    },
+    {
+      "n": 79,
+      "t": "Tue 10:21",
+      "tool": "forgejo",
+      "actor": "ben",
+      "action": "push",
+      "target": "eval-dashboard@feat/show-gate-results",
+      "result": "ok",
+      "detail": "7d63b3ba Show gate results per model version"
+    },
+    {
+      "n": 80,
+      "t": "Tue 10:23",
+      "tool": "forgejo",
+      "actor": "ben",
+      "action": "open PR",
+      "target": "eval-dashboard#1",
+      "result": "ok",
+      "detail": "Show gate results per model version"
+    },
+    {
+      "n": 81,
+      "t": "Tue 10:24",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "eval-dashboard@7d63b3ba",
+      "result": "passed",
+      "detail": "test: playwright: 'filters by version' passed on retry"
+    },
+    {
+      "n": 82,
+      "t": "Tue 10:25",
+      "tool": "forgejo",
+      "actor": "zoe",
+      "action": "approve",
+      "target": "eval-dashboard#1",
+      "result": "ok",
+      "detail": ""
+    },
+    {
+      "n": 83,
+      "t": "Tue 10:28",
+      "tool": "forgejo",
+      "actor": "ben",
+      "action": "push",
+      "target": "eval-dashboard@main",
+      "result": "ok",
+      "detail": "decc1596 Merge #1: Show gate results per model version"
+    },
+    {
+      "n": 84,
+      "t": "Tue 10:30",
+      "tool": "ci",
+      "actor": "bot-ci",
+      "action": "pipeline",
+      "target": "eval-dashboard@decc1596",
+      "result": "passed",
+      "detail": "coverage 83.8%"
+    },
+    {
+      "n": 85,
+      "t": "Tue 10:32",
+      "tool": "harbor",
+      "actor": "bot-ci",
+      "action": "push image",
+      "target": "eval-dashboard:1.0.0",
+      "result": "pushed",
+      "detail": "signed sha256:709b0d34a4d5"
+    },
+    {
+      "n": 86,
+      "t": "Tue 10:36",
+      "tool": "argocd",
+      "actor": "ben",
+      "action": "sync",
+      "target": "eval-dashboard 1.0.0 -> mac-kind",
+      "result": "ok",
+      "detail": "environments@3cf742ab, sha256:709b0d34a4d5"
+    },
+    {
+      "n": 87,
+      "t": "Tue 10:40",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "eval-dashboard 1.0.0 -> docker-dev",
+      "result": "ok",
+      "detail": "environments@4aa43d38, sha256:709b0d34a4d5"
+    },
+    {
+      "n": 88,
+      "t": "Tue 10:44",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "eval-dashboard 1.0.0 -> aks-staging",
+      "result": "ok",
+      "detail": "environments@020a0808, sha256:709b0d34a4d5"
+    },
+    {
+      "n": 89,
+      "t": "Tue 10:45",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "eval-dashboard 1.0.0 -> gke-staging",
+      "result": "ok",
+      "detail": "environments@52230d09, sha256:709b0d34a4d5"
+    },
+    {
+      "n": 90,
+      "t": "Tue 10:46",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "eval-dashboard 1.0.0 -> eks-staging",
+      "result": "ok",
+      "detail": "environments@16351167, sha256:709b0d34a4d5"
+    },
+    {
+      "n": 91,
+      "t": "Tue 10:47",
+      "tool": "argocd",
+      "actor": "mei",
+      "action": "sync",
+      "target": "inference-engine 1.0.0 -> aks-prod",
+      "result": "ok",
+      "detail": "environments@30ab7c11, sha256:017b08adcff1"
+    },
+    {
+      "n": 92,
+      "t": "Tue 10:51",
+      "tool": "argocd",
+      "actor": "mei",
+      "action": "sync",
+      "target": "inference-engine 1.0.0 -> gke-prod",
+      "result": "ok",
+      "detail": "environments@e22edf0c, sha256:017b08adcff1"
+    },
+    {
+      "n": 93,
+      "t": "Tue 10:54",
+      "tool": "argocd",
+      "actor": "mei",
+      "action": "sync",
+      "target": "inference-engine 1.0.0 -> eks-prod",
+      "result": "ok",
+      "detail": "environments@3cac2410, sha256:017b08adcff1"
+    },
+    {
+      "n": 94,
+      "t": "Tue 10:55",
+      "tool": "argocd",
+      "actor": "raj",
+      "action": "sync",
+      "target": "feature-service 1.0.1 -> aks-prod",
+      "result": "ok",
+      "detail": "environments@8b6ab2f9, sha256:ef8703522e57"
+    },
+    {
+      "n": 95,
+      "t": "Tue 10:57",
+      "tool": "argocd",
+      "actor": "raj",
+      "action": "sync",
+      "target": "feature-service 1.0.1 -> gke-prod",
+      "result": "ok",
+      "detail": "environments@5f39bf4f, sha256:ef8703522e57"
+    },
+    {
+      "n": 96,
+      "t": "Tue 10:59",
+      "tool": "argocd",
+      "actor": "raj",
+      "action": "sync",
+      "target": "feature-service 1.0.1 -> eks-prod",
+      "result": "ok",
+      "detail": "environments@3680663f, sha256:ef8703522e57"
+    },
+    {
+      "n": 97,
+      "t": "Tue 11:01",
+      "tool": "argocd",
+      "actor": "raj",
+      "action": "sync",
+      "target": "model-gateway 1.0.0 -> aks-prod",
+      "result": "ok",
+      "detail": "environments@1d5523c0, sha256:0dd33a969151"
+    },
+    {
+      "n": 98,
+      "t": "Tue 11:06",
+      "tool": "argocd",
+      "actor": "raj",
+      "action": "sync",
+      "target": "model-gateway 1.0.0 -> gke-prod",
+      "result": "ok",
+      "detail": "environments@fa7afa51, sha256:0dd33a969151"
+    },
+    {
+      "n": 99,
+      "t": "Tue 11:10",
+      "tool": "argocd",
+      "actor": "raj",
+      "action": "sync",
+      "target": "model-gateway 1.0.0 -> eks-prod",
+      "result": "ok",
+      "detail": "environments@b469fdbe, sha256:0dd33a969151"
+    },
+    {
+      "n": 100,
+      "t": "Tue 11:12",
+      "tool": "argocd",
+      "actor": "zoe",
+      "action": "sync",
+      "target": "eval-dashboard 1.0.0 -> aks-prod",
+      "result": "ok",
+      "detail": "environments@1e169f88, sha256:709b0d34a4d5"
+    },
+    {
+      "n": 101,
+      "t": "Tue 11:16",
+      "tool": "argocd",
+      "actor": "zoe",
+      "action": "sync",
+      "target": "eval-dashboard 1.0.0 -> gke-prod",
+      "result": "ok",
+      "detail": "environments@01866d89, sha256:709b0d34a4d5"
+    },
+    {
+      "n": 102,
+      "t": "Tue 11:18",
+      "tool": "argocd",
+      "actor": "zoe",
+      "action": "sync",
+      "target": "eval-dashboard 1.0.0 -> eks-prod",
+      "result": "ok",
+      "detail": "environments@da852f4d, sha256:709b0d34a4d5"
+    },
+    {
+      "n": 103,
+      "t": "Wed 08:33",
+      "tool": "dvc",
+      "actor": "sam",
+      "action": "dvc push",
+      "target": "support-tickets:1.0",
+      "result": "ok",
+      "detail": "48000 rows, md5:eec1f634bf97"
+    },
+    {
+      "n": 104,
+      "t": "Wed 08:38",
+      "tool": "mlflow",
+      "actor": "sam",
+      "action": "train on CPU",
+      "target": "intent-classifier v1",
+      "result": "ok",
+      "detail": "run 4ee686b574, f1 0.902, 42 min on 8 vCPU"
+    },
+    {
+      "n": 105,
+      "t": "Wed 08:39",
+      "tool": "evals",
+      "actor": "bot-ci",
+      "action": "gate check",
+      "target": "intent-classifier v1",
+      "result": "passed",
+      "detail": "all 7 gates passed"
+    },
+    {
+      "n": 106,
+      "t": "Wed 08:40",
+      "tool": "mlflow",
+      "actor": "bot-ci",
+      "action": "register",
+      "target": "intent-classifier v1",
+      "result": "ok",
+      "detail": "status candidate"
+    },
+    {
+      "n": 107,
+      "t": "Wed 08:42",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "intent-classifier v1 -> aks-staging",
+      "result": "ok",
+      "detail": "environments@925765b4, sha256:5a36cd5ea56f"
+    },
+    {
+      "n": 108,
+      "t": "Wed 08:44",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "intent-classifier v1 -> gke-staging",
+      "result": "ok",
+      "detail": "environments@316e8cfd, sha256:5a36cd5ea56f"
+    },
+    {
+      "n": 109,
+      "t": "Wed 08:48",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "intent-classifier v1 -> eks-staging",
+      "result": "ok",
+      "detail": "environments@83970cbb, sha256:5a36cd5ea56f"
+    },
+    {
+      "n": 110,
+      "t": "Wed 08:50",
+      "tool": "evals",
+      "actor": "bot-ci",
+      "action": "speed check",
+      "target": "intent-classifier v1 on aks-staging",
+      "result": "passed",
+      "detail": "p95 90 ms on amd64, AVX-512 (limit 120)"
+    },
+    {
+      "n": 111,
+      "t": "Wed 08:51",
+      "tool": "evals",
+      "actor": "bot-ci",
+      "action": "speed check",
+      "target": "intent-classifier v1 on gke-staging",
+      "result": "passed",
+      "detail": "p95 85 ms on amd64, AMX (limit 120)"
+    },
+    {
+      "n": 112,
+      "t": "Wed 08:52",
+      "tool": "evals",
+      "actor": "bot-ci",
+      "action": "speed check",
+      "target": "intent-classifier v1 on eks-staging",
+      "result": "passed",
+      "detail": "p95 86 ms on arm64, Graviton (limit 120)"
+    },
+    {
+      "n": 113,
+      "t": "Wed 08:56",
+      "tool": "rollouts",
+      "actor": "bot-gitops",
+      "action": "canary 10%",
+      "target": "intent-classifier v1 on eks-prod",
+      "result": "passed",
+      "detail": "p95 88 ms, errors 0.18%"
+    },
+    {
+      "n": 114,
+      "t": "Wed 09:01",
+      "tool": "rollouts",
+      "actor": "bot-gitops",
+      "action": "canary 50%",
+      "target": "intent-classifier v1 on eks-prod",
+      "result": "passed",
+      "detail": "p95 87 ms, errors 0.32%"
+    },
+    {
+      "n": 115,
+      "t": "Wed 09:03",
+      "tool": "rollouts",
+      "actor": "bot-gitops",
+      "action": "canary 100%",
+      "target": "intent-classifier v1 on eks-prod",
+      "result": "passed",
+      "detail": "p95 88 ms, errors 0.20%"
+    },
+    {
+      "n": 116,
+      "t": "Wed 09:06",
+      "tool": "argocd",
+      "actor": "lea",
+      "action": "sync",
+      "target": "intent-classifier v1 -> eks-prod",
+      "result": "ok",
+      "detail": "environments@29fe2be5, sha256:5a36cd5ea56f"
+    },
+    {
+      "n": 117,
+      "t": "Wed 09:08",
+      "tool": "argocd",
+      "actor": "lea",
+      "action": "sync",
+      "target": "intent-classifier v1 -> aks-prod",
+      "result": "ok",
+      "detail": "environments@306524c7, sha256:5a36cd5ea56f"
+    },
+    {
+      "n": 118,
+      "t": "Wed 09:09",
+      "tool": "argocd",
+      "actor": "lea",
+      "action": "sync",
+      "target": "intent-classifier v1 -> gke-prod",
+      "result": "ok",
+      "detail": "environments@207f5c36, sha256:5a36cd5ea56f"
+    },
+    {
+      "n": 119,
+      "t": "Wed 09:14",
+      "tool": "mlflow",
+      "actor": "lea",
+      "action": "set alias",
+      "target": "intent-classifier v1 -> champion",
+      "result": "ok",
+      "detail": ""
+    },
+    {
+      "n": 120,
+      "t": "Thu 08:35",
+      "tool": "dvc",
+      "actor": "sam",
+      "action": "dvc push",
+      "target": "support-tickets:1.1",
+      "result": "ok",
+      "detail": "61000 rows, md5:861225c3ba59"
+    },
+    {
+      "n": 121,
+      "t": "Thu 08:40",
+      "tool": "mlflow",
+      "actor": "sam",
+      "action": "train on CPU",
+      "target": "intent-classifier v2",
+      "result": "ok",
+      "detail": "run 44c568e4a3, f1 0.918, 23 min on 8 vCPU"
+    },
+    {
+      "n": 122,
+      "t": "Thu 08:41",
+      "tool": "evals",
+      "actor": "bot-ci",
+      "action": "gate check",
+      "target": "intent-classifier v2",
+      "result": "passed",
+      "detail": "all 7 gates passed"
+    },
+    {
+      "n": 123,
+      "t": "Thu 08:43",
+      "tool": "mlflow",
+      "actor": "bot-ci",
+      "action": "register",
+      "target": "intent-classifier v2",
+      "result": "ok",
+      "detail": "status candidate"
+    },
+    {
+      "n": 124,
+      "t": "Thu 08:44",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "intent-classifier v2 -> aks-staging",
+      "result": "ok",
+      "detail": "environments@f1dfb053, sha256:c1d013cf0b26"
+    },
+    {
+      "n": 125,
+      "t": "Thu 08:49",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "intent-classifier v2 -> gke-staging",
+      "result": "ok",
+      "detail": "environments@43e145c5, sha256:c1d013cf0b26"
+    },
+    {
+      "n": 126,
+      "t": "Thu 08:50",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "intent-classifier v2 -> eks-staging",
+      "result": "ok",
+      "detail": "environments@63f72fe4, sha256:c1d013cf0b26"
+    },
+    {
+      "n": 127,
+      "t": "Thu 08:52",
+      "tool": "evals",
+      "actor": "bot-ci",
+      "action": "speed check",
+      "target": "intent-classifier v2 on aks-staging",
+      "result": "passed",
+      "detail": "p95 115 ms on amd64, AVX-512 (limit 120)"
+    },
+    {
+      "n": 128,
+      "t": "Thu 08:57",
+      "tool": "evals",
+      "actor": "bot-ci",
+      "action": "speed check",
+      "target": "intent-classifier v2 on gke-staging",
+      "result": "passed",
+      "detail": "p95 105 ms on amd64, AMX (limit 120)"
+    },
+    {
+      "n": 129,
+      "t": "Thu 09:02",
+      "tool": "evals",
+      "actor": "bot-ci",
+      "action": "speed check",
+      "target": "intent-classifier v2 on eks-staging",
+      "result": "passed",
+      "detail": "p95 109 ms on arm64, Graviton (limit 120)"
+    },
+    {
+      "n": 130,
+      "t": "Thu 09:07",
+      "tool": "rollouts",
+      "actor": "bot-gitops",
+      "action": "canary 10%",
+      "target": "intent-classifier v2 on eks-prod",
+      "result": "aborted",
+      "detail": "p95 169 ms, errors 2.36%"
+    },
+    {
+      "n": 131,
+      "t": "Thu 09:12",
+      "tool": "argocd",
+      "actor": "argo-rollouts",
+      "action": "revert",
+      "target": "intent-classifier v1 -> eks-prod",
+      "result": "ok",
+      "detail": "environments@18cc1f65, sha256:5a36cd5ea56f"
+    },
+    {
+      "n": 132,
+      "t": "Fri 08:33",
+      "tool": "mlflow",
+      "actor": "lea",
+      "action": "train on CPU",
+      "target": "intent-classifier v3",
+      "result": "ok",
+      "detail": "run bbe91a2361, f1 0.917, 43 min on 8 vCPU"
+    },
+    {
+      "n": 133,
+      "t": "Fri 08:37",
+      "tool": "evals",
+      "actor": "bot-ci",
+      "action": "gate check",
+      "target": "intent-classifier v3",
+      "result": "failed",
+      "detail": "stopped by: Fairness"
+    },
+    {
+      "n": 134,
+      "t": "Fri 08:40",
+      "tool": "mlflow",
+      "actor": "bot-ci",
+      "action": "register",
+      "target": "intent-classifier v3",
+      "result": "ok",
+      "detail": "status rejected"
+    },
+    {
+      "n": 135,
+      "t": "Fri 08:41",
+      "tool": "mlflow",
+      "actor": "noor",
+      "action": "model:promote",
+      "target": "intent-classifier v3 -> champion",
+      "result": "denied",
+      "detail": "role developer lacks model:promote"
+    },
+    {
+      "n": 136,
+      "t": "Fri 08:42",
+      "tool": "mlflow",
+      "actor": "lea",
+      "action": "model:promote",
+      "target": "intent-classifier v3 -> champion",
+      "result": "denied",
+      "detail": "gates failed: a rejected version cannot be promoted"
+    },
+    {
+      "n": 137,
+      "t": "Fri 08:46",
+      "tool": "dvc",
+      "actor": "lea",
+      "action": "dvc push",
+      "target": "support-tickets:1.2",
+      "result": "ok",
+      "detail": "66000 rows, md5:469e3034ffc5"
+    },
+    {
+      "n": 138,
+      "t": "Fri 08:47",
+      "tool": "mlflow",
+      "actor": "lea",
+      "action": "train on CPU",
+      "target": "intent-classifier v4",
+      "result": "ok",
+      "detail": "run 733b583073, f1 0.920, 33 min on 8 vCPU"
+    },
+    {
+      "n": 139,
+      "t": "Fri 08:49",
+      "tool": "evals",
+      "actor": "bot-ci",
+      "action": "gate check",
+      "target": "intent-classifier v4",
+      "result": "passed",
+      "detail": "all 7 gates passed"
+    },
+    {
+      "n": 140,
+      "t": "Fri 08:52",
+      "tool": "mlflow",
+      "actor": "bot-ci",
+      "action": "register",
+      "target": "intent-classifier v4",
+      "result": "ok",
+      "detail": "status candidate"
+    },
+    {
+      "n": 141,
+      "t": "Fri 08:55",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "intent-classifier v4 -> aks-staging",
+      "result": "ok",
+      "detail": "environments@ee787a39, sha256:9ffb964f68db"
+    },
+    {
+      "n": 142,
+      "t": "Fri 08:57",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "intent-classifier v4 -> gke-staging",
+      "result": "ok",
+      "detail": "environments@2def98d4, sha256:9ffb964f68db"
+    },
+    {
+      "n": 143,
+      "t": "Fri 09:01",
+      "tool": "argocd",
+      "actor": "bot-gitops",
+      "action": "sync",
+      "target": "intent-classifier v4 -> eks-staging",
+      "result": "ok",
+      "detail": "environments@214049db, sha256:9ffb964f68db"
+    },
+    {
+      "n": 144,
+      "t": "Fri 09:04",
+      "tool": "evals",
+      "actor": "bot-ci",
+      "action": "speed check",
+      "target": "intent-classifier v4 on aks-staging",
+      "result": "passed",
+      "detail": "p95 86 ms on amd64, AVX-512 (limit 120)"
+    },
+    {
+      "n": 145,
+      "t": "Fri 09:09",
+      "tool": "evals",
+      "actor": "bot-ci",
+      "action": "speed check",
+      "target": "intent-classifier v4 on gke-staging",
+      "result": "passed",
+      "detail": "p95 79 ms on amd64, AMX (limit 120)"
+    },
+    {
+      "n": 146,
+      "t": "Fri 09:14",
+      "tool": "evals",
+      "actor": "bot-ci",
+      "action": "speed check",
+      "target": "intent-classifier v4 on eks-staging",
+      "result": "passed",
+      "detail": "p95 80 ms on arm64, Graviton (limit 120)"
+    },
+    {
+      "n": 147,
+      "t": "Fri 09:16",
+      "tool": "rollouts",
+      "actor": "bot-gitops",
+      "action": "canary 10%",
+      "target": "intent-classifier v4 on eks-prod",
+      "result": "passed",
+      "detail": "p95 82 ms, errors 0.22%"
+    },
+    {
+      "n": 148,
+      "t": "Fri 09:21",
+      "tool": "rollouts",
+      "actor": "bot-gitops",
+      "action": "canary 50%",
+      "target": "intent-classifier v4 on eks-prod",
+      "result": "passed",
+      "detail": "p95 83 ms, errors 0.24%"
+    },
+    {
+      "n": 149,
+      "t": "Fri 09:23",
+      "tool": "rollouts",
+      "actor": "bot-gitops",
+      "action": "canary 100%",
+      "target": "intent-classifier v4 on eks-prod",
+      "result": "passed",
+      "detail": "p95 81 ms, errors 0.18%"
+    },
+    {
+      "n": 150,
+      "t": "Fri 09:26",
+      "tool": "argocd",
+      "actor": "lea",
+      "action": "sync",
+      "target": "intent-classifier v4 -> eks-prod",
+      "result": "ok",
+      "detail": "environments@702c33f5, sha256:9ffb964f68db"
+    },
+    {
+      "n": 151,
+      "t": "Fri 09:28",
+      "tool": "argocd",
+      "actor": "lea",
+      "action": "sync",
+      "target": "intent-classifier v4 -> aks-prod",
+      "result": "ok",
+      "detail": "environments@11b768a0, sha256:9ffb964f68db"
+    },
+    {
+      "n": 152,
+      "t": "Fri 09:31",
+      "tool": "argocd",
+      "actor": "lea",
+      "action": "sync",
+      "target": "intent-classifier v4 -> gke-prod",
+      "result": "ok",
+      "detail": "environments@7b34a836, sha256:9ffb964f68db"
+    },
+    {
+      "n": 153,
+      "t": "Fri 09:36",
+      "tool": "mlflow",
+      "actor": "lea",
+      "action": "set alias",
+      "target": "intent-classifier v4 -> champion",
+      "result": "ok",
+      "detail": ""
+    },
+    {
+      "n": 154,
+      "t": "Fri 09:40",
+      "tool": "keycloak",
+      "actor": "kai",
+      "action": "login",
+      "target": "realm factory",
+      "result": "ok",
+      "detail": "OIDC token, groups: team-risk, role-viewer"
+    },
+    {
+      "n": 155,
+      "t": "Fri 09:43",
+      "tool": "argocd",
+      "actor": "kai",
+      "action": "deploy:prod",
+      "target": "intent-classifier v4 -> prod",
+      "result": "denied",
+      "detail": "role viewer lacks deploy:prod"
+    },
+    {
+      "n": 156,
+      "t": "Fri 09:44",
+      "tool": "opentofu",
+      "actor": "tom",
+      "action": "infra:apply",
+      "target": "eks-prod",
+      "result": "denied",
+      "detail": "role developer lacks infra:apply"
+    },
+    {
+      "n": 157,
+      "t": "Fri 09:45",
+      "tool": "keycloak",
+      "actor": "ana",
+      "action": "offboard",
+      "target": "sam",
+      "result": "ok",
+      "detail": "disable account, end sessions"
+    },
+    {
+      "n": 158,
+      "t": "Fri 09:49",
+      "tool": "forgejo",
+      "actor": "ana",
+      "action": "offboard",
+      "target": "sam",
+      "result": "ok",
+      "detail": "delete SSH keys and personal tokens"
+    },
+    {
+      "n": 159,
+      "t": "Fri 09:52",
+      "tool": "harbor",
+      "actor": "ana",
+      "action": "offboard",
+      "target": "sam",
+      "result": "ok",
+      "detail": "revoke CLI secret"
+    },
+    {
+      "n": 160,
+      "t": "Fri 09:53",
+      "tool": "mlflow",
+      "actor": "ana",
+      "action": "offboard",
+      "target": "sam",
+      "result": "ok",
+      "detail": "remove experiment permissions"
+    },
+    {
+      "n": 161,
+      "t": "Fri 09:54",
+      "tool": "argocd",
+      "actor": "ana",
+      "action": "offboard",
+      "target": "sam",
+      "result": "ok",
+      "detail": "revoke API tokens"
+    },
+    {
+      "n": 162,
+      "t": "Fri 09:57",
+      "tool": "clouds",
+      "actor": "ana",
+      "action": "offboard",
+      "target": "sam",
+      "result": "ok",
+      "detail": "remove federation bindings in all three"
+    },
+    {
+      "n": 163,
+      "t": "Fri 09:59",
+      "tool": "keycloak",
+      "actor": "sam",
+      "action": "login",
+      "target": "realm factory",
+      "result": "denied",
+      "detail": "account disabled"
+    }
+  ],
+  "catalog": [
+    {
+      "id": "identity",
+      "layer": "Sign-in and access",
+      "job": "One login for every tool. Groups decide who can do what.",
+      "pick": "Keycloak",
+      "licence": "Apache-2.0",
+      "options": [
+        {
+          "name": "Keycloak",
+          "pros": "Mature OIDC and SAML, fine-grained groups, large community.",
+          "cons": "Heaviest to run. Major upgrades arrive often and need care."
+        },
+        {
+          "name": "Authentik",
+          "pros": "Friendlier admin UI. Built-in proxy for apps that have no SSO.",
+          "cons": "Smaller ecosystem. Some features are enterprise-only."
+        },
+        {
+          "name": "Dex or Authelia",
+          "pros": "Tiny footprint.",
+          "cons": "No real user management: you still need a directory behind them."
+        }
+      ],
+      "gotchas": [
+        "If the identity provider is down, nobody can log in anywhere. Run two replicas, back up its database, and keep one sealed break-glass admin account in each tool.",
+        "Disabling a user does not revoke their SSH keys, personal tokens or robot accounts inside each tool. Offboarding must be a script that visits every tool.",
+        "Many open-core tools charge for SSO or group sync. Check the free edition before adopting a tool.",
+        "Keep the realm as code (keycloak-config-cli or the OpenTofu provider) so access changes are reviewed pull requests."
+      ]
+    },
+    {
+      "id": "source",
+      "layer": "Code, reviews and packages",
+      "job": "Git hosting, pull requests, and the package registries for every language.",
+      "pick": "Forgejo",
+      "licence": "GPL-3.0-or-later",
+      "options": [
+        {
+          "name": "Forgejo (or Gitea)",
+          "pros": "One small binary. Built-in registries for Maven, PyPI, Cargo, Go, Conan, npm, containers and Helm. OIDC login.",
+          "cons": "Fewer enterprise controls. Smaller plugin ecosystem."
+        },
+        {
+          "name": "GitLab CE",
+          "pros": "Code, CI, registry and issues in one product. Very mature CI.",
+          "cons": "Wants 8 GB RAM or more. Many approval and access features sit in paid tiers."
+        }
+      ],
+      "gotchas": [
+        "Protect main on day one: one review from someone else plus green CI.",
+        "Git is the source of truth for deployments too, so mirror and back up the forge nightly.",
+        "Datasets and model files do not belong in Git. Use DVC and object storage.",
+        "Forgejo Actions reads GitHub-style workflows, but not every marketplace action works. Keep workflows thin."
+      ]
+    },
+    {
+      "id": "ci",
+      "layer": "CI runners",
+      "job": "Runs the same make targets a developer runs on a Mac, on every push.",
+      "pick": "Forgejo Actions or Woodpecker CI",
+      "licence": "GPL-3.0 / Apache-2.0",
+      "options": [
+        {
+          "name": "Forgejo Actions or Woodpecker",
+          "pros": "Simple, container-native, little to operate.",
+          "cons": "Fewer features than the big engines."
+        },
+        {
+          "name": "Jenkins",
+          "pros": "Does anything. A plugin exists for everything.",
+          "cons": "Plugin and security upkeep never ends. Groovy pipelines get hard to read."
+        },
+        {
+          "name": "Tekton or Argo Workflows",
+          "pros": "Kubernetes-native. Good for training jobs shaped like graphs.",
+          "cons": "Verbose YAML and a steep learning curve."
+        },
+        {
+          "name": "Dagger",
+          "pros": "Pipelines as code that run the same on a Mac and in CI.",
+          "cons": "One more engine to learn and host."
+        }
+      ],
+      "gotchas": [
+        "Keep pipeline YAML thin. Logic lives in the Makefile so a Mac and CI run the same commands.",
+        "Pin actions and images by commit SHA or digest, scanners included. In March 2026 hijacked Trivy action tags stole CI secrets and led to poisoned LiteLLM releases on PyPI.",
+        "A runner with the Docker socket mounted is root on its host. Use rootless BuildKit or throwaway runners.",
+        "Proxy and cache dependencies through your own registry, or builds crawl and break when the internet hiccups.",
+        "Latency tests are flaky on shared runners. Give speed gates a dedicated runner with fixed CPU."
+      ]
+    },
+    {
+      "id": "artifacts",
+      "layer": "Images, packages and signatures",
+      "job": "Stores what CI builds, scans it, signs it, and copies it next to each cluster.",
+      "pick": "Harbor plus the forge's package registries",
+      "licence": "Apache-2.0",
+      "options": [
+        {
+          "name": "Harbor",
+          "pros": "Scanning, signing policy, OIDC, and replication to ACR, Artifact Registry and ECR.",
+          "cons": "Several services plus Postgres and Redis to run."
+        },
+        {
+          "name": "Forge built-in registry only",
+          "pros": "No extra tool.",
+          "cons": "No scanning, admission policy or replication."
+        },
+        {
+          "name": "Zot",
+          "pros": "Tiny OCI-native registry.",
+          "cons": "Fewer features and a smaller community."
+        },
+        {
+          "name": "Cloud registries alone",
+          "pros": "Managed and close to the clusters.",
+          "cons": "Three places to manage, and not open source."
+        }
+      ],
+      "gotchas": [
+        "Pulling images across clouds costs money and time. Replicate to the registry beside each cluster.",
+        "Deploy by digest, never by tag. A tag can move; a digest cannot.",
+        "Harbor's login mode cannot be switched once users exist. Choose OIDC at install.",
+        "Set retention and garbage collection early or the disk fills."
+      ]
+    },
+    {
+      "id": "security",
+      "layer": "Supply-chain checks",
+      "job": "Finds leaked secrets, risky code and vulnerable dependencies before anything ships.",
+      "pick": "Gitleaks, Opengrep, Syft + Grype or Trivy, cosign, Kyverno, ZAP",
+      "licence": "MIT / LGPL / Apache-2.0",
+      "options": [
+        {
+          "name": "Trivy",
+          "pros": "One tool for images, IaC, SBOMs and secrets.",
+          "cons": "Its releases and actions were compromised in March 2026. Pin exact versions and digests."
+        },
+        {
+          "name": "Syft + Grype",
+          "pros": "Clean split: build the SBOM once, scan it many times.",
+          "cons": "Two tools instead of one."
+        },
+        {
+          "name": "SonarQube Community Build",
+          "pros": "Quality gates for many languages in one UI.",
+          "cons": "Branch and pull-request analysis is paid."
+        }
+      ],
+      "gotchas": [
+        "Scanners are software too. Pin them and verify them like any other dependency.",
+        "Block criticals that have a fix. Blocking everything stops the line daily and teaches people to bypass it.",
+        "Keep the ignore list in Git with an expiry date on every entry.",
+        "Signing without verifying is theatre. Enforce signatures at admission with Kyverno."
+      ]
+    },
+    {
+      "id": "data",
+      "layer": "Data and object storage",
+      "job": "Versions datasets so any model can be traced to the exact data that trained and tested it.",
+      "pick": "DVC on each cloud's bucket (S3, GCS, Azure Blob)",
+      "licence": "Apache-2.0",
+      "options": [
+        {
+          "name": "DVC",
+          "pros": "Feels like Git. No server. Works with any bucket.",
+          "cons": "No UI. Slow with millions of tiny files."
+        },
+        {
+          "name": "lakeFS",
+          "pros": "Branch and merge for whole data lakes, with a UI.",
+          "cons": "Another service to run."
+        },
+        {
+          "name": "Git LFS",
+          "pros": "Simplest possible.",
+          "cons": "Poor at scale, and fills the forge's disk."
+        }
+      ],
+      "gotchas": [
+        "MinIO's community edition is no longer maintained (repository archived April 2026). For self-hosted S3 use SeaweedFS, Garage or Ceph RGW.",
+        "Record the dataset hash in every training run. Without it lineage is a guess.",
+        "Golden test sets must be held out and access-controlled, or they leak into training."
+      ]
+    },
+    {
+      "id": "tracking",
+      "layer": "Experiments and model registry",
+      "job": "Remembers every training run and which model version is the champion.",
+      "pick": "MLflow",
+      "licence": "Apache-2.0",
+      "options": [
+        {
+          "name": "MLflow",
+          "pros": "The de facto standard. Tracking, registry and evaluation for any framework.",
+          "cons": "No OIDC in the open-source server. Plain UI."
+        },
+        {
+          "name": "ClearML",
+          "pros": "Tracking plus orchestration and data management.",
+          "cons": "Heavier server, some open-core parts."
+        },
+        {
+          "name": "Aim",
+          "pros": "Fast, pleasant run comparison.",
+          "cons": "No model registry."
+        }
+      ],
+      "gotchas": [
+        "Put oauth2-proxy in front of MLflow to get SSO.",
+        "Use aliases (champion, candidate). Stages are deprecated.",
+        "Pin the model version in Git for each deployment. Do not resolve an alias at runtime, or rollbacks stop being auditable.",
+        "Back up both halves: metadata in Postgres and artifacts in the bucket."
+      ]
+    },
+    {
+      "id": "evaluation",
+      "layer": "Model testing",
+      "job": "Decides with numbers, not opinions, whether a model may move down the line.",
+      "pick": "pytest golden sets, lm-evaluation-harness or Inspect, Fairlearn, Evidently, garak, k6",
+      "licence": "MIT / Apache-2.0",
+      "options": [
+        {
+          "name": "pytest plus your own golden sets",
+          "pros": "Everyone knows it. Runs the same on a Mac and in CI.",
+          "cons": "You build the metrics and reports yourself."
+        },
+        {
+          "name": "lm-evaluation-harness or Inspect AI",
+          "pros": "Standard benchmarks and agent-style evaluations.",
+          "cons": "Slow on CPU: run a small subset per commit and the full set nightly."
+        },
+        {
+          "name": "promptfoo or DeepEval",
+          "pros": "Quick prompt and RAG regression tests.",
+          "cons": "Judge-model costs. promptfoo stays MIT but has belonged to OpenAI since March 2026."
+        },
+        {
+          "name": "garak or PyRIT",
+          "pros": "Red-team probes: jailbreaks, prompt injection, data leakage.",
+          "cons": "Noisy results that need triage."
+        }
+      ],
+      "gotchas": [
+        "Models are not deterministic. Fix seeds and thread counts, and assert within a tolerance band, never equality.",
+        "Test the file you ship. Quantizing to int8 shifts accuracy, so gate the ONNX or GGUF artifact, not the training checkpoint.",
+        "On a Mac force device='cpu', or PyTorch may quietly use MPS and give different numbers from the cloud.",
+        "Thresholds live in Git and change by pull request.",
+        "Two tiers: a smoke suite under two minutes on every commit, the full suite on every candidate."
+      ]
+    },
+    {
+      "id": "serving",
+      "layer": "Model serving on CPU",
+      "job": "Turns a model file into an HTTP service that is fast enough on ordinary CPUs.",
+      "pick": "ONNX Runtime or llama.cpp in a plain container",
+      "licence": "MIT",
+      "options": [
+        {
+          "name": "Plain container (FastAPI + ONNX Runtime)",
+          "pros": "Simplest. Runs the same on Docker, kind and every cloud.",
+          "cons": "You write the batching and health checks."
+        },
+        {
+          "name": "BentoML",
+          "pros": "Python-first packaging with batching built in.",
+          "cons": "Another abstraction to learn."
+        },
+        {
+          "name": "KServe",
+          "pros": "Canary, scale to zero, standard inference protocol.",
+          "cons": "More moving parts than small CPU models need."
+        }
+      ],
+      "gotchas": [
+        "Seldon Core moved to a BSL licence in 2024 and is no longer open source.",
+        "Kubernetes CPU limits throttle and wreck p95 latency. Set requests equal to limits and match OMP_NUM_THREADS to the request.",
+        "Chips differ per cloud (AVX-512 or AMX on x86, NEON on arm64). Measure latency on each cloud, not once.",
+        "Small models can ship inside the image, so one digest rolls back code and model together."
+      ]
+    },
+    {
+      "id": "infra",
+      "layer": "Infrastructure as code",
+      "job": "Creates the clusters, networks, buckets and identities on each cloud.",
+      "pick": "OpenTofu",
+      "licence": "MPL-2.0",
+      "options": [
+        {
+          "name": "OpenTofu",
+          "pros": "Open source. Drop-in for Terraform code and providers. State encryption built in.",
+          "cons": "The very newest Terraform features can differ."
+        },
+        {
+          "name": "Terraform",
+          "pros": "Largest ecosystem and documentation.",
+          "cons": "BSL licence, so not open source."
+        },
+        {
+          "name": "Pulumi",
+          "pros": "Real programming languages.",
+          "cons": "A different model plus a state service."
+        },
+        {
+          "name": "Crossplane",
+          "pros": "Kubernetes-native control plane.",
+          "cons": "Steep, and needs a cluster before it can build one."
+        }
+      ],
+      "gotchas": [
+        "Remote state with locking, one state per cloud per environment. Never local state.",
+        "OpenTofu builds the cluster and installs Argo CD, then stops. Do not manage in-cluster apps with it.",
+        "There is no real rollback: you revert and apply. Guard stateful resources with prevent_destroy and backups.",
+        "Pin provider versions and commit the lock file.",
+        "Keep Kubernetes minor versions aligned across AKS, GKE and EKS."
+      ]
+    },
+    {
+      "id": "config",
+      "layer": "Machines, scripts and cloud CLIs",
+      "job": "Sets up Macs, runners and the Docker host, and hides three cloud CLIs behind one command.",
+      "pick": "Ansible, shell, and az / gcloud / aws behind factoryctl",
+      "licence": "GPL-3.0",
+      "options": [
+        {
+          "name": "Ansible",
+          "pros": "Agentless and readable. Good for Macs, runners and VMs.",
+          "cons": "Slow across many hosts. Logic in YAML gets ugly."
+        },
+        {
+          "name": "Shell scripts",
+          "pros": "No dependencies.",
+          "cons": "Hard to keep idempotent. Use set -euo pipefail and shellcheck."
+        },
+        {
+          "name": "Packer images",
+          "pros": "Immutable and fast to boot.",
+          "cons": "Every change means a rebuild."
+        }
+      ],
+      "gotchas": [
+        "Ansible is not for deploying apps to Kubernetes. That is GitOps' job.",
+        "kubectl login differs per cloud: AKS needs kubelogin, GKE needs gke-gcloud-auth-plugin, EKS uses aws eks get-token. Wrap all three.",
+        "Pin CLI versions with a Brewfile and mise so every Mac and runner matches."
+      ]
+    },
+    {
+      "id": "delivery",
+      "layer": "GitOps and safe rollout",
+      "job": "Makes each cluster match what Git says, and rolls back when numbers go bad.",
+      "pick": "Argo CD and Argo Rollouts, Helm + Kustomize",
+      "licence": "Apache-2.0",
+      "options": [
+        {
+          "name": "Argo CD",
+          "pros": "Clear UI, SSO, roles by group.",
+          "cons": "A central hub needs network paths and credentials into every cluster."
+        },
+        {
+          "name": "Flux",
+          "pros": "Pull-only and light. No inbound access needed.",
+          "cons": "Minimal UI."
+        },
+        {
+          "name": "helm upgrade from CI",
+          "pros": "Simplest.",
+          "cons": "No drift detection, and CI holds cluster credentials."
+        }
+      ],
+      "gotchas": [
+        "With auto-sync on, 'argocd app rollback' is refused. Roll back with git revert.",
+        "One Argo CD per cluster, pulling from Git, avoids a hub that holds the keys to every cloud.",
+        "ingress-nginx was retired in March 2026. Use a Gateway API implementation such as Envoy Gateway, Traefik or Cilium.",
+        "Bitnami stopped publishing free versioned images and charts in August 2025. Use upstream charts and operators such as CloudNativePG."
+      ]
+    },
+    {
+      "id": "secrets",
+      "layer": "Secrets",
+      "job": "Keeps passwords and keys out of Git and out of CI variables.",
+      "pick": "External Secrets Operator with each cloud's secret manager; SOPS + age for Git",
+      "licence": "Apache-2.0 / MPL-2.0",
+      "options": [
+        {
+          "name": "External Secrets + cloud secret managers",
+          "pros": "No vault to run. Uses workload identity.",
+          "cons": "Three backends to understand."
+        },
+        {
+          "name": "SOPS + age",
+          "pros": "Encrypted secrets in Git. Very simple.",
+          "cons": "You distribute keys by hand. No rotation or audit trail."
+        },
+        {
+          "name": "OpenBao",
+          "pros": "Open-source fork of Vault: dynamic secrets and auditing.",
+          "cons": "One more highly-available service."
+        }
+      ],
+      "gotchas": [
+        "CI reaches each cloud through workload identity. Store no long-lived cloud keys.",
+        "Workload identity comes in three flavours (AKS Workload Identity, GKE Workload Identity Federation, EKS Pod Identity). Hide them behind module outputs.",
+        "HashiCorp Vault is BSL-licensed. OpenBao is the open-source line."
+      ]
+    },
+    {
+      "id": "observability",
+      "layer": "Metrics, logs and drift",
+      "job": "Shows whether services and models are healthy, and wakes someone when they are not.",
+      "pick": "Prometheus, Grafana, Loki, OpenTelemetry, Evidently",
+      "licence": "Apache-2.0 / AGPL-3.0",
+      "options": [
+        {
+          "name": "Prometheus + Grafana + Loki",
+          "pros": "The standard. Dashboards exist for everything.",
+          "cons": "Grafana and Loki are AGPL: fine to use, relevant if you modify and resell."
+        },
+        {
+          "name": "VictoriaMetrics",
+          "pros": "Lighter, with cheaper long-term storage.",
+          "cons": "Smaller community."
+        },
+        {
+          "name": "SigNoz",
+          "pros": "Metrics, logs and traces in one product.",
+          "cons": "Younger project."
+        }
+      ],
+      "gotchas": [
+        "Grafana OSS maps roles from OIDC claims, but team sync is an enterprise feature.",
+        "Run one metrics stack per cluster and remote-write to the hub. Never scrape across clouds.",
+        "Model quality and drift are production metrics. Alert on them exactly like error rates."
+      ]
+    },
+    {
+      "id": "knowledge",
+      "layer": "Portal, docs and chat",
+      "job": "Lets one team find, understand and reuse what another team built.",
+      "pick": "A static portal first, MkDocs + ADRs in Git, Zulip",
+      "licence": "Apache-2.0",
+      "options": [
+        {
+          "name": "Static portal (like this one)",
+          "pros": "Hours to set up and nothing to patch.",
+          "cons": "No templates or scorecards engine."
+        },
+        {
+          "name": "Backstage",
+          "pros": "Catalog, templates, docs and plugins.",
+          "cons": "It is a framework you build and upgrade, so it needs a TypeScript owner. Worth it past roughly 50 services."
+        },
+        {
+          "name": "Wiki.js or BookStack",
+          "pros": "Friendly editing for everyone.",
+          "cons": "Docs drift away from the code."
+        }
+      ],
+      "gotchas": [
+        "Mattermost's free edition has no generic OIDC login. Zulip does.",
+        "Keep docs beside the code, or they rot.",
+        "Put an owner file in every repo from day one."
+      ]
+    },
+    {
+      "id": "localdev",
+      "layer": "Local development on macOS",
+      "job": "Gives every developer the same tools and a small copy of the platform on a laptop.",
+      "pick": "Brewfile, mise, Colima, kind, devcontainers, pre-commit",
+      "licence": "MIT / Apache-2.0",
+      "options": [
+        {
+          "name": "Colima",
+          "pros": "Free, light, command-line.",
+          "cons": "No GUI."
+        },
+        {
+          "name": "Podman Desktop or Rancher Desktop",
+          "pros": "GUI, with Kubernetes built in.",
+          "cons": "Occasional compatibility quirks."
+        },
+        {
+          "name": "Docker Desktop",
+          "pros": "Smoothest experience.",
+          "cons": "Paid licence for larger companies, and not open source."
+        }
+      ],
+      "gotchas": [
+        "Apple Silicon is arm64 and most cloud nodes are amd64. Build multi-arch images; emulating amd64 on a Mac is slow.",
+        "arm64 cloud nodes (Graviton, Cobalt, Axion) match the Mac and cost less. Worth a staging pool.",
+        "kind is not a cloud: no real load balancers, storage classes or IAM. Staging on real clusters stays mandatory."
+      ]
+    }
+  ]
+}

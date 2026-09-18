@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Factory floor: AI model testing factory, simulated</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Tokens. Machine-enamel green, shop-floor grey, hazard yellow for the one thing that matters: where you are on the line. */
+:root{
+  --floor:#E4E9E5; --panel:#F6F8F6; --ink:#15221E; --steel:#55655F; --rule:#C3CDC7;
+  --enamel:#1F5A4B; --on-enamel:#F6F8F6; --hazard:#F2B824; --on-hazard:#15221E; --stop:#B5382A;
+  --good-bg:#D5E8DD; --bad-bg:#F2D9D4; --warn-bg:#FAEBBB; --plain-bg:#DDE3DF;
+  --body:"Barlow","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --cond:"Barlow Condensed","Avenir Next Condensed","Arial Narrow",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --pad:clamp(1rem,4vw,2.5rem);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --floor:#0F1714; --panel:#17211D; --ink:#E2EAE5; --steel:#9AABA5; --rule:#2B3A34;
+    --enamel:#7DC8AB; --on-enamel:#0F1714; --stop:#EE8272;
+    --good-bg:#1C3A2E; --bad-bg:#47221C; --warn-bg:#43381A; --plain-bg:#25322D;
+  }
+}
+:root[data-theme="dark"]{
+  --floor:#0F1714; --panel:#17211D; --ink:#E2EAE5; --steel:#9AABA5; --rule:#2B3A34;
+  --enamel:#7DC8AB; --on-enamel:#0F1714; --stop:#EE8272;
+  --good-bg:#1C3A2E; --bad-bg:#47221C; --warn-bg:#43381A; --plain-bg:#25322D;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--floor);color:var(--ink);font:400 1rem/1.55 var(--body);-webkit-text-size-adjust:100%}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--hazard);outline-offset:2px}
+code,pre,.mono{font-family:var(--mono);font-size:.84em}
+pre{margin:.5rem 0 0;padding:.7rem .8rem;background:var(--plain-bg);border-radius:3px;overflow-x:auto;white-space:pre}
+.muted{color:var(--steel)}
+
+/* Header */
+.bar{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;align-items:center;justify-content:space-between;padding:.7rem var(--pad);background:var(--enamel);color:var(--on-enamel)}
+.bar .title{font:700 1.55rem/1 var(--cond);letter-spacing:.01em}
+.bar .sub{display:block;font:400 .82rem/1.3 var(--body);opacity:.85;margin-top:.15rem}
+.who{display:flex;align-items:center;gap:.5rem;font-size:.88rem}
+.who select{font:500 .9rem var(--body);padding:.3rem .4rem;border-radius:3px;border:0;background:var(--panel);color:var(--ink);max-width:14rem}
+
+/* The line: the signature element. Stations are the navigation, the belt runs underneath. */
+.line{display:flex;overflow-x:auto;background:var(--panel);scroll-snap-type:x proximity;scrollbar-width:thin}
+.station{flex:0 0 9.6rem;scroll-snap-align:start;padding:.7rem .9rem .8rem;text-decoration:none;border-right:1px solid var(--rule)}
+.station .n{display:block;font:700 1.6rem/1 var(--cond);color:var(--steel)}
+.station .name{display:block;font:600 1.18rem/1.15 var(--cond);margin-top:.1rem}
+.station .tool{display:block;font-size:.78rem;color:var(--steel);line-height:1.3}
+.station .stat{display:block;font-size:.8rem;line-height:1.3;margin-top:.45rem}
+.station:hover{background:var(--plain-bg)}
+.station[aria-current="page"]{background:var(--hazard);color:var(--on-hazard)}
+.station[aria-current="page"] .n,.station[aria-current="page"] .tool{color:var(--on-hazard)}
+.lamp{display:inline-block;width:.6rem;height:.6rem;border-radius:50%;background:var(--enamel);margin-right:.35rem;outline:1px solid var(--panel)}
+.lamp.warn{background:var(--hazard);outline-color:var(--on-hazard)}
+.station[aria-current="page"] .lamp{background:var(--on-hazard)}
+.belt{height:10px;background:repeating-linear-gradient(-45deg,var(--hazard) 0 12px,#15221E 12px 24px);background-size:34px 10px}
+@media (prefers-reduced-motion:no-preference){.belt{animation:belt 1.4s linear 2}}
+@keyframes belt{to{background-position:68px 0}}
+@media (min-width:78rem){.line{display:grid;grid-template-columns:repeat(8,1fr)}.station:last-child{border-right:0}}
+
+.services{display:flex;flex-wrap:wrap;gap:.2rem 1.2rem;padding:.6rem var(--pad);border-bottom:1px solid var(--rule);font-size:.92rem}
+.services a{text-decoration:none;padding:.45rem 0;border-bottom:3px solid transparent}
+.services a:hover{border-bottom-color:var(--rule)}
+.services a[aria-current="page"]{border-bottom-color:var(--hazard);font-weight:600}
+
+/* Views */
+main{max-width:76rem;margin:0 auto;padding:1.4rem var(--pad) 4rem}
+h1{font:700 clamp(1.9rem,5.5vw,2.7rem)/1.05 var(--cond);margin:.3rem 0 .5rem}
+h2{font:600 1.4rem/1.2 var(--cond);margin:2.2rem 0 .5rem;padding-top:1rem;border-top:1px solid var(--rule)}
+h3{font:600 1.05rem/1.3 var(--body);margin:1.2rem 0 .3rem}
+p{margin:.4rem 0;max-width:68ch}
+.lede{font-size:1.08rem}
+.sim{font-size:.88rem;color:var(--steel)}
+.scroll{overflow-x:auto;margin:.4rem 0}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+.wide table{min-width:44rem}
+th{font-weight:600;color:var(--steel);text-align:left;white-space:nowrap}
+th,td{padding:.42rem .9rem .42rem 0;vertical-align:top;border-bottom:1px solid var(--rule)}
+td small{display:block;color:var(--steel);line-height:1.35}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;padding:0 .45rem;border-radius:3px;font-size:.8rem;font-weight:500;line-height:1.5;background:var(--plain-bg);white-space:nowrap}
+.pill.good{background:var(--good-bg)} .pill.bad{background:var(--bad-bg)} .pill.warn{background:var(--warn-bg)}
+td.pass{background:var(--good-bg)} td.fail{background:var(--bad-bg);font-weight:600}
+td.pass,td.fail{padding-left:.5rem}
+.figures{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:.8rem 2rem;margin:1rem 0}
+.figures b{display:block;font:700 2rem/1.05 var(--cond)}
+.figures span{font-size:.86rem;color:var(--steel)}
+.plan{margin:.6rem 0}
+.plan div{display:grid;grid-template-columns:8.5rem 1fr;gap:.2rem 1rem;padding:.5rem 0;border-bottom:1px solid var(--rule)}
+.plan dt{font:600 1.08rem/1.3 var(--cond)} .plan dd{margin:0}
+@media (max-width:34rem){.plan div{grid-template-columns:1fr}}
+ul.feed{list-style:none;padding:0;margin:.4rem 0}
+ul.feed li{padding:.45rem 0;border-bottom:1px solid var(--rule);max-width:80ch}
+ul.feed .when{color:var(--steel);font-size:.84rem;margin-right:.5rem;white-space:nowrap}
+details{border-bottom:1px solid var(--rule);padding:.5rem 0}
+summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:.3rem .7rem;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+";font:700 1.1rem/1 var(--cond);width:.8rem;color:var(--steel)}
+details[open]>summary::before{content:"\2212"}
+.beads{display:inline-flex;gap:3px}
+.bead{width:.75rem;height:.75rem;border-radius:2px;background:var(--enamel)}
+.bead.failed{background:var(--stop)} .bead.flaky{background:var(--hazard)} .bead.skipped{background:transparent;outline:1px solid var(--steel);outline-offset:-1px}
+.steps{margin:.5rem 0 .3rem 1.5rem;font-size:.88rem}
+.steps li{margin:.25rem 0}
+.actions{display:flex;flex-wrap:wrap;gap:.6rem;margin:1rem 0}
+.act{font:600 .93rem var(--body);padding:.55rem .9rem;border:0;border-radius:3px;background:var(--enamel);color:var(--on-enamel);cursor:pointer;text-align:left}
+.act[data-allowed="false"]{background:transparent;color:var(--ink);outline:1px solid var(--steel);outline-offset:-1px}
+.act small{display:block;font-weight:400;opacity:.85}
+.filters{display:flex;flex-wrap:wrap;gap:.5rem 1rem;margin:.8rem 0;font-size:.9rem}
+.filters select{font:inherit;padding:.25rem .4rem;border-radius:3px;border:1px solid var(--steel);background:var(--panel);color:var(--ink)}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,21rem),1fr));gap:1rem 2rem}
+.charts figure{margin:0} .charts figcaption{font-size:.88rem;font-weight:600}
+svg.chart{width:100%;height:auto;display:block}
+.ch-line{fill:none;stroke:var(--enamel);stroke-width:2;stroke-linejoin:round}
+.ch-limit{stroke:var(--stop);stroke-dasharray:5 4}
+.ch-mark{stroke:var(--steel);stroke-dasharray:2 3}
+.ch-text{fill:var(--steel);font:11px var(--body)}
+.opt h3{margin-top:.8rem}
+.opt ul{margin:.3rem 0;padding-left:1.2rem;max-width:80ch} .opt li{margin:.3rem 0}
+dialog{border:0;border-radius:4px;padding:1.2rem 1.3rem;max-width:min(38rem,92vw);background:var(--panel);color:var(--ink);border-top:8px solid var(--enamel)}
+dialog.denied{border-top-color:var(--stop)}
+dialog::backdrop{background:rgba(10,18,15,.55)}
+dialog h2{border:0;margin:0 0 .4rem;padding:0}
+dialog form{margin-top:1rem;text-align:right}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div><span class="title">Factory floor</span><span class="sub">AI model testing factory, simulated. CPU only, small models.</span></div>
+  <label class="who">Signed in as <select id="who" aria-label="Signed-in user"></select></label>
+</header>
+<nav class="line" id="line" aria-label="The line, in order"></nav>
+<div class="belt" aria-hidden="true"></div>
+<nav class="services" id="services" aria-label="Shared services"></nav>
+<main id="view" tabindex="-1"></main>
+<dialog id="dlg" aria-labelledby="dlg-title"><h2 id="dlg-title"></h2><div id="dlg-body"></div><form method="dialog"><button class="act">Close</button></form></dialog>
+
+<script id="factory-data" type="application/json">__FACTORY_DATA__</script>
+<script>
+(function () {
+  'use strict';
+  var view = document.getElementById('view');
+  var raw = document.getElementById('factory-data').textContent.trim();
+  if (!raw || raw.indexOf('__FACTORY') === 0) {
+    view.innerHTML = '<h1>No factory data yet</h1><p class="lede">This is the empty template. Run <code>python3 factory_sim.py run</code>, then open <code>site/index.html</code>.</p>';
+    return;
+  }
+  var D = JSON.parse(raw);
+  var state = { user: 'lea', auditTool: '', auditResult: '' };
+
+  var STATIONS = [
+    ['code', 'Code', 'Forgejo'], ['build', 'Build and test', 'CI runners'], ['scan', 'Scan and sign', 'Harbor, Grype, cosign'],
+    ['train', 'Train', 'DVC, MLflow'], ['evaluate', 'Evaluate', 'Gates kept in Git'], ['register', 'Register', 'MLflow registry'],
+    ['deploy', 'Deploy', 'Argo CD, Rollouts'], ['observe', 'Observe', 'Prometheus, Grafana']
+  ];
+  var SERVICES = [['floor', 'Floor plan'], ['access', 'Sign-in and access'], ['infra', 'Infrastructure'],
+                  ['share', 'Shared knowledge'], ['audit', 'Audit trail'], ['options', 'Tool options']];
+  var PLAN = [
+    ['People', 'Developers on macOS with a Brewfile, mise, Colima, kind and devcontainers. The same make targets run on the laptop and in CI.'],
+    ['Sign-in', 'Keycloak. One login, one token, and the groups inside it become roles in every tool below.'],
+    ['Share', 'This portal, MkDocs and decision records in Git, Zulip for chat. Every repo names its owner.'],
+    ['The line', 'Forgejo, CI runners, Harbor with scanners and signing, DVC and MLflow, evaluation gates, Argo CD with Rollouts.'],
+    ['Targets', 'mac-kind, docker-dev, then staging and prod on AKS, GKE and EKS. Same manifests everywhere.'],
+    ['Foundations', 'OpenTofu per cloud, Ansible for Macs and hosts, factoryctl over az, gcloud and aws, External Secrets.'],
+    ['Watch', 'Prometheus, Grafana, Loki, OpenTelemetry, Evidently for drift, and one audit trail across all tools.']
+  ];
+  var ACTIONS = {
+    merge: { perm: 'pr:merge', label: 'Merge a pull request', cmds: ['factoryctl pr merge inference-engine 1', '# Forgejo checks branch protection first: one approval from someone else, and green CI'] },
+    train: { perm: 'model:train', label: 'Start a training run', cmds: ['make train DATA=support-tickets:1.2', '# runs as a Kubernetes Job on 8 vCPU and logs params, metrics and the ONNX file to MLflow'] },
+    champion: { perm: 'model:promote', label: 'Promote a candidate to champion', cmds: ['factoryctl model promote ' + D.meta.model + ' ' + D.champion, '# sets the MLflow alias, then opens a pull request that pins the version in environments/prod'] },
+    prod: { perm: 'deploy:prod', label: 'Promote to production', cmds: ['factoryctl promote ' + D.meta.model + ' ' + D.champion + ' --env prod', '# opens a pull request against environments/prod; after merge Argo Rollouts runs the 10, 50, 100 percent canary'] },
+    rollback: { perm: 'deploy:prod', label: 'Roll back production', cmds: ['factoryctl rollback ' + D.meta.model + ' --env prod', '# = git revert <environments commit> && git push; Argo CD syncs the previous digest within a minute'] },
+    apply: { perm: 'infra:apply', label: 'Apply an infrastructure change', cmds: ['tofu -chdir=infra/live/aws/staging plan -out plan.bin', 'tofu -chdir=infra/live/aws/staging apply plan.bin'] },
+    offboard: { perm: 'access:manage', label: 'Offboard a user', cmds: ['factoryctl offboard sam', '# disables the Keycloak account, then removes SSH keys, tokens, robot secrets and cloud bindings in every tool'] }
+  };
+
+  // ---------- helpers ----------
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  var GOOD = ['ok', 'passed', 'pushed', 'merged', 'Healthy', 'Synced', 'promoted', 'ready', 'champion', 'candidate', 'resolved', 'active', 'deploy', 'accepted'];
+  var BAD = ['failed', 'denied', 'blocked', 'aborted', 'rejected', 'disabled', 'critical'];
+  var WARN = ['flaky', 'warning', 'rolled back', 'rollback', 'open alert'];
+  function pill(s, label) { var c = GOOD.indexOf(s) >= 0 ? 'good' : BAD.indexOf(s) >= 0 ? 'bad' : WARN.indexOf(s) >= 0 ? 'warn' : ''; return '<span class="pill ' + c + '">' + esc(label || s) + '</span>'; }
+  function table(cols, rows, wide) {
+    if (!rows.length) return '<p class="muted">Nothing here yet.</p>';
+    return '<div class="scroll' + (wide ? ' wide' : '') + '"><table><thead><tr>' + cols.map(function (c) { return '<th>' + esc(c.h) + '</th>'; }).join('') +
+      '</tr></thead><tbody>' + rows.map(function (r) {
+        return '<tr>' + cols.map(function (c) { var cls = typeof c.cls === 'function' ? c.cls(r) : c.cls; return '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + (c.f ? c.f(r) : esc(r[c.k])) + '</td>'; }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+  function me() { return D.users.filter(function (u) { return u.id === state.user; })[0]; }
+  function can(perm) { var u = me(); if (!u.active) return false; var p = D.roles[u.role].perms; return p.indexOf('*') >= 0 || p.indexOf(perm) >= 0; }
+  function actions(ids) {
+    return '<div class="actions">' + ids.map(function (id) {
+      var a = ACTIONS[id], ok = can(a.perm);
+      return '<button class="act" data-act="' + id + '" data-allowed="' + ok + '">' + esc(a.label) + '<small>' + (ok ? 'allowed for ' + esc(me().role) : 'needs ' + esc(a.perm)) + '</small></button>';
+    }).join('') + '</div>';
+  }
+  function head(title, lede, ids) {
+    return '<h1>' + esc(title) + '</h1><p class="lede">' + esc(lede) + '</p>' + (ids || []).map(function (id) {
+      var c = D.catalog.filter(function (x) { return x.id === id; })[0];
+      return '<p class="sim">' + esc(c.layer) + ': standing in for <strong>' + esc(c.pick) + '</strong>. Alternatives: ' +
+        esc(c.options.slice(1).map(function (o) { return o.name; }).join(', ')) + '. <a href="#options">Compare options</a></p>';
+    }).join('');
+  }
+  function chart(values, limit, marks) {
+    var W = 480, H = 142, L = 30, R = 8, T = 30, B = 16;
+    var lo = Math.min.apply(null, values.concat([limit])) * 0.85, hi = Math.max.apply(null, values.concat([limit])) * 1.08;
+    function x(i) { return L + i * (W - L - R) / (values.length - 1); }
+    function y(v) { return T + (hi - v) * (H - T - B) / (hi - lo); }
+    var pts = values.map(function (v, i) { return x(i).toFixed(1) + ',' + y(v).toFixed(1); }).join(' ');
+    var out = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Line chart. Latest value ' + values[values.length - 1] + ', limit ' + limit + '.">';
+    out += '<line class="ch-limit" x1="' + L + '" x2="' + (W - R) + '" y1="' + y(limit) + '" y2="' + y(limit) + '"/>';
+    out += '<text class="ch-text" x="' + (W - R) + '" y="' + (y(limit) - 4) + '" text-anchor="end">limit ' + limit + '</text>';
+    (marks || []).forEach(function (m, k) {
+      out += '<line class="ch-mark" x1="' + x(m.i) + '" x2="' + x(m.i) + '" y1="' + (14 + (k % 2) * 12) + '" y2="' + (H - B) + '"/>';
+      out += '<text class="ch-text" x="' + (x(m.i) + 3) + '" y="' + (11 + (k % 2) * 12) + '">' + esc(m.label) + '</text>';
+    });
+    out += '<polyline class="ch-line" points="' + pts + '"/>';
+    out += '<text class="ch-text" x="0" y="' + (y(hi) + 10) + '">' + Math.round(hi * 100) / 100 + '</text><text class="ch-text" x="0" y="' + (H - B) + '">' + Math.round(lo * 100) / 100 + '</text>';
+    return out + '</svg>';
+  }
+  function liveMatrix(apps) {
+    var cols = [{ h: 'Runs where', f: function (a) { return '<strong>' + esc(a) + '</strong>'; } }].concat(D.targets.map(function (t) {
+      return { h: t.id, cls: 'num', f: function (a) { var x = D.live[t.id][a]; return x ? esc(x.version) : '<span class="muted">none</span>'; } };
+    }));
+    return table(cols, apps, true);
+  }
+  function allApps() { var seen = {}; D.targets.forEach(function (t) { Object.keys(D.live[t.id]).forEach(function (a) { seen[a] = 1; }); }); return Object.keys(seen); }
+
+  // ---------- views ----------
+  var views = {
+    floor: function () {
+      var d = D.dora, m = D.meta;
+      return head('One week on the factory floor', m.events + ' recorded events from ' + m.start + ' to ' + m.end + ': six repos in six languages, four versions of one small CPU model, eight deployment targets, one sign-in. Pick a station on the line to see what its tool did.') +
+        '<div class="figures"><div><b>' + d.prod_changes + '</b><span>production changes attempted</span></div><div><b>' + d.lead_hours + ' h</b><span>average time from first commit to production</span></div>' +
+        '<div><b>' + d.failure_rate + '%</b><span>of production changes failed</span></div><div><b>' + d.restore_minutes + ' min</b><span>to restore service, with no human involved</span></div></div>' +
+        '<h2>What is running where</h2><p>Versions per target, read from the environments repo. Production runs the same digests that passed staging.</p>' + liveMatrix(allApps()) +
+        '<h2>How the floor is laid out</h2><dl class="plan">' + PLAN.map(function (p) { return '<div><dt>' + esc(p[0]) + '</dt><dd>' + esc(p[1]) + '</dd></div>'; }).join('') + '</dl>' +
+        '<h2>What happened this week</h2><ul class="feed">' + D.chat.map(function (c) { return '<li><span class="when">' + esc(c.t) + ' ' + esc(c.channel) + '</span>' + esc(c.text) + '</li>'; }).join('') + '</ul>';
+    },
+    code: function () {
+      var prs = [], commits = [];
+      D.repos.forEach(function (r) { prs = prs.concat(r.prs); r.commits.forEach(function (c) { commits.push({ repo: r.name, c: c }); }); });
+      return head('Code', 'Every change starts as a branch and a pull request. Main is protected: one approval from someone else, and green CI.', ['source']) + actions(['merge']) +
+        '<h2>Repositories</h2>' + table([
+          { h: 'Repository', f: function (r) { return '<strong>' + esc(r.name) + '</strong><small>' + esc(r.about) + '</small>'; } },
+          { h: 'Language', f: function (r) { return esc(D.toolchains[r.lang].label); } }, { h: 'Team', k: 'team' }, { h: 'Kind', k: 'kind' },
+          { h: 'Latest tag', cls: 'num', f: function (r) { return esc(r.tags[r.tags.length - 1].name); } },
+          { h: 'Commits', cls: 'num', f: function (r) { return r.commits.length; } }], D.repos, true) +
+        '<h2>Pull requests</h2>' + table([
+          { h: 'Pull request', f: function (p) { return '<strong>' + esc(p.repo) + ' #' + p.id + '</strong><small>' + esc(p.title) + '</small>'; } },
+          { h: 'Author', k: 'author' }, { h: 'Approved by', f: function (p) { return esc(p.approvals.join(', ')); } },
+          { h: 'CI', f: function (p) { return pill(p.ci); } }, { h: 'State', f: function (p) { return pill(p.status); } }], prs, true) +
+        '<h2>Commits</h2>' + table([{ h: 'When', cls: 'num', f: function (x) { return esc(x.c.t); } }, { h: 'Repository', k: 'repo' },
+          { h: 'Commit', f: function (x) { return '<span class="mono">' + esc(x.c.sha) + '</span> ' + esc(x.c.message) + '<small>' + esc(x.c.author) + ' on ' + esc(x.c.branch) + '</small>'; } }], commits, true);
+    },
+    build: function () {
+      var langs = Object.keys(D.toolchains).map(function (k) { return D.toolchains[k]; });
+      return head('Build and test', 'Every repo offers the same make targets: setup, lint, test, build. CI only calls make, so a Mac and the runner behave the same. Shared checks for secrets and risky code run on every push.', ['ci']) +
+        '<h2>Toolchains</h2>' + table([
+          { h: 'Language', f: function (t) { return '<strong>' + esc(t.label) + '</strong><small class="mono">' + esc(t.image) + '</small>'; } },
+          { h: 'Build and test tools', k: 'tools' }, { h: 'Packages go to', f: function (t) { return esc(t.pkg) + ' registry'; } }, { h: 'Gotcha', k: 'gotcha' }], langs, true) +
+        '<h2>Pipelines</h2><p>Each square is one step. Open a pipeline to see the exact commands.</p>' + D.pipelines.map(function (p) {
+          return '<details><summary><strong>' + esc(p.repo) + '</strong><span class="mono">' + esc(p.sha) + '</span><span class="muted">' + esc(p.branch) + ', ' + esc(p.t) + '</span>' + pill(p.status) +
+            '<span class="beads">' + p.steps.map(function (s) { return '<span class="bead ' + esc(s.status) + '" title="' + esc(s.name + ': ' + s.status) + '"></span>'; }).join('') + '</span></summary>' +
+            '<ol class="steps">' + p.steps.map(function (s) { return '<li><strong>' + esc(s.name) + '</strong> ' + pill(s.status) + ' <span class="muted">' + s.secs + ' s</span><br><code>' + esc(s.cmd) + '</code>' + (s.note ? '<br>' + esc(s.note) : '') + '</li>'; }).join('') +
+            '</ol><p class="muted">Runs in ' + esc(p.image) + '. Coverage ' + p.coverage + '%.</p></details>';
+        }).join('');
+    },
+    scan: function () {
+      return head('Scan and sign', 'An image leaves CI only with a parts list (SBOM), a clean scan and a signature. Clusters refuse anything unsigned. Policy: block critical vulnerabilities that have a fix.', ['artifacts', 'security']) +
+        '<h2>Images</h2>' + table([
+          { h: 'Image', f: function (i) { return '<strong>' + esc(i.repo) + ':' + esc(i.tag) + '</strong><small class="mono">' + esc(i.digest) + '</small>'; } },
+          { h: 'Built for', k: 'arch' }, { h: 'Critical', cls: 'num', f: function (i) { return i.vulns.critical; } }, { h: 'High', cls: 'num', f: function (i) { return i.vulns.high; } },
+          { h: 'Signed', f: function (i) { return i.signed ? 'yes' : 'no'; } }, { h: 'Result', f: function (i) { return pill(i.status); } }, { h: 'Copied to', k: 'replicated' }], D.images, true) +
+        '<h2>Packages</h2><p>Published to the forge\'s built-in registries, one per language.</p>' + table([{ h: 'Package', k: 'name' }, { h: 'Registry', k: 'type' }, { h: 'Version', k: 'version', cls: 'num' }, { h: 'When', k: 't', cls: 'num' }], D.packages);
+    },
+    train: function () {
+      return head('Train', 'Small models, trained on CPU as ordinary Kubernetes Jobs. Every run records the code commit, the dataset hash and the settings, so any model can be rebuilt.', ['data', 'tracking']) + actions(['train']) +
+        '<h2>Dataset versions</h2>' + table([{ h: 'Dataset', f: function (d) { return '<strong>' + esc(d.name) + ':' + esc(d.version) + '</strong><small>' + esc(d.note) + '</small>'; } },
+          { h: 'Rows', cls: 'num', f: function (d) { return d.rows.toLocaleString('en'); } }, { h: 'Hash', f: function (d) { return '<span class="mono">' + esc(d.hash) + '</span>'; } }, { h: 'Pushed by', k: 'by' }], D.datasets, true) +
+        '<h2>Training runs</h2>' + table([
+          { h: 'Run', f: function (r) { return '<strong>' + esc(r.tag) + '</strong> <span class="mono">' + esc(r.run_id) + '</span><small>' + esc(r.why) + '</small>'; } },
+          { h: 'Recipe', f: function (r) { return esc(r.params.base) + '<small>' + r.params.epochs + ' epochs, lr ' + esc(r.params.lr) + ', ' + esc(r.params.export) + '</small>'; } },
+          { h: 'Data and code', f: function (r) { return esc(r.dataset) + '<small class="mono">git ' + esc(r.git) + '</small>'; } },
+          { h: 'F1', cls: 'num', f: function (r) { return r.metrics.f1_macro.toFixed(3); } }, { h: 'Size', cls: 'num', f: function (r) { return r.size_mb + ' MB'; } },
+          { h: 'Time', cls: 'num', f: function (r) { return r.minutes + ' min'; } }, { h: 'By', k: 'by' }], D.runs, true);
+    },
+    evaluate: function () {
+      var cols = [{ h: 'Gate', f: function (g) { return '<strong>' + esc(g.suite) + '</strong><small>' + esc(g.why) + '</small><small>' + esc(g.tool) + '</small>'; } },
+        { h: 'Must be', cls: 'num', f: function (g) { return esc(g.op) + ' ' + g.limit; } }].concat(D.versions.map(function (v) {
+        function cell(g) { return v.gates.filter(function (x) { return x.suite === g.suite; })[0]; }
+        return { h: v.version, cls: function (g) { return 'num ' + (cell(g).passed ? 'pass' : 'fail'); }, f: function (g) { return cell(g).value; } };
+      }));
+      return head('Evaluate', 'A model moves on only if it passes every gate. The limits live in Git and change by pull request. The gates test the int8 ONNX file that ships, not the training checkpoint.', ['evaluation']) +
+        '<h2>Gate results by model version</h2>' + table(cols, D.gates, true) +
+        '<h2>Outcome</h2>' + table([{ h: 'Version', f: function (v) { return '<strong>' + esc(v.version) + '</strong>'; } }, { h: 'Status', f: function (v) { return pill(v.status); } }, { h: 'Why', f: function (v) { return esc(v.note || 'Passed every gate and the production canary.'); } }], D.versions) +
+        '<h2>Speed on each cloud\'s chips</h2><p>The same model is faster or slower on different CPUs, so the speed gate runs again on every staging cluster. Limit: ' + D.canary_limits.p95_ms + ' ms.</p>' +
+        table([{ h: 'Version', k: 'version' }, { h: 'Cluster', k: 'target' }, { h: 'CPU', k: 'cpu' }, { h: 'p95', cls: 'num', f: function (s) { return s.p95_ms + ' ms'; } }, { h: 'Result', f: function (s) { return pill(s.passed ? 'passed' : 'failed'); } }], D.speed_checks, true);
+    },
+    register: function () {
+      return head('Register', 'The registry answers two questions: which version is the champion, and exactly what is it made of. The champion is ' + D.meta.model + ' ' + D.champion + '.', ['tracking']) + actions(['champion']) +
+        '<h2>Model versions and lineage</h2><p>Lineage is four values: code commit, dataset hash, model version and artifact digest. With those you can rebuild or roll back anything.</p>' + table([
+          { h: 'Version', f: function (v) { return '<strong>' + esc(v.version) + '</strong><small>' + esc(v.format) + ', ' + v.size_mb + ' MB</small>'; } }, { h: 'Status', f: function (v) { return pill(v.status); } },
+          { h: 'Code', f: function (v) { return '<span class="mono">git ' + esc(v.lineage.git) + '</span>'; } },
+          { h: 'Data', f: function (v) { return esc(v.lineage.dataset) + '<small class="mono">' + esc(v.lineage.data) + '</small>'; } },
+          { h: 'Artifact', f: function (v) { return '<span class="mono">' + esc(v.lineage.artifact) + '</span>'; } }, { h: 'Trained by', k: 'by' }], D.versions, true);
+    },
+    deploy: function () {
+      var hist = D.history.slice().reverse();
+      return head('Deploy', 'Each cluster pulls its desired state from the environments repo. Deploying is a commit; rolling back is a revert. Production changes start as a canary that watches latency and errors and aborts by itself.', ['delivery']) + actions(['prod', 'rollback']) +
+        '<h2>What is running where</h2>' + liveMatrix(allApps()) +
+        '<h2>Canary rollouts of ' + esc(D.meta.model) + '</h2><p>Limits: p95 at most ' + D.canary_limits.p95_ms + ' ms, errors at most ' + D.canary_limits.error_rate + '%.</p>' + D.rollouts.map(function (r) {
+          return '<h3>' + esc(r.version) + ' on ' + esc(r.target) + ' ' + pill(r.result) + '</h3>' + table([{ h: 'Traffic', cls: 'num', f: function (s) { return s.weight + '%'; } }, { h: 'p95', cls: 'num', f: function (s) { return s.p95_ms + ' ms'; } },
+            { h: 'Errors', cls: 'num', f: function (s) { return s.error_rate + '%'; } }, { h: 'Analysis', f: function (s) { return pill(s.passed ? 'passed' : 'aborted'); } }, { h: 'When', k: 't', cls: 'num' }], r.steps) +
+            (r.restored_minutes != null ? '<p>Reverted to the previous version automatically, ' + r.restored_minutes + ' minutes after the failed check. Approved by ' + esc(r.approved_by) + '.</p>' : '');
+        }).join('') +
+        '<h2>Deployment history</h2>' + table([{ h: 'When', k: 't', cls: 'num' }, { h: 'App', k: 'app' }, { h: 'Target', k: 'target' }, { h: 'Change', k: 'change', cls: 'num' },
+          { h: 'Kind', f: function (h) { return pill(h.kind); } }, { h: 'By', k: 'by' }, { h: 'Commit', f: function (h) { return '<span class="mono">' + esc(h.commit) + '</span>'; } }], hist, true);
+    },
+    observe: function () {
+      var S = D.series;
+      return head('Observe', 'Model quality and drift are production metrics, watched and alerted on exactly like latency and errors. Each cluster keeps its own metrics and forwards them to the hub.', ['observability']) +
+        '<h2>p95 latency of the newest pods, in ms</h2><div class="charts">' + ['aks-prod', 'gke-prod', 'eks-prod'].map(function (t) {
+          return '<figure><figcaption>' + t + '</figcaption>' + chart(S[t].p95_ms, S[t].limit, S[t].marks) + '</figure>';
+        }).join('') + '</div><h2>Input drift score, all production traffic</h2><div class="charts"><figure>' + chart(S.drift.values, S.drift.limit, []) + '</figure></div>' +
+        '<h2>Alerts</h2>' + table([{ h: 'When', k: 't', cls: 'num' }, { h: 'Alert', f: function (a) { return '<strong>' + esc(a.name) + '</strong><small>' + esc(a.detail) + '</small>'; } },
+          { h: 'Where', k: 'target' }, { h: 'Severity', f: function (a) { return pill(a.severity); } }, { h: 'State', f: function (a) { return pill(a.status === 'open' ? 'open alert' : a.status); } }], D.alerts, true);
+    },
+    access: function () {
+      var u = me(), role = D.roles[u.role];
+      var token = { iss: 'https://sso.factory.example/realms/factory', sub: u.id, groups: ['team-' + u.team, 'role-' + u.role], exp: '8 hours' };
+      var toolNames = Object.keys(role.tools);
+      return head('Sign-in and access', 'One login for every tool. The token carries two kinds of group, team and role, and each tool maps them to its own permissions. Access changes are pull requests against one file.', ['identity']) + actions(['offboard']) +
+        '<h2>Your token</h2><p>You are ' + esc(u.id) + ': ' + esc(role.about) + ' Switch user in the header to see every view change.</p><pre>' + esc(JSON.stringify(token, null, 2)) + '</pre>' +
+        '<h2>What each role becomes in each tool</h2>' + table([{ h: 'Role', f: function (r) { return '<strong>' + esc(r) + '</strong><small>' + esc(D.roles[r].about) + '</small>'; } }].concat(toolNames.map(function (t) {
+          return { h: t, f: function (r) { return esc(D.roles[r].tools[t]); } };
+        })), Object.keys(D.roles), true) +
+        '<h2>People and bots</h2>' + table([{ h: 'User', f: function (x) { return '<strong>' + esc(x.id) + '</strong>' + (x.bot ? ' <span class="muted">bot</span>' : ''); } }, { h: 'Team', k: 'team' }, { h: 'Role', k: 'role' },
+          { h: 'Account', f: function (x) { return pill(x.active ? 'active' : 'disabled'); } }], D.users) +
+        '<h2>Refused this week</h2><p>Every refusal is recorded with who, what and why.</p>' + table([{ h: 'When', k: 't', cls: 'num' }, { h: 'Who', f: function (d) { return esc(d.user) + '<small>' + esc(d.role) + '</small>'; } },
+          { h: 'Tool', k: 'tool' }, { h: 'Wanted', f: function (d) { return '<span class="mono">' + esc(d.wanted) + '</span><small>' + esc(d.target) + '</small>'; } }, { h: 'Why refused', k: 'why' }], D.denials, true);
+    },
+    infra: function () {
+      return head('Infrastructure', 'OpenTofu builds each cluster and installs Argo CD, then stops. Ansible sets up Macs and hosts. One wrapper, factoryctl, hides the three cloud CLIs. These are the commands a real run executes.', ['infra', 'config', 'secrets']) + actions(['apply']) +
+        '<h2>Targets</h2>' + D.targets.map(function (t) {
+          return '<details><summary><strong>' + esc(t.id) + '</strong><span class="muted">' + esc(t.cloud) + ', ' + esc(t.env) + ', ' + esc(t.cpu) + '</span>' + pill(t.state.status || 'pending') + '</summary>' +
+            '<p>' + esc(t.where) + '. ' + esc(t.note) + '</p><pre>' + esc(t.cmds.join('\n')) + '</pre><p class="muted">Applied by ' + esc(t.state.by) + ' with ' + esc(t.state.tool) + ', ' + esc(t.state.t) + '.</p></details>';
+        }).join('');
+    },
+    share: function () {
+      var names = { owner: 'Owner set', ci_green: 'CI green', coverage: 'Coverage 80%+', sbom: 'SBOM', signed: 'Signed', docs: 'Docs' };
+      return head('Shared knowledge', 'A catalog so teams can find and reuse each other\'s work, decision records so nobody re-argues settled questions, and one chat feed the line posts to.', ['knowledge']) +
+        '<h2>Catalog and scorecards</h2>' + table([{ h: 'Component', f: function (c) { return '<strong>' + esc(c.name) + '</strong> <span class="num">' + esc(c.version) + '</span><small>' + esc(c.about) + '</small>'; } },
+          { h: 'Owner', f: function (c) { return 'team ' + esc(c.team); } }, { h: 'Language', k: 'lang' },
+          { h: 'Scorecard', f: function (c) { return Object.keys(names).map(function (k) { return pill(c.checks[k] ? 'ok' : 'failed', names[k] + (c.checks[k] ? '' : ': missing')); }).join(' '); } }], D.components, true) +
+        '<h2>Decision records</h2>' + table([{ h: 'Record', f: function (a) { return '<strong>' + esc(a.id) + '</strong>'; } }, { h: 'Decision', f: function (a) { return esc(a.title) + '<small>' + esc(a.why) + '</small>'; } }, { h: 'Status', k: 'status' }], D.adrs, true) +
+        '<h2>Chat feed</h2><ul class="feed">' + D.chat.map(function (c) { return '<li><span class="when">' + esc(c.t) + ' ' + esc(c.channel) + '</span>' + esc(c.text) + '</li>'; }).join('') + '</ul>';
+    },
+    audit: function () {
+      function uniq(k) { var s = {}; D.audit.forEach(function (e) { s[e[k]] = 1; }); return Object.keys(s).sort(); }
+      function sel(id, label, opts, cur) { return '<label>' + label + ' <select data-filter="' + id + '"><option value="">all</option>' + opts.map(function (o) { return '<option' + (o === cur ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></label>'; }
+      var rows = D.audit.filter(function (e) { return (!state.auditTool || e.tool === state.auditTool) && (!state.auditResult || e.result === state.auditResult); });
+      return head('Audit trail', 'Every tool writes who did what, to what, and whether it was allowed. One append-only log answers most questions about change tracking.', []) +
+        '<div class="filters">' + sel('auditTool', 'Tool', uniq('tool'), state.auditTool) + sel('auditResult', 'Result', uniq('result'), state.auditResult) + '<span class="muted">' + rows.length + ' of ' + D.audit.length + ' events</span></div>' +
+        table([{ h: '#', k: 'n', cls: 'num' }, { h: 'When', k: 't', cls: 'num' }, { h: 'Tool', k: 'tool' }, { h: 'Who', k: 'actor' }, { h: 'Did', f: function (e) { return esc(e.action) + '<small>' + esc(e.target) + '</small>'; } },
+          { h: 'Result', f: function (e) { return pill(e.result); } }, { h: 'Detail', k: 'detail' }], rows, true);
+    },
+    options: function () {
+      return head('Tool options', 'For each job on the floor: the default pick, the alternatives with pros and cons, and the gotchas. All open source. Scope: CPU only, small models.', []) +
+        D.catalog.map(function (c) {
+          return '<details class="opt"><summary><strong>' + esc(c.layer) + '</strong><span class="muted">' + esc(c.pick) + '</span></summary><p>' + esc(c.job) + ' Licence: ' + esc(c.licence) + '.</p>' +
+            table([{ h: 'Option', f: function (o) { return '<strong>' + esc(o.name) + '</strong>'; } }, { h: 'Pros', k: 'pros' }, { h: 'Cons', k: 'cons' }], c.options, true) +
+            '<h3>Gotchas</h3><ul>' + c.gotchas.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('') + '</ul></details>';
+        }).join('');
+    }
+  };
+
+  // ---------- shell ----------
+  function current() { var id = location.hash.replace('#', ''); return views[id] ? id : 'floor'; }
+  function render() {
+    var id = current();
+    document.getElementById('line').innerHTML = STATIONS.map(function (s, i) {
+      var st = D.line[s[0]];
+      return '<a class="station" href="#' + s[0] + '"' + (s[0] === id ? ' aria-current="page"' : '') + '><span class="n">' + (i + 1) + '</span><span class="name">' + esc(s[1]) + '</span><span class="tool">' + esc(s[2]) +
+        '</span><span class="stat"><span class="lamp ' + st.lamp + '"></span>' + esc(st.text) + '</span></a>';
+    }).join('');
+    document.getElementById('services').innerHTML = SERVICES.map(function (s) { return '<a href="#' + s[0] + '"' + (s[0] === id ? ' aria-current="page"' : '') + '>' + esc(s[1]) + '</a>'; }).join('');
+    view.innerHTML = views[id]();
+    var active = document.querySelector('.station[aria-current="page"]');
+    if (active && active.scrollIntoView) active.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }
+  var who = document.getElementById('who');
+  who.innerHTML = D.users.map(function (u) { return '<option value="' + esc(u.id) + '"' + (u.id === state.user ? ' selected' : '') + '>' + esc(u.id + ', ' + u.role + (u.active ? '' : ' (disabled)')) + '</option>'; }).join('');
+  who.addEventListener('change', function () { state.user = who.value; render(); });
+  window.addEventListener('hashchange', function () { render(); window.scrollTo(0, 0); });
+  document.addEventListener('change', function (e) { var k = e.target.getAttribute && e.target.getAttribute('data-filter'); if (k) { state[k] = e.target.value; render(); } });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-act]') : null;
+    if (!b) return;
+    var a = ACTIONS[b.getAttribute('data-act')], u = me(), ok = can(a.perm), dlg = document.getElementById('dlg');
+    dlg.className = ok ? '' : 'denied';
+    document.getElementById('dlg-title').textContent = ok ? 'Allowed: ' + a.label.toLowerCase() : 'Denied: ' + a.label.toLowerCase();
+    document.getElementById('dlg-body').innerHTML = ok
+      ? '<p>' + esc(u.id) + ' is a ' + esc(u.role) + ' and holds <code>' + esc(a.perm) + '</code>. On the real floor this runs:</p><pre>' + esc(a.cmds.join('\n')) + '</pre>'
+      : '<p>' + esc(u.id) + (u.active ? ' is a ' + esc(u.role) + ', and that role lacks ' : ' is disabled and no longer holds ') + '<code>' + esc(a.perm) + '</code>. The attempt is written to the audit trail.</p><p>To get access, open a pull request against <code>access/groups.yaml</code>. A maintainer of the owning team reviews it.</p>';
+    if (dlg.showModal) dlg.showModal(); else alert(document.getElementById('dlg-title').textContent);
+  });
+  render();
+})();
+</script>
+</body>
+</html>
