@@ -1,0 +1,17 @@
+AI Software Factory Workspace
+=============================
+
+This VM contains common compilers, package clients, test tools, and rootless
+container tooling. A repository must still pin its exact language and dependency
+versions using lockfiles and versioned build containers.
+
+Rules:
+- Never store cloud access keys, registry passwords, or production data here.
+- Pull dependencies through the approved package repository.
+- Run the repository's local test command before pushing.
+- Build releases in CI; local images are development evidence only.
+- Prefer Podman/Buildah rootless mode and never mount a privileged Docker socket.
+
+Workspace: {{ factory_workspace }}
+Configured by Ansible: {{ ansible_date_time.iso8601 }}
+

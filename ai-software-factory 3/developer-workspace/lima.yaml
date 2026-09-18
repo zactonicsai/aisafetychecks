@@ -1,0 +1,31 @@
+arch: default
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-arm64.img"
+    arch: aarch64
+  - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img"
+    arch: x86_64
+cpus: 4
+memory: 8GiB
+disk: 60GiB
+mounts:
+  - location: "~"
+    writable: false
+  - location: "/tmp/lima/ai-factory"
+    writable: true
+containerd:
+  system: false
+  user: true
+provision:
+  - mode: system
+    script: |
+      #!/bin/sh
+      set -eux
+      apt-get update
+      DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-venv git curl ca-certificates ansible
+      mkdir -p /workspace
+      chown 1000:1000 /workspace
+message: |
+  AI Factory workspace is running.
+  Project area: /workspace
+  Container CLI: nerdctl
+

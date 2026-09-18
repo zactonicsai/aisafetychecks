@@ -1,0 +1,16 @@
+.DS_Store
+.env
+__pycache__/
+*.pyc
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+.terraform.lock.hcl
+target/
+build/
+dist/
+node_modules/
+playwright-report/
+test-results/
+

@@ -1,0 +1,8 @@
+---
+- name: Configure the AI factory developer workspace
+  hosts: all
+  become: true
+  gather_facts: true
+  roles:
+    - developer_workspace
+

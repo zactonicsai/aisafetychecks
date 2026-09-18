@@ -1,0 +1,9 @@
+project_id         = "replace-with-gcp-project-id"
+region             = "us-central1"
+name               = "ai-factory-dev"
+kubernetes_version = null
+admin_cidr         = "203.0.113.10/32"
+machine_type       = "e2-standard-4"
+node_min           = 1
+node_max           = 4
+

@@ -1,0 +1,27 @@
+apiVersion: forge.aether.io/v1
+kind: PipelineTemplate
+name: custom-test-tool
+description: >
+  For teams building a unique harness (fuzzers, eval suites, web drivers).
+  The output is an OCI image AND a reusable catalog task other pipelines can call.
+stages:
+  - id: fetch
+    uses: catalog/git-fetch
+  - id: build
+    uses: catalog/matrix-build
+    params:
+      languages: ["python", "go", "rust"]   # pick what the tool is written in
+  - id: unit
+    uses: catalog/language-unit-tests
+  - id: integration
+    uses: catalog/testcontainers
+  - id: package
+    uses: catalog/buildah-image
+  - id: publish-task
+    uses: catalog/register-tekton-task
+    params:
+      task_name: "team-${PROJECT}-harness"
+  - id: stage
+    uses: catalog/gitops-pr
+    params:
+      namespace: ns-stage

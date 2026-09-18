@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive AI software factory architecture simulator">
+  <title>AI Software Factory</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">OPEN FACTORY / CONTROL ROOM</p>
+      <h1>AI Software Factory</h1>
+    </div>
+    <div class="header-actions">
+      <span class="status"><span class="dot"></span> Simulator online</span>
+      <button id="fontButton" class="secondary" type="button" aria-label="Increase text size">Text size</button>
+      <button id="themeButton" class="secondary" type="button">Dark mode</button>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Factory areas">
+    <button class="tab active" data-view="overview">Overview</button>
+    <button class="tab" data-view="pipeline">Pipeline lab</button>
+    <button class="tab" data-view="deployments">Deployments</button>
+    <button class="tab" data-view="catalog">Tool catalog</button>
+    <button class="tab" data-view="audit">Audit</button>
+  </nav>
+
+  <main id="main">
+    <section id="overview" class="view active" aria-labelledby="overviewTitle">
+      <div class="hero">
+        <div>
+          <p class="kicker">BUILD ONCE · PROVE IT · PROMOTE BY DIGEST</p>
+          <h2 id="overviewTitle">One paved road from a Mac to any managed Kubernetes</h2>
+          <p>Develop in a prepared Linux workspace, check code into Git, run repeatable tests, sign immutable artifacts, and let GitOps deploy the same digest to kind, AKS, GKE, or EKS.</p>
+        </div>
+        <div class="hero-stat">
+          <strong id="toolCount">—</strong>
+          <span>integrated capabilities</span>
+        </div>
+      </div>
+
+      <div class="flow" aria-label="Software factory flow">
+        <article><span>01</span><h3>Workspace</h3><p>Lima Linux VM, Ansible, IDE and trusted package configuration.</p></article>
+        <article><span>02</span><h3>Source</h3><p>Gitea reviews, owners, protected branches and signed changes.</p></article>
+        <article><span>03</span><h3>Build & prove</h3><p>Tekton compiles, tests, scans, evaluates, signs and records evidence.</p></article>
+        <article><span>04</span><h3>Store</h3><p>Harbor, packages, MLflow and object storage preserve immutable outputs.</p></article>
+        <article><span>05</span><h3>Promote</h3><p>Argo CD reconciles approved Git state; previous digests remain recoverable.</p></article>
+      </div>
+
+      <div class="grid two">
+        <article class="panel">
+          <div class="panel-head"><div><p class="eyebrow">PLATFORM MAP</p><h3>Separation of concerns</h3></div><span class="tag blue">portable core</span></div>
+          <div class="stack-map">
+            <div><b>Experience</b><span>Lima · IDE · Jupyter · optional Backstage</span></div>
+            <div><b>Control</b><span>Keycloak · Gitea · Tekton · Argo CD · OpenBao</span></div>
+            <div><b>Evidence</b><span>Harbor · packages · MLflow · MinIO · SBOM</span></div>
+            <div><b>Runtime</b><span>kind · AKS · GKE · EKS · OpenTelemetry</span></div>
+          </div>
+        </article>
+        <article class="panel">
+          <div class="panel-head"><div><p class="eyebrow">GUARDRAILS</p><h3>Release contract</h3></div><span class="tag green">policy ready</span></div>
+          <ul class="checks">
+            <li>Peer-reviewed commit and declared owner</li>
+            <li>Locked dependencies and repeatable build</li>
+            <li>Unit, integration, security and AI evaluation evidence</li>
+            <li>SBOM, provenance, vulnerability decision and signature</li>
+            <li>Immutable digest, approval and observable rollout</li>
+            <li>Known-good rollback target and data compatibility</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="pipeline" class="view" aria-labelledby="pipelineTitle">
+      <div class="section-title"><div><p class="eyebrow">SIMULATION</p><h2 id="pipelineTitle">Pipeline lab</h2><p>Choose a project and language profile. The API creates a complete example evidence record.</p></div></div>
+      <div class="grid split">
+        <form id="pipelineForm" class="panel form-panel">
+          <label for="projectInput">Project name</label>
+          <input id="projectInput" name="project" value="fraud-model" maxlength="80" required>
+          <label for="profileSelect">Pipeline profile</label>
+          <select id="profileSelect" name="profile"></select>
+          <button class="primary" type="submit">Run simulated pipeline</button>
+          <p class="fine">No code or cloud service is changed. This illustrates the evidence contract.</p>
+        </form>
+        <article class="panel">
+          <div class="panel-head"><div><p class="eyebrow">LATEST RUN</p><h3 id="runTitle">No run yet</h3></div><span id="runStatus" class="tag neutral">waiting</span></div>
+          <ol id="stageList" class="stages"><li>Select a profile and run the simulation.</li></ol>
+          <div id="artifactBox" class="artifact hidden"></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="deployments" class="view" aria-labelledby="deploymentTitle">
+      <div class="section-title"><div><p class="eyebrow">GITOPS STATE</p><h2 id="deploymentTitle">Deployments and rollback</h2><p>Production systems should revert the desired digest in Git. This demo swaps known-good digests in memory.</p></div></div>
+      <div id="deploymentGrid" class="grid cards"></div>
+    </section>
+
+    <section id="catalog" class="view" aria-labelledby="catalogTitle">
+      <div class="section-title catalog-heading"><div><p class="eyebrow">OPEN SOURCE FIRST</p><h2 id="catalogTitle">Tool catalog</h2><p>Core capabilities stay small. Model, security, operations, and portal layers can be added in phases.</p></div><input id="catalogSearch" type="search" placeholder="Filter tools" aria-label="Filter tool catalog"></div>
+      <div id="catalogGrid" class="grid cards"></div>
+    </section>
+
+    <section id="audit" class="view" aria-labelledby="auditTitle">
+      <div class="section-title"><div><p class="eyebrow">TRACEABILITY</p><h2 id="auditTitle">Audit trail</h2><p>Every pipeline, approval, promotion, rollback, exception, and administrative change should be exported to durable storage.</p></div></div>
+      <div class="panel table-wrap">
+        <table>
+          <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th></tr></thead>
+          <tbody id="auditBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
+

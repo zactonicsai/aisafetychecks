@@ -1,0 +1,9 @@
+name               = "ai-factory-dev"
+location           = "eastus"
+kubernetes_version = null # Let AKS select a supported default or pin an approved version.
+registry_name       = "replacegloballyuniqueacr"
+admin_cidrs        = ["203.0.113.10/32"]
+node_vm_size       = "Standard_D4s_v5"
+node_count         = 2
+node_min           = 1
+node_max           = 4

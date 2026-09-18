@@ -1,0 +1,54 @@
+---
+- name: Refuse unsupported operating systems
+  ansible.builtin.assert:
+    that:
+      - ansible_os_family == "Debian"
+    fail_msg: "This starter role supports Debian/Ubuntu workspaces. Add a separate role for other families."
+
+- name: Update the APT cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install common polyglot build tools
+  ansible.builtin.apt:
+    name: "{{ factory_packages }}"
+    state: present
+
+- name: Create the shared workspace directory
+  ansible.builtin.file:
+    path: "{{ factory_workspace }}"
+    state: directory
+    owner: "{{ factory_user }}"
+    group: "{{ factory_user }}"
+    mode: "0750"
+
+- name: Install workspace guidance
+  ansible.builtin.template:
+    src: FACTORY-README.txt.j2
+    dest: "{{ factory_workspace }}/FACTORY-README.txt"
+    owner: "{{ factory_user }}"
+    group: "{{ factory_user }}"
+    mode: "0640"
+
+- name: Read the global Git default branch
+  ansible.builtin.command: git config --system --get init.defaultBranch
+  register: git_default_branch
+  changed_when: false
+  failed_when: false
+
+- name: Configure a safer global Git default
+  ansible.builtin.command: git config --system init.defaultBranch main
+  when: git_default_branch.stdout != "main"
+  changed_when: true
+
+- name: Read the global Git pull behavior
+  ansible.builtin.command: git config --system --get pull.ff
+  register: git_pull_ff
+  changed_when: false
+  failed_when: false
+
+- name: Require fast-forward-only Git pulls
+  ansible.builtin.command: git config --system pull.ff only
+  when: git_pull_ff.stdout != "only"
+  changed_when: true

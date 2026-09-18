@@ -1,0 +1,44 @@
+{
+  "realm": "ai-factory",
+  "enabled": true,
+  "displayName": "AI Software Factory",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": false,
+  "bruteForceProtected": true,
+  "sslRequired": "external",
+  "roles": {
+    "realm": [
+      {"name": "developer", "description": "Build and test owned components"},
+      {"name": "maintainer", "description": "Merge and promote to staging"},
+      {"name": "release-approver", "description": "Approve production promotion"},
+      {"name": "security-reviewer", "description": "Manage security policy and exceptions"},
+      {"name": "platform-admin", "description": "Operate shared factory services"},
+      {"name": "auditor", "description": "Read audit evidence"}
+    ]
+  },
+  "groups": [
+    {"name": "developers", "realmRoles": ["developer"]},
+    {"name": "maintainers", "realmRoles": ["maintainer"]},
+    {"name": "release-approvers", "realmRoles": ["release-approver"]},
+    {"name": "security-reviewers", "realmRoles": ["security-reviewer"]},
+    {"name": "platform-admins", "realmRoles": ["platform-admin"]},
+    {"name": "auditors", "realmRoles": ["auditor"]}
+  ],
+  "clients": [
+    {
+      "clientId": "factory-portal",
+      "name": "Factory Portal",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://127.0.0.1:8080/*", "https://factory.example.invalid/*"],
+      "webOrigins": ["http://127.0.0.1:8080", "https://factory.example.invalid"],
+      "attributes": {"pkce.code.challenge.method": "S256"},
+      "protocol": "openid-connect"
+    }
+  ],
+  "users": []
+}
+

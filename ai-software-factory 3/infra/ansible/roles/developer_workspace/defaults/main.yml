@@ -1,0 +1,32 @@
+---
+factory_user: "{{ ansible_user_id }}"
+factory_workspace: /workspace
+factory_packages:
+  - build-essential
+  - clang
+  - clang-tidy
+  - cmake
+  - ninja-build
+  - gdb
+  - git
+  - git-lfs
+  - curl
+  - jq
+  - unzip
+  - zip
+  - shellcheck
+  - python3
+  - python3-pip
+  - python3-venv
+  - pipx
+  - openjdk-17-jdk
+  - maven
+  - golang-go
+  - rustc
+  - cargo
+  - nodejs
+  - npm
+  - podman
+  - buildah
+  - skopeo
+
