@@ -119,6 +119,7 @@
     <button class="tab whitespace-nowrap px-3 py-3 border-b-4 border-transparent text-gray70 hover:bg-gray10" data-view="l1">1. Commands</button>
     <button class="tab whitespace-nowrap px-3 py-3 border-b-4 border-transparent text-gray70 hover:bg-gray10" data-view="l2">2. Broken pods</button>
     <button class="tab whitespace-nowrap px-3 py-3 border-b-4 border-transparent text-gray70 hover:bg-gray10" data-view="l3">3. Broken Services</button>
+    <button class="tab whitespace-nowrap px-3 py-3 border-b-4 border-transparent text-gray70 hover:bg-gray10" data-view="aks">4. Azure AKS</button>
     <button class="tab whitespace-nowrap px-3 py-3 border-b-4 border-transparent text-gray70 hover:bg-gray10" data-view="cert">Certificate</button>
   </div>
 </nav>
@@ -128,7 +129,7 @@
 <!-- ======================= START ======================= -->
 <section id="view-start" class="view txt">
   <h1 class="text-4xl font-light text-navy leading-tight mb-3">Learn to run the school kitchen</h1>
-  <p class="text-lg">Kubernetes (people write <strong>K8s</strong>) is a giant school kitchen that runs lots of apps at once. In three lessons you learn to talk to the kitchen, fix lunch boxes that will not start, and fix pickup windows that nobody can reach.</p>
+  <p class="text-lg">Kubernetes (people write <strong>K8s</strong>) is a giant school kitchen that runs lots of apps at once. In four lessons you learn to talk to the kitchen, fix lunch boxes that will not start, fix pickup windows that nobody can reach, and connect kubectl to a real cloud kitchen on Azure.</p>
 
   <p class="font-semibold text-navy mt-6 mb-2">This is what a bad day looks like. Pick a row to jump to the lesson that fixes it.</p>
   <div class="scroll-x border border-gray30">
@@ -193,7 +194,7 @@ kubectl get pods -n web</code></pre>
     <li>Each lesson ends with a quiz. You get <strong>two tries</strong> per question. Miss the first try and a hint pops up.</li>
     <li>Your score saves in this browser. Reach 80% and you can print a certificate.</li>
   </ul>
-  <div class="btn-row no-print"><button class="btn btn-pri" data-view="l1">Start Lesson 1</button></div>
+  <div class="btn-row no-print"><button class="btn btn-pri" data-view="l1">Start Lesson 1</button><button class="btn btn-sec" data-view="aks">Jump to Azure AKS setup</button></div>
 </section>
 
 <!-- ======================= LESSON 1 ======================= -->
@@ -907,6 +908,230 @@ kubectl describe networkpolicy -n web</code></pre>
   <div id="quiz-l3"></div>
 </section>
 
+<!-- ======================= LESSON 4: AKS ======================= -->
+<section id="view-aks" class="view txt hidden">
+  <h1 class="text-4xl font-light text-navy leading-tight mb-3">Lesson 4: A real kitchen in the cloud (Azure AKS)</h1>
+  <p class="text-lg">minikube is a toy kitchen on your laptop. <strong>Azure Kubernetes Service (AKS)</strong> is a real one in Microsoft&rsquo;s cloud. Azure runs the control room for you. You rent the tables (nodes). Every kubectl and Helm command from Lessons 1 to 3 works exactly the same. The only new skill is <strong>pointing your walkie-talkie at the cloud kitchen</strong>.</p>
+
+  <h2 class="text-2xl font-light text-navy mt-6 mb-3">Two logins, not one</h2>
+  <p>This is the idea that confuses most beginners, so learn it first.</p>
+  <div class="scroll-x">
+    <table>
+      <thead><tr><th>Tool</th><th>Talks to</th><th>Kitchen picture</th><th>Used for</th></tr></thead>
+      <tbody>
+        <tr><td><code>az</code> (Azure CLI)</td><td>Azure itself</td><td>The school office that builds and owns kitchens</td><td>Log in, create the cluster, <strong>fetch the keys</strong>, delete the cluster</td></tr>
+        <tr><td><code>kubectl</code></td><td>The cluster&rsquo;s API server</td><td>The walkie-talkie inside one kitchen</td><td>Pods, deployments, services: everything from Lessons 1 to 3</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The bridge between them is one command: <code>az aks get-credentials</code>. It asks the office for the kitchen&rsquo;s address and your key, and saves them in the file kubectl reads, called the <strong>kubeconfig</strong>.</p>
+  <div class="btn-row no-print">
+    <button class="btn btn-sec" data-pop="aks-bg">Background: what AKS is, pros and cons</button>
+    <button class="btn btn-sec" data-pop="aks-kubeconfig">What is inside the kubeconfig file?</button>
+    <button class="btn btn-sec" data-pop="aks-cost">Cost: read before you create anything</button>
+  </div>
+
+  <details class="sec" open>
+    <summary>Step-by-step: from nothing to kubectl get nodes</summary>
+    <div class="body">
+      <div class="note warn"><strong>AKS nodes cost real money while they run.</strong> Use a school or free-trial subscription, ask a teacher first, and do step 9 (clean up) the same day.</div>
+      <ol>
+        <li><strong>Install the Azure CLI</strong> from the <a href="https://learn.microsoft.com/en-us/cli/azure/install-azure-cli" target="_blank" rel="noopener">official install page</a>, then check it:
+<pre><code>az version</code></pre>
+          No install allowed on your computer? Use <a href="https://shell.azure.com" target="_blank" rel="noopener">Azure Cloud Shell</a> in a browser. It already has <code>az</code>, <code>kubectl</code>, <code>kubelogin</code>, and <code>helm</code>.</li>
+        <li><strong>Log in to Azure.</strong> A browser window opens for your account:
+<pre><code>az login
+az login --use-device-code     # if no browser can open (remote computer)</code></pre></li>
+        <li><strong>Pick the right subscription.</strong> A subscription is the billing account that owns the cluster. Many people have more than one.
+<pre><code>az account list --output table
+az account set --subscription "My School Subscription"
+az account show --output table</code></pre></li>
+        <li><strong>Install kubectl and kubelogin</strong> (skip if you already have both, or you are in Cloud Shell):
+<pre><code>az aks install-cli
+kubectl version --client
+kubelogin --version</code></pre>
+          <code>kubelogin</code> is a small helper that lets kubectl sign in with your Microsoft account.</li>
+        <li><strong>Create a resource group.</strong> A resource group is a folder in Azure. Put everything for this class in one folder so you can delete it all at once later.
+<pre><code>az group create --name rg-k8s-class --location eastus</code></pre></li>
+        <li><strong>Create the cluster.</strong> This takes 5 to 10 minutes. Already have a cluster from your teacher? Skip to step 7.
+<pre><code>az aks create \
+  --resource-group rg-k8s-class \
+  --name aks-class \
+  --node-count 1 \
+  --node-vm-size Standard_B2s \
+  --tier free \
+  --generate-ssh-keys</code></pre>
+          One small node and the free control-room tier keep the cost low. If Azure says that VM size is not available in your region or subscription, choose another small size it suggests.</li>
+        <li><strong>Fetch the keys.</strong> This is the connection step:
+<pre><code>az aks get-credentials --resource-group rg-k8s-class --name aks-class</code></pre>
+          You should see:
+<pre><code>Merged "aks-class" as current context in /home/you/.kube/config</code></pre>
+          Three things just happened: the cluster&rsquo;s address and your login were <em>added</em> to your kubeconfig, your minikube entry was <em>kept</em>, and kubectl was <em>switched</em> to point at AKS.</li>
+        <li><strong>Prove the connection:</strong>
+<pre><code>kubectl config current-context     # should print: aks-class
+kubectl get nodes
+kubectl cluster-info</code></pre>
+          A node named like <code>aks-nodepool1-12345678-vmss000000</code> with status <code>Ready</code> means you are talking to the cloud. If kubectl asks you to open <code>microsoft.com/devicelogin</code> and type a code, do it. That is the second login, explained in the next section.</li>
+        <li><strong>Clean up</strong> when you finish for the day:
+<pre><code>az aks stop  --resource-group rg-k8s-class --name aks-class      # pause: stops node costs, keeps the cluster
+az aks start --resource-group rg-k8s-class --name aks-class      # un-pause next time
+
+az group delete --name rg-k8s-class --yes --no-wait              # delete everything in the folder
+kubectl config delete-context aks-class                          # tidy your kubeconfig</code></pre></li>
+      </ol>
+    </div>
+  </details>
+
+  <details class="sec">
+    <summary>Try it: the shop app with a real public address</summary>
+    <div class="body">
+      <p>In Lesson 3 you learned that a <code>LoadBalancer</code> Service needs a cloud. Now you have one. Helm and kubectl need no changes. They follow the current context.</p>
+<pre><code>kubectl create namespace web
+kubectl create deployment shop --image=nginx:1.27 --replicas=2 -n web
+kubectl expose deployment shop --type=LoadBalancer --port=80 -n web
+kubectl get svc shop -n web -w</code></pre>
+<pre><code>NAME   TYPE           CLUSTER-IP    EXTERNAL-IP     PORT(S)
+shop   LoadBalancer   10.0.45.12    &lt;pending&gt;       80:31234/TCP
+shop   LoadBalancer   10.0.45.12    20.51.100.27    80:31234/TCP</code></pre>
+      <p><code>&lt;pending&gt;</code> for a minute or two is normal. Azure is building a real load balancer and public IP. When the address appears, open <code>http://EXTERNAL-IP</code> in any browser, anywhere.</p>
+      <div class="note warn">A public IP means the whole internet can reach it, and it costs a little. Delete it when done: <code>kubectl delete svc shop -n web</code>.</div>
+      <div class="btn-row no-print"><button class="btn btn-sec" data-pop="aks-acr">Private images on AKS: connect Azure Container Registry</button></div>
+    </div>
+  </details>
+
+  <details class="sec">
+    <summary>The second login: Microsoft Entra ID and kubelogin</summary>
+    <div class="body">
+      <p>Real team clusters do not hand out a permanent key. They make kubectl prove who you are with your Microsoft account (<strong>Microsoft Entra ID</strong>, the new name for Azure Active Directory). On such a cluster, the first kubectl command says:</p>
+<pre><code>To sign in, use a web browser to open the page https://microsoft.com/devicelogin
+and enter the code ABCD1234 to authenticate.</code></pre>
+      <p>Open the page, type the code, sign in. kubectl continues. The pass lasts a while, then you repeat.</p>
+      <h4>Skip the code: reuse your az login</h4>
+<pre><code>kubelogin convert-kubeconfig -l azurecli</code></pre>
+      <p>This rewrites your kubeconfig to say &ldquo;ask the Azure CLI for a pass.&rdquo; As long as <code>az login</code> is fresh, kubectl just works. Run it once after each <code>get-credentials</code>.</p>
+      <h4>Two permission checks</h4>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>Question</th><th>Role you need</th><th>Error if missing</th></tr></thead>
+          <tbody>
+            <tr><td>May you <em>download</em> the kubeconfig?</td><td><code>Azure Kubernetes Service Cluster User Role</code></td><td><code>get-credentials</code> fails with <code>AuthorizationFailed</code></td></tr>
+            <tr><td>May you <em>do things</em> inside the cluster?</td><td><code>Azure Kubernetes Service RBAC Reader</code>, <code>Writer</code>, <code>Admin</code>, or <code>Cluster Admin</code> (or Kubernetes RBAC set up by an admin)</td><td>kubectl connects, then says <code>Error from server (Forbidden)</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><code>Forbidden</code> is good news in disguise: the connection works, and the cluster knows who you are. You only need a teacher or admin to grant a role.</p>
+      <div class="note warn"><strong>About <code>--admin</code>:</strong> <code>az aks get-credentials --admin</code> downloads a master key that skips Entra ID. It never expires and is not tied to your name. Avoid it. Well-run clusters switch it off (&ldquo;local accounts disabled&rdquo;), and then the flag simply fails.</div>
+      <div class="btn-row no-print"><button class="btn btn-sec" data-pop="aks-entra">More info: roles, examples, and how an admin grants access</button></div>
+    </div>
+  </details>
+
+  <details class="sec">
+    <summary>Juggling clusters: minikube, AKS dev, AKS prod</summary>
+    <div class="body">
+      <p>Every <code>get-credentials</code> adds one more <strong>context</strong> to the same kubeconfig file. You met contexts in Lesson 1. Now they matter.</p>
+<pre><code>kubectl config get-contexts
+CURRENT   NAME        CLUSTER     AUTHINFO
+          minikube    minikube    minikube
+*         aks-class   aks-class   clusterUser_rg-k8s-class_aks-class
+
+kubectl config use-context minikube      # back to the laptop kitchen
+kubectl config use-context aks-class     # back to the cloud kitchen
+kubectl get pods --context minikube      # one command only, no switching</code></pre>
+      <h4>Useful get-credentials options</h4>
+<pre><code>az aks get-credentials -g rg-k8s-class -n aks-class --overwrite-existing   # replace a stale entry without asking
+az aks get-credentials -g rg-k8s-class -n aks-class --context class-cloud  # choose your own context name
+az aks get-credentials -g rg-k8s-class -n aks-class --file ./aks.config    # save to a separate file
+kubectl get nodes --kubeconfig ./aks.config                                # use that file for one command</code></pre>
+      <p><code>-g</code> and <code>-n</code> are short for <code>--resource-group</code> and <code>--name</code>.</p>
+      <div class="note warn">The worst real-world accidents are correct commands sent to the wrong cluster. Before any <code>delete</code>, <code>helm uninstall</code>, or <code>apply</code>, run <code>kubectl config current-context</code>.</div>
+      <div class="btn-row no-print"><button class="btn btn-sec" data-pop="aks-ctx">One file or many? Pros and cons</button></div>
+    </div>
+  </details>
+
+  <details class="sec">
+    <summary>Other ways to connect: pros and cons</summary>
+    <div class="body">
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>Way</th><th>How</th><th>Pros</th><th>Cons</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Laptop + az CLI</strong> (this lesson)</td><td><code>az aks get-credentials</code></td><td>Your own tools, editor, and files. Works with Helm and scripts.</td><td>Must install three tools. Blocked by some school laptops.</td></tr>
+            <tr><td><strong>Azure Cloud Shell</strong></td><td><a href="https://shell.azure.com" target="_blank" rel="noopener">shell.azure.com</a>, then the same <code>get-credentials</code></td><td>Nothing to install. Already logged in. Works on a Chromebook or tablet.</td><td>Times out after about 20 idle minutes. Your YAML files live in the cloud, not on your laptop.</td></tr>
+            <tr><td><strong>Portal &ldquo;Connect&rdquo; button</strong></td><td>Azure portal &rarr; your cluster &rarr; Overview &rarr; Connect</td><td>Shows the exact two commands with your names filled in. Great for copy and paste.</td><td>Still needs a shell to paste into.</td></tr>
+            <tr><td><strong>Portal resource views</strong></td><td>Portal &rarr; cluster &rarr; Workloads / Services</td><td>Point and click. Good for a quick look.</td><td>Not kubectl. You will not learn the commands, and you cannot script it.</td></tr>
+            <tr><td><strong><code>az aks command invoke</code></strong></td><td><code>az aks command invoke -g RG -n NAME --command "kubectl get pods -A"</code></td><td>Reaches <strong>private</strong> clusters with no VPN. Azure runs the command inside for you.</td><td>Slow (each call starts a helper pod). One command at a time.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="sec">
+    <summary>When the connection fails: error messages decoded</summary>
+    <div class="body">
+      <p>Same rule as Lesson 2: the message is a clue. Work from your laptop outward: tool &rarr; Azure login &rarr; subscription &rarr; kubeconfig &rarr; network &rarr; permission.</p>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>You see</th><th>It means</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td><code>az: command not found</code></td><td>Azure CLI is not installed (or the terminal was not reopened)</td><td>Install it, open a new terminal</td></tr>
+            <tr><td><code>Please run 'az login' to setup account</code></td><td>Not logged in, or the login expired</td><td><code>az login</code></td></tr>
+            <tr><td><code>ResourceGroupNotFound</code> or <code>ResourceNotFound</code></td><td>Typo, or you are in the <strong>wrong subscription</strong></td><td><code>az account show</code>, then <code>az aks list -o table</code> to see real names</td></tr>
+            <tr><td><code>kubelogin is not installed</code> / <code>executable kubelogin not found</code></td><td>The cluster uses Entra ID, and the helper is missing</td><td><code>az aks install-cli</code></td></tr>
+            <tr><td>kubectl shows minikube&rsquo;s nodes</td><td>Wrong context</td><td><code>kubectl config use-context aks-class</code></td></tr>
+            <tr><td><code>Unable to connect to the server: dial tcp ... i/o timeout</code></td><td>Your laptop cannot reach the API server: the cluster is <strong>stopped</strong>, is <strong>private</strong>, or only allows certain IP addresses</td><td><code>az aks show -g RG -n NAME --query powerState</code>. Start it, use the VPN, or use <code>az aks command invoke</code></td></tr>
+            <tr><td><code>no such host</code></td><td>The cluster was deleted or recreated, and your kubeconfig has the old address</td><td><code>get-credentials --overwrite-existing</code></td></tr>
+            <tr><td><code>error: You must be logged in to the server (Unauthorized)</code></td><td>Your pass expired or belongs to a different account</td><td><code>az login</code>, then <code>get-credentials --overwrite-existing</code>, then <code>kubelogin convert-kubeconfig -l azurecli</code></td></tr>
+            <tr><td><code>Error from server (Forbidden): ... cannot list resource "pods"</code></td><td>Connected and identified, but no permission</td><td>Ask an admin for an AKS RBAC role</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h4>The 1-minute connection check</h4>
+<pre><code>az account show --output table          # right account and subscription?
+az aks list --output table              # does the cluster exist? is it Running?
+kubectl config current-context          # is kubectl aimed at it?
+kubectl get nodes                       # can I reach it and am I allowed?</code></pre>
+    </div>
+  </details>
+
+  <details class="sec">
+    <summary>Best practices and cheat card</summary>
+    <div class="body">
+      <ul>
+        <li>One resource group per project, so one <code>az group delete</code> cleans up everything.</li>
+        <li>Use Entra ID sign-in with <code>kubelogin</code>. Do not use <code>--admin</code>.</li>
+        <li>Give people the smallest role that works: Reader for looking, Writer for deploying.</li>
+        <li>Give contexts clear names (<code>class-cloud</code>, <code>prod-DANGER</code>) with <code>--context</code>.</li>
+        <li>Check <code>kubectl config current-context</code> before anything that changes or deletes.</li>
+        <li>Never put a kubeconfig file in Git, email, or chat. It is a key.</li>
+        <li>Stop or delete practice clusters the same day.</li>
+      </ul>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>You want to&hellip;</th><th>Command</th></tr></thead>
+          <tbody>
+            <tr><td>Log in to Azure</td><td><code>az login</code></td></tr>
+            <tr><td>Choose the subscription</td><td><code>az account set --subscription NAME</code></td></tr>
+            <tr><td>Install kubectl + kubelogin</td><td><code>az aks install-cli</code></td></tr>
+            <tr><td>List your clusters</td><td><code>az aks list -o table</code></td></tr>
+            <tr><td><strong>Connect kubectl</strong></td><td><code>az aks get-credentials -g RG -n NAME</code></td></tr>
+            <tr><td>Skip the device-code prompt</td><td><code>kubelogin convert-kubeconfig -l azurecli</code></td></tr>
+            <tr><td>Check where kubectl points</td><td><code>kubectl config current-context</code></td></tr>
+            <tr><td>Switch clusters</td><td><code>kubectl config use-context NAME</code></td></tr>
+            <tr><td>Pause / resume the cluster</td><td><code>az aks stop</code> / <code>az aks start</code></td></tr>
+            <tr><td>Delete everything</td><td><code>az group delete --name RG</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <p class="no-print mt-4">Official references: <a href="https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli" target="_blank" rel="noopener">Quickstart: deploy an AKS cluster with Azure CLI</a>, <a href="https://learn.microsoft.com/en-us/cli/azure/aks" target="_blank" rel="noopener">az aks command reference</a>, <a href="https://learn.microsoft.com/en-us/azure/aks/control-kubeconfig-access" target="_blank" rel="noopener">Control access to the kubeconfig file</a>, <a href="https://learn.microsoft.com/en-us/azure/aks/kubelogin-authentication" target="_blank" rel="noopener">Use kubelogin with AKS</a>, <a href="https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/" target="_blank" rel="noopener">Kubernetes: kubeconfig files</a>.</p>
+
+  <h2 class="text-2xl font-light text-navy mt-10 mb-1">Lesson 4 quiz</h2>
+  <div id="quiz-aks"></div>
+</section>
+
 <!-- ======================= CERTIFICATE ======================= -->
 <section id="view-cert" class="view hidden">
   <div class="no-print txt">
@@ -930,7 +1155,7 @@ kubectl describe networkpolicy -n web</code></pre>
     <p class="text-3xl sm:text-4xl font-light text-navy mt-2">Kubernetes Class: kubectl + Helm</p>
     <p class="mt-8 text-gray70">This certifies that</p>
     <p id="cert-who" class="text-3xl font-semibold text-ink mt-2 border-b border-gray30 inline-block px-6 pb-1 break-words max-w-full">Your name</p>
-    <p class="mt-6 max-w-xl mx-auto leading-relaxed">can talk to a cluster with kubectl, install apps with Helm, fix pods that will not start, and fix Services that will not connect.</p>
+    <p class="mt-6 max-w-xl mx-auto leading-relaxed">can talk to a cluster with kubectl, install apps with Helm, fix pods that will not start, fix Services that will not connect, and connect kubectl to Azure AKS.</p>
     <p class="mt-6 font-mono text-navy"><span id="cert-score"></span></p>
     <p id="cert-detail" class="mt-1 text-gray70 text-sm"></p>
     <p id="cert-date" class="mt-8 text-gray70"></p>
@@ -1509,6 +1734,158 @@ nslookup google.com                # tests outside names too</code></pre>
     <p>If <code>kubernetes.default</code> resolves but <code>shop.web</code> does not, DNS is healthy and the Service name or namespace is wrong.</p>
     ${refs(doc('https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/', 'DNS for Services and Pods'), doc('https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/', 'Debugging DNS resolution'))}` },
 
+  'aks-bg': { t: 'What AKS is: pros and cons', h: `
+    <p>Running Kubernetes yourself means running the control room: the API server, the scheduler, and the database that remembers everything. Keeping those healthy, backed up, and upgraded is a full-time job.</p>
+    <p>With a <strong>managed</strong> Kubernetes service, the cloud company does that job. On Azure it is called AKS. Amazon&rsquo;s is EKS and Google&rsquo;s is GKE. The kubectl commands are the same on all of them. Only the &ldquo;fetch the keys&rdquo; step differs.</p>
+    <div class="scroll-x"><table>
+      <thead><tr><th></th><th>minikube / kind</th><th>AKS</th></tr></thead>
+      <tbody>
+        <tr><td>Cost</td><td>Free</td><td>You pay for nodes, disks, load balancers, public IPs</td></tr>
+        <tr><td>Setup time</td><td>2 minutes</td><td>5 to 10 minutes, plus an Azure account</td></tr>
+        <tr><td>Control room</td><td>On your laptop</td><td>Run and repaired by Azure</td></tr>
+        <tr><td>LoadBalancer Services</td><td>Need a trick (<code>minikube tunnel</code>)</td><td>Real public IP automatically</td></tr>
+        <tr><td>Storage (PVCs)</td><td>A folder on your laptop</td><td>Real Azure disks, created on demand</td></tr>
+        <tr><td>Sign-in</td><td>None</td><td>Microsoft Entra ID accounts and roles</td></tr>
+        <tr><td>Mistakes</td><td>Delete and start over</td><td>Can cost money or affect other people</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Suggestion:</strong> learn the commands on minikube. Use AKS to learn the cloud parts: connecting, identity, public addresses, and real storage.</p>
+    <h4>Two flavors of AKS</h4>
+    <ul>
+      <li><strong>AKS Standard</strong> (what this lesson uses): you choose node sizes and settings.</li>
+      <li><strong>AKS Automatic</strong>: Azure chooses and scales the nodes for you with safe defaults. Less to decide, fewer knobs. Connecting with <code>get-credentials</code> is the same.</li>
+    </ul>
+    ${refs(doc('https://learn.microsoft.com/en-us/azure/aks/what-is-aks', 'What is AKS?'), doc('https://learn.microsoft.com/en-us/azure/aks/intro-aks-automatic', 'AKS Automatic'), doc('https://learn.microsoft.com/en-us/azure/aks/concepts-clusters-workloads', 'AKS core concepts'))}` },
+
+  'aks-kubeconfig': { t: 'What is inside the kubeconfig file?', h: `
+    <p>kubectl has no idea where your cluster is until it reads a YAML file, by default <code>~/.kube/config</code> (on Windows, <code>C:\\Users\\YOU\\.kube\\config</code>). It has three lists and one pointer:</p>
+<pre><code>clusters:                 # WHERE: address of each API server
+  - name: aks-class
+    cluster:
+      server: https://aks-class-dns-1a2b3c4d.hcp.eastus.azmk8s.io:443
+users:                    # WHO: how to prove who you are
+  - name: clusterUser_rg-k8s-class_aks-class
+    user:
+      exec:
+        command: kubelogin       # "run this helper to get a pass"
+contexts:                 # PAIRS: one cluster + one user (+ a default namespace)
+  - name: aks-class
+    context:
+      cluster: aks-class
+      user: clusterUser_rg-k8s-class_aks-class
+current-context: aks-class       # the pointer: which pair to use right now</code></pre>
+    <p><code>az aks get-credentials</code> writes one entry into each list and moves the pointer. It <em>merges</em>, so your other clusters stay.</p>
+    <h4>Look without opening the file</h4>
+<pre><code>kubectl config view --minify        # only the current context
+kubectl config get-contexts</code></pre>
+    <h4>Which file wins?</h4>
+    <ol>
+      <li>The <code>--kubeconfig FILE</code> flag on a command</li>
+      <li>The <code>KUBECONFIG</code> environment variable</li>
+      <li><code>~/.kube/config</code></li>
+    </ol>
+    <p>Treat this file like a house key. Never share it or commit it to Git.</p>
+    ${refs(doc('https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/', 'Organizing cluster access using kubeconfig files'), doc('https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/', 'Configure access to multiple clusters'))}` },
+
+  'aks-cost': { t: 'Cost: read before you create anything', h: `
+    <h4>What costs money</h4>
+    <ul>
+      <li><strong>Nodes</strong> (virtual machines): the big one. Charged for every hour they run, busy or idle.</li>
+      <li><strong>Disks</strong> attached to nodes and to PVCs.</li>
+      <li><strong>Load balancers and public IPs</strong> from <code>type: LoadBalancer</code> Services.</li>
+      <li><strong>Control room tier:</strong> <code>--tier free</code> costs nothing and is right for class. <code>standard</code> and <code>premium</code> add an hourly fee in exchange for an uptime promise and longer support.</li>
+    </ul>
+    <h4>Ways to keep it small</h4>
+    <ul>
+      <li><code>--node-count 1</code> and a small VM size.</li>
+      <li><code>az aks stop</code> when you take a break. Node charges stop. Disks still cost a little.</li>
+      <li><code>az group delete</code> when the lesson ends. Nothing left, nothing charged.</li>
+      <li>Set a budget alert in the Azure portal under Cost Management.</li>
+      <li>Students can look for the Azure for Students offer, which gives credit without a credit card.</li>
+    </ul>
+    <h4>First time in a new subscription?</h4>
+    <p>If <code>az aks create</code> complains that a provider is not registered, run this once and wait a few minutes:</p>
+<pre><code>az provider register --namespace Microsoft.ContainerService
+az provider show --namespace Microsoft.ContainerService --query registrationState</code></pre>
+    ${refs(doc('https://learn.microsoft.com/en-us/azure/aks/free-standard-pricing-tiers', 'AKS pricing tiers'), doc('https://learn.microsoft.com/en-us/azure/aks/start-stop-cluster', 'Stop and start an AKS cluster'), doc('https://azure.microsoft.com/en-us/pricing/details/kubernetes-service/', 'AKS pricing'))}` },
+
+  'aks-entra': { t: 'Roles, examples, and how an admin grants access', h: `
+    <p>Azure checks you twice. First: may you download the kubeconfig? Second: what may you do inside?</p>
+    <div class="scroll-x"><table>
+      <thead><tr><th>Role</th><th>Lets you</th></tr></thead>
+      <tbody>
+        <tr><td>Azure Kubernetes Service Cluster User Role</td><td>Run <code>az aks get-credentials</code> (the normal, Entra ID kubeconfig)</td></tr>
+        <tr><td>Azure Kubernetes Service Cluster Admin Role</td><td>Run <code>get-credentials --admin</code> (the master key). Give this to almost nobody.</td></tr>
+        <tr><td>Azure Kubernetes Service RBAC Reader</td><td>Look at most things in a namespace. Cannot see Secrets.</td></tr>
+        <tr><td>Azure Kubernetes Service RBAC Writer</td><td>Create and change apps in a namespace</td></tr>
+        <tr><td>Azure Kubernetes Service RBAC Admin</td><td>Writer, plus manage permissions inside a namespace</td></tr>
+        <tr><td>Azure Kubernetes Service RBAC Cluster Admin</td><td>Everything, in every namespace</td></tr>
+      </tbody>
+    </table></div>
+    <h4>Example: a teacher gives a student read access to one namespace</h4>
+<pre><code>AKS_ID=$(az aks show -g rg-k8s-class -n aks-class --query id -o tsv)
+
+az role assignment create \\
+  --assignee student@school.example \\
+  --role "Azure Kubernetes Service Cluster User Role" \\
+  --scope $AKS_ID
+
+az role assignment create \\
+  --assignee student@school.example \\
+  --role "Azure Kubernetes Service RBAC Reader" \\
+  --scope $AKS_ID/namespaces/web</code></pre>
+    <p>New role assignments can take a few minutes to start working. The RBAC roles apply when the cluster was created with Entra ID and Azure RBAC turned on:</p>
+<pre><code>az aks create ... --enable-aad --enable-azure-rbac --disable-local-accounts</code></pre>
+    <h4>Check what you are allowed to do</h4>
+<pre><code>kubectl auth can-i list pods -n web
+kubectl auth can-i delete deployments -n web
+kubectl auth whoami</code></pre>
+    <h4>Robots and pipelines</h4>
+    <p>A build system cannot type a device code. It logs in as a service principal or managed identity, then uses <code>kubelogin convert-kubeconfig -l spn</code>, <code>-l msi</code>, or <code>-l workloadidentity</code>.</p>
+    ${refs(doc('https://learn.microsoft.com/en-us/azure/aks/manage-azure-rbac', 'Use Azure RBAC for Kubernetes authorization'), doc('https://learn.microsoft.com/en-us/azure/aks/control-kubeconfig-access', 'Control access to the kubeconfig file'), doc('https://learn.microsoft.com/en-us/azure/aks/kubelogin-authentication', 'Use kubelogin with AKS'), doc('https://azure.github.io/kubelogin/', 'kubelogin documentation'))}` },
+
+  'aks-ctx': { t: 'One kubeconfig file or many? Pros and cons', h: `
+    <div class="scroll-x"><table>
+      <thead><tr><th>Way</th><th>Pros</th><th>Cons</th></tr></thead>
+      <tbody>
+        <tr><td><strong>One merged file</strong> (the default)</td><td>Simple. <code>use-context</code> switches quickly.</td><td>Easy to forget which cluster is current. One leaked file exposes every cluster.</td></tr>
+        <tr><td><strong>One file per cluster</strong> (<code>--file</code>)</td><td>You must choose a cluster on purpose. Production can never be the accidental default.</td><td>More typing: <code>--kubeconfig</code> on each command, or set <code>KUBECONFIG</code>.</td></tr>
+      </tbody>
+    </table></div>
+    <h4>Example: keep production separate</h4>
+<pre><code>az aks get-credentials -g rg-prod -n aks-prod --file ~/.kube/prod.config
+
+# everyday terminal: only minikube and dev are visible
+kubectl get pods
+
+# production, on purpose, in this terminal only
+export KUBECONFIG=~/.kube/prod.config
+kubectl get pods</code></pre>
+    <h4>More helpers</h4>
+<pre><code>kubectl config rename-context aks-class class-cloud
+kubectl config set-context --current --namespace=web
+kubectl config delete-context aks-class
+kubectl config delete-cluster aks-class
+kubectl config unset users.clusterUser_rg-k8s-class_aks-class</code></pre>
+    <p>Many people also show the current context in their terminal prompt, so it is always in view.</p>
+    ${refs(doc('https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/', 'Configure access to multiple clusters'), doc('https://learn.microsoft.com/en-us/cli/azure/aks#az-aks-get-credentials', 'az aks get-credentials reference'))}` },
+
+  'aks-acr': { t: 'Private images on AKS: Azure Container Registry', h: `
+    <p>Remember ImagePullBackOff with <code>unauthorized</code> from Lesson 2? On Azure, private images usually live in <strong>Azure Container Registry (ACR)</strong>. Instead of making a pull secret by hand, you let the cluster&rsquo;s own identity read the registry:</p>
+<pre><code>az acr create -g rg-k8s-class -n myclassregistry123 --sku Basic
+az aks update -g rg-k8s-class -n aks-class --attach-acr myclassregistry123</code></pre>
+    <p>Now any pod can use <code>image: myclassregistry123.azurecr.io/shop:2.1</code> with no <code>imagePullSecrets</code>.</p>
+    <h4>Check it</h4>
+<pre><code>az aks check-acr -g rg-k8s-class -n aks-class --acr myclassregistry123.azurecr.io</code></pre>
+    <div class="scroll-x"><table>
+      <thead><tr><th>Way</th><th>Pros</th><th>Cons</th></tr></thead>
+      <tbody>
+        <tr><td><code>--attach-acr</code></td><td>No passwords stored anywhere. Works for every namespace.</td><td>ACR only. Needs permission to assign roles in Azure.</td></tr>
+        <tr><td>Pull secret (Lesson 2)</td><td>Works with any registry (Docker Hub, GitHub).</td><td>A password to store, copy to each namespace, and rotate.</td></tr>
+      </tbody>
+    </table></div>
+    ${refs(doc('https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration', 'Authenticate with ACR from AKS'))}` },
+
   'l3-netpol': { t: 'A NetworkPolicy example', h: `
     <p>By default, every pod can talk to every pod. A NetworkPolicy narrows that. Once <em>any</em> policy selects a pod, everything not explicitly allowed to that pod is dropped silently, which shows up as a <strong>timeout</strong>.</p>
 <pre><code>apiVersion: networking.k8s.io/v1
@@ -1713,6 +2090,58 @@ const LESSONS = [
     hint: 'Same Service, different caller, silent timeout. Something is choosing who gets in.',
     why: 'A NetworkPolicy can allow some callers and silently drop others. <code>kubectl get networkpolicy -n web</code>.',
     more: 'Timeouts suggest traffic is being dropped. &ldquo;Connection refused&rdquo; suggests the traffic arrived and nothing answered. It is a useful hint for picking where to look first.' }
+ ]},
+ { id: 'aks', name: 'Lesson 4: Azure AKS', qs: [
+  { q: 'Which single command connects kubectl to an AKS cluster by saving its address and your login into the kubeconfig?',
+    o: ['<code>az login</code>', '<code>kubectl cluster-info</code>', '<code>az aks get-credentials --resource-group RG --name NAME</code>', '<code>az aks create --name NAME</code>'], a: 2,
+    hint: 'You are fetching the keys to the kitchen. Another word for keys: credentials.',
+    why: '<code>az login</code> only signs you in to Azure. <code>get-credentials</code> is the bridge that writes the cluster into the file kubectl reads.',
+    more: 'Short form: <code>az aks get-credentials -g rg-k8s-class -n aks-class</code>. The portal&rsquo;s Connect button shows this exact command with your names filled in.' },
+  { q: 'Why do you need both <code>az</code> and <code>kubectl</code>?',
+    o: ['<code>az</code> talks to Azure (create the cluster, fetch keys). <code>kubectl</code> talks to the cluster (pods, services).', 'They are the same tool with two names', '<code>kubectl</code> creates the cluster and <code>az</code> reads the logs', '<code>az</code> replaces Helm'], a: 0,
+    hint: 'One talks to the school office that owns kitchens. One is the walkie-talkie inside a kitchen.',
+    why: 'Two layers: Azure manages the cluster as a cloud resource, and Kubernetes manages what runs inside it.',
+    more: '<code>az aks stop</code> pauses the whole cluster (an Azure action). <code>kubectl scale --replicas=0</code> pauses one app (a Kubernetes action).' },
+  { q: '<code>az aks get-credentials</code> says <code>ResourceGroupNotFound</code>, but you are sure the spelling is right. What do you check first?',
+    o: ['The pod&rsquo;s readiness probe', 'Which subscription is active: <code>az account show</code>', 'CoreDNS in kube-system', 'The Helm release history'], a: 1,
+    hint: 'Many people have more than one billing account. Azure only searches the active one.',
+    why: 'Resource groups live inside a subscription. In the wrong subscription, the group truly does not exist. Fix with <code>az account set --subscription NAME</code>.',
+    more: '<code>az aks list -o table</code> shows every cluster in the active subscription with its resource group, so you can copy the real names.' },
+  { q: 'After <code>get-credentials</code>, kubectl says <code>kubelogin is not installed</code>. What is kubelogin and how do you get it?',
+    o: ['A Helm chart. <code>helm install kubelogin</code>', 'A pod. <code>kubectl apply -f kubelogin.yaml</code>', 'An Azure subscription type. Buy it in the portal.', 'A helper that signs kubectl in with Microsoft Entra ID. <code>az aks install-cli</code>'], a: 3,
+    hint: 'It runs on <em>your</em> computer, next to kubectl, and one <code>az aks</code> command installs both.',
+    why: 'Entra ID clusters need kubelogin to fetch a sign-in pass for kubectl. <code>az aks install-cli</code> installs kubectl and kubelogin together.',
+    more: 'After installing, run <code>kubelogin convert-kubeconfig -l azurecli</code> so kubectl reuses your <code>az login</code> and stops asking for device codes.' },
+  { q: 'You already use minikube. You run <code>az aks get-credentials</code> for <code>aks-class</code>. What happens to your kubeconfig?',
+    o: ['minikube is erased', 'AKS is added, minikube is kept, and the current context switches to <code>aks-class</code>', 'Nothing changes until you restart the computer', 'A second kubectl is installed'], a: 1,
+    hint: 'Read the success message again: &ldquo;<em>Merged</em> &hellip; as <em>current context</em>.&rdquo;',
+    why: 'It merges a new entry and moves the pointer. Go back any time with <code>kubectl config use-context minikube</code>.',
+    more: 'Add <code>--context class-cloud</code> to choose the context name, or <code>--file ./aks.config</code> to keep this cluster in a separate file.' },
+  { q: '<code>kubectl get pods</code> answers: <code>Error from server (Forbidden): pods is forbidden: User "you@school.example" cannot list resource "pods"</code>. What is true?',
+    o: ['The cluster is stopped', 'kubectl is pointed at minikube', 'The connection and sign-in work. You are missing a permission (an AKS RBAC role).', 'The kubeconfig file is corrupted'], a: 2,
+    hint: 'The server <em>answered</em>, and it knows your name. What does that prove?',
+    why: 'Forbidden means reached + identified + not allowed. Ask an admin for a role such as Azure Kubernetes Service RBAC Reader.',
+    more: 'Test yourself with <code>kubectl auth can-i list pods -n web</code>. It prints yes or no.' },
+  { q: '<code>kubectl get nodes</code> hangs, then says <code>Unable to connect to the server: dial tcp &hellip; i/o timeout</code>. Which is a likely cause?',
+    o: ['The cluster is stopped, or it is private / IP-restricted and your laptop cannot reach it', 'A Service selector typo', 'The image tag is wrong', 'You have too many Helm releases'], a: 0,
+    hint: 'A timeout means nobody answered at all. This is about reaching the API server, not about pods.',
+    why: 'Check <code>az aks show -g RG -n NAME --query powerState</code>. For private clusters use the VPN or <code>az aks command invoke</code>.',
+    more: 'Compare with Lesson 3: a timeout means traffic is dropped on the way, while Forbidden or Unauthorized means you arrived and were turned away.' },
+  { q: 'Why should you avoid <code>az aks get-credentials --admin</code>?',
+    o: ['It is slower', 'It only works on minikube', 'It deletes your other contexts', 'It downloads a master key that skips Entra ID sign-in, never expires, and is not tied to your name'], a: 3,
+    hint: 'Think about what happens if that file leaks, and who the cluster thinks did the damage.',
+    why: 'Named, expiring sign-ins are safer and leave a record of who did what. Well-run clusters disable local accounts, and then <code>--admin</code> fails.',
+    more: 'Admins turn it off with <code>az aks update -g RG -n NAME --disable-local-accounts</code>.' },
+  { q: 'On AKS you run <code>kubectl expose deployment shop --type=LoadBalancer --port=80</code>. EXTERNAL-IP shows <code>&lt;pending&gt;</code> for a minute. What is happening?',
+    o: ['It is broken. Delete the Service.', 'Azure is creating a real load balancer and public IP. Wait and watch with <code>-w</code>.', 'DNS is down', 'LoadBalancer Services do not work on AKS'], a: 1,
+    hint: 'On minikube this stays pending forever. What does a cloud have that a laptop lacks?',
+    why: 'The cloud builds real network equipment for you, which takes a moment. Then the address works from anywhere.',
+    more: 'If it stays pending for many minutes, <code>kubectl describe svc shop</code> shows Events from Azure, such as a public IP quota being used up.' },
+  { q: 'Class is over. Which command removes the cluster and everything made for it, so nothing keeps costing money?',
+    o: ['<code>kubectl delete pods --all</code>', '<code>kubectl config delete-context aks-class</code>', '<code>az group delete --name rg-k8s-class</code>', '<code>az logout</code>'], a: 2,
+    hint: 'You put everything in one Azure &ldquo;folder&rdquo; in step 5. Delete the folder.',
+    why: 'Deleting the resource group deletes the cluster, nodes, disks, and IPs. <code>delete-context</code> only tidies your laptop&rsquo;s kubeconfig. The cluster would keep running and billing.',
+    more: 'Just taking a break? <code>az aks stop</code> pauses node charges and keeps your apps for next time.' }
  ]}
 ];
 
@@ -1916,7 +2345,7 @@ $('#print-btn').addEventListener('click', () => {
   setTimeout(() => { $('#print-msg').textContent = 'If no print window opened, use your browser menu: Print (Ctrl+P or Cmd+P). Choose "Save as PDF" to keep a copy.'; }, 800);
 });
 $('#reset-btn').addEventListener('click', () => {
-  openPop('Reset all scores?', '<p>This clears every answer in all three quizzes and the name on the certificate. Your text size stays the same. You cannot undo this.</p>', [
+  openPop('Reset all scores?', '<p>This clears every answer in every quiz and the name on the certificate. Your text size stays the same. You cannot undo this.</p>', [
     { label: 'Keep my scores', cls: 'btn-sec' },
     { label: 'Reset all scores', cls: 'btn-danger', fn: () => {
         state.ans = {}; state.name = ''; save();
