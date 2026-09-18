@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aether Forge — AI Software Factory</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="login-gate" class="gate">
+    <div class="gate-card">
+      <div class="mark">AF</div>
+      <h1>Aether Forge</h1>
+      <p class="muted">Open-source AI model testing software factory</p>
+      <p class="tiny">Simulated Keycloak SSO — one session for Git, packages, CI, registry, GitOps, docs.</p>
+      <label>Username</label>
+      <input id="user" value="grace" autocomplete="username" />
+      <label>Password</label>
+      <input id="pass" type="password" value="forge" autocomplete="current-password" />
+      <button class="primary" id="login-btn">Sign in with SSO</button>
+      <p class="tiny">ada (platform) · linus (developer) · grace (ml-engineer) · ken (reviewer) — password <code>forge</code></p>
+    </div>
+  </div>
+
+  <header class="top">
+    <div class="brand">
+      <span class="mark sm">AF</span>
+      <div>
+        <strong>Aether Forge</strong>
+        <div class="tiny">Factory floor · simulated control plane</div>
+      </div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="who" id="who"></div>
+  </header>
+
+  <main id="app"></main>
+  <footer>
+    Azure managed Kubernetes is <strong>AKS</strong>. AWS is <strong>EKS</strong>. GCP is <strong>GKE</strong>.
+    IaC in this factory is <strong>OpenTofu</strong> (Terraform is not OSI open source).
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+Factory language,Actual system
+Floor,"Control plane + portal (SSO, catalog, audit)"
+Workbench,"Golden Linux workspace (Mac via Colima/Podman, or Coder on k3s)"
+Tool crib,Nexus (language/apt) + Harbor (OCI/Helm/ModelKits)
+Line,Catalog pipelines: build → test → eval → image → scan → stage → promote
+Shipping dock,GitOps to k3s / AKS / GKE / EKS
+Rollback,Revert Git SHA; images are immutable

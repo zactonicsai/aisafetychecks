@@ -1,0 +1,31 @@
+# Golden developer workbench — this is the "Linux configure VM" as an image.
+# Run on Mac via Colima/Podman, or as a Coder workspace template.
+FROM debian:bookworm-slim
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    CARGO_HOME=/opt/cargo \
+    GOPATH=/opt/go \
+    PATH=/opt/cargo/bin:/opt/go/bin:/usr/local/go/bin:$PATH
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl git make bash-completion sudo \
+    openjdk-21-jdk maven \
+    gcc g++ clang cmake ninja-build gdb \
+    python3 python3-pip python3-venv python3-dev \
+    golang-go \
+    rustc cargo \
+    nodejs npm \
+    podman buildah skopeo \
+    jq unzip zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Language test tools (thin set; teams add more from Nexus)
+RUN pip3 install --break-system-packages \
+    pytest ruff mypy mlflow dvc httpx \
+    && npm install -g playwright @playwright/test \
+    && cargo install --locked cargo-nextest || true
+
+WORKDIR /workspace
+USER 1000:1000
+CMD ["bash"]

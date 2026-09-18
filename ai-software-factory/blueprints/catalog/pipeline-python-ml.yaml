@@ -1,0 +1,37 @@
+# Catalog template: Python model or test-tool
+# Developers copy this into their repo and add tasks. They do not fork CI systems.
+apiVersion: forge.aether.io/v1
+kind: PipelineTemplate
+name: lang-python-ml
+stages:
+  - id: fetch
+    uses: catalog/git-dvc-fetch
+  - id: build
+    uses: catalog/python-uv-build
+  - id: unit
+    uses: catalog/pytest
+    params:
+      args: "-q --maxfail=1"
+  - id: eval
+    uses: catalog/model-eval
+    params:
+      baseline: "registry:production"
+      fail_below_f1: 0.80
+  - id: package
+    uses: catalog/buildah-image
+    params:
+      dockerfile: Containerfile
+  - id: scan
+    uses: catalog/grype-cosign
+  - id: publish
+    uses: catalog/harbor-push
+  - id: stage
+    uses: catalog/gitops-pr
+    params:
+      cluster: k3s
+      namespace: ns-stage
+  - id: promote
+    uses: catalog/gitops-promote
+    when: manual-approval
+    params:
+      environments: [aks, gke, eks]

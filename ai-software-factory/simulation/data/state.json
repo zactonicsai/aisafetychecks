@@ -1,0 +1,434 @@
+{
+  "packages": [
+    {
+      "ecosystem": "apt",
+      "name": "openjdk-21-jdk",
+      "version": "21.0.4",
+      "channel": "proxy"
+    },
+    {
+      "ecosystem": "apt",
+      "name": "gcc",
+      "version": "13.2",
+      "channel": "proxy"
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pytest",
+      "version": "8.3.3",
+      "channel": "proxy"
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "mlflow",
+      "version": "2.16.2",
+      "channel": "proxy"
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "dvc",
+      "version": "3.55.2",
+      "channel": "proxy"
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "torch",
+      "version": "2.4.1",
+      "channel": "hosted-wheel"
+    },
+    {
+      "ecosystem": "maven",
+      "name": "junit-jupiter",
+      "version": "5.11.0",
+      "channel": "proxy"
+    },
+    {
+      "ecosystem": "go",
+      "name": "github.com/stretchr/testify",
+      "version": "v1.9.0",
+      "channel": "proxy"
+    },
+    {
+      "ecosystem": "crates",
+      "name": "tokio",
+      "version": "1.40.0",
+      "channel": "proxy"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@playwright/test",
+      "version": "1.47.2",
+      "channel": "proxy"
+    },
+    {
+      "ecosystem": "oci",
+      "name": "platform/workbench",
+      "version": "stable",
+      "channel": "harbor"
+    },
+    {
+      "ecosystem": "oci",
+      "name": "platform/pipeline-runner",
+      "version": "1.8.0",
+      "channel": "harbor"
+    },
+    {
+      "ecosystem": "helm",
+      "name": "kserve",
+      "version": "0.14.1",
+      "channel": "harbor"
+    }
+  ],
+  "repos": [
+    {
+      "name": "platform",
+      "desc": "OpenTofu, Ansible, workbench image, catalog tasks",
+      "default_branch": "main",
+      "commits": 128
+    },
+    {
+      "name": "models/fraud-ranker",
+      "desc": "Gradient boosted ranker + pytest eval harness",
+      "default_branch": "main",
+      "commits": 42
+    },
+    {
+      "name": "tools/web-contract-harness",
+      "desc": "Custom Playwright contract tests published as a catalog task",
+      "default_branch": "main",
+      "commits": 19
+    },
+    {
+      "name": "services/ledger-api",
+      "desc": "Go HTTP service with Testcontainers",
+      "default_branch": "main",
+      "commits": 67
+    },
+    {
+      "name": "gitops/clusters",
+      "desc": "Desired state for k3s / AKS / GKE / EKS",
+      "default_branch": "main",
+      "commits": 90
+    }
+  ],
+  "workspaces": [
+    {
+      "id": "ws-ada",
+      "name": "ada-platform",
+      "owner": "ada",
+      "image": "harbor.forge.internal/platform/workbench:stable",
+      "runtime": "coder-k3s",
+      "status": "running",
+      "toolchains": [
+        "java",
+        "c++",
+        "python",
+        "go",
+        "rust",
+        "node"
+      ]
+    },
+    {
+      "id": "ws-grace",
+      "name": "grace-fraud-ranker",
+      "owner": "grace",
+      "image": "harbor.forge.internal/platform/workbench:stable",
+      "runtime": "colima-podman",
+      "status": "running",
+      "toolchains": [
+        "python",
+        "rust"
+      ]
+    },
+    {
+      "id": "ws-cea0fd",
+      "name": "grace-bench",
+      "owner": "grace",
+      "image": "harbor.forge.internal/platform/workbench:stable",
+      "runtime": "colima-podman",
+      "status": "running",
+      "toolchains": [
+        "java",
+        "c++",
+        "python",
+        "go",
+        "rust",
+        "node"
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "id": "4112b93334",
+      "project": "models/fraud-ranker",
+      "template": "lang-python-ml",
+      "target": "k3s",
+      "kind": "model",
+      "actor": "grace",
+      "status": "passed",
+      "started": "2026-09-18T19:07:15Z",
+      "finished": "2026-09-18T19:07:18Z",
+      "digest": "sha256:1f1b2d58a92e",
+      "stages": [
+        {
+          "id": "fetch",
+          "status": "passed",
+          "finished": "2026-09-18T19:07:16Z"
+        },
+        {
+          "id": "build",
+          "status": "queued",
+          "finished": null
+        },
+        {
+          "id": "unit",
+          "status": "queued",
+          "finished": null
+        },
+        {
+          "id": "eval",
+          "status": "queued",
+          "finished": null
+        },
+        {
+          "id": "package",
+          "status": "queued",
+          "finished": null
+        },
+        {
+          "id": "scan",
+          "status": "queued",
+          "finished": null
+        },
+        {
+          "id": "publish",
+          "status": "queued",
+          "finished": null
+        },
+        {
+          "id": "stage",
+          "status": "queued",
+          "finished": null
+        },
+        {
+          "id": "promote",
+          "status": "queued",
+          "finished": null
+        }
+      ]
+    }
+  ],
+  "models": [
+    {
+      "name": "models/fraud-ranker",
+      "version": "438",
+      "stage": "Staging",
+      "metrics": {
+        "f1": 0.92,
+        "auc": 0.95,
+        "latency_p99_ms": 20
+      },
+      "digest": "sha256:1f1b2d58a92e"
+    },
+    {
+      "name": "fraud-ranker",
+      "version": "3",
+      "stage": "Production",
+      "metrics": {
+        "f1": 0.91,
+        "auc": 0.96,
+        "latency_p99_ms": 18
+      },
+      "digest": "sha256:9f3a1c"
+    },
+    {
+      "name": "fraud-ranker",
+      "version": "4-rc",
+      "stage": "Staging",
+      "metrics": {
+        "f1": 0.93,
+        "auc": 0.97,
+        "latency_p99_ms": 21
+      },
+      "digest": "sha256:aa12b0"
+    }
+  ],
+  "deployments": [
+    {
+      "app": "models/fraud-ranker",
+      "target": "k3s",
+      "env": "stage",
+      "digest": "sha256:1f1b2d58a92e",
+      "status": "healthy",
+      "git_sha": "4112b93"
+    },
+    {
+      "app": "fraud-ranker",
+      "target": "k3s",
+      "env": "stage",
+      "digest": "sha256:aa12b0",
+      "status": "healthy",
+      "git_sha": "b7c21e4"
+    },
+    {
+      "app": "fraud-ranker",
+      "target": "aks",
+      "env": "prod",
+      "digest": "sha256:9f3a1c",
+      "status": "healthy",
+      "git_sha": "91aa002"
+    }
+  ],
+  "knowledge": [
+    {
+      "title": "Golden path: Python model",
+      "team": "platform",
+      "body": "Use template lang-python-ml. Never push weights to Git; DVC + MinIO."
+    },
+    {
+      "title": "Mac local loop",
+      "team": "platform",
+      "body": "colima start --cpu 6 --memory 12; forge ws start. Build linux/arm64 and linux/amd64."
+    },
+    {
+      "title": "Rollback is a Git revert",
+      "team": "sre",
+      "body": "Argo CD syncs the previous digest. Images are immutable. Do not retag latest."
+    }
+  ],
+  "audit": [
+    {
+      "ts": "2026-09-18T19:09:36Z",
+      "actor": "grace",
+      "action": "workspace.start",
+      "detail": "grace-bench"
+    },
+    {
+      "ts": "2026-09-18T19:07:15Z",
+      "actor": "grace",
+      "action": "pipeline.start",
+      "detail": "models/fraud-ranker via lang-python-ml \u2192 k3s"
+    },
+    {
+      "ts": "2026-09-18T19:06:43Z",
+      "actor": "grace",
+      "action": "sso.login",
+      "detail": "Keycloak simulated session issued"
+    },
+    {
+      "ts": "2026-09-18T18:28:56Z",
+      "actor": "grace",
+      "action": "sso.login",
+      "detail": "Keycloak simulated session issued"
+    }
+  ],
+  "templates": [
+    {
+      "id": "lang-python-ml",
+      "languages": [
+        "python"
+      ],
+      "stages": [
+        "fetch",
+        "build",
+        "unit",
+        "eval",
+        "package",
+        "scan",
+        "publish",
+        "stage",
+        "promote"
+      ]
+    },
+    {
+      "id": "lang-java-svc",
+      "languages": [
+        "java"
+      ],
+      "stages": [
+        "fetch",
+        "build",
+        "unit",
+        "integration",
+        "package",
+        "scan",
+        "publish",
+        "stage"
+      ]
+    },
+    {
+      "id": "lang-cpp-lib",
+      "languages": [
+        "c++"
+      ],
+      "stages": [
+        "fetch",
+        "cmake",
+        "googletest",
+        "package",
+        "scan",
+        "publish"
+      ]
+    },
+    {
+      "id": "lang-go-api",
+      "languages": [
+        "go"
+      ],
+      "stages": [
+        "fetch",
+        "build",
+        "gotest",
+        "package",
+        "scan",
+        "publish",
+        "stage"
+      ]
+    },
+    {
+      "id": "lang-rust-cli",
+      "languages": [
+        "rust"
+      ],
+      "stages": [
+        "fetch",
+        "clippy",
+        "test",
+        "package",
+        "scan",
+        "publish"
+      ]
+    },
+    {
+      "id": "web-frontend",
+      "languages": [
+        "js"
+      ],
+      "stages": [
+        "fetch",
+        "lint",
+        "unit",
+        "playwright",
+        "package",
+        "scan",
+        "publish",
+        "stage"
+      ]
+    },
+    {
+      "id": "custom-test-tool",
+      "languages": [
+        "any"
+      ],
+      "stages": [
+        "fetch",
+        "build",
+        "unit",
+        "integration",
+        "package",
+        "publish-task",
+        "stage"
+      ]
+    }
+  ]
+}
