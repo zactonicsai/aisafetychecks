@@ -120,6 +120,7 @@
     <button class="tab whitespace-nowrap px-3 py-3 border-b-4 border-transparent text-gray70 hover:bg-gray10" data-view="l2">2. Broken pods</button>
     <button class="tab whitespace-nowrap px-3 py-3 border-b-4 border-transparent text-gray70 hover:bg-gray10" data-view="l3">3. Broken Services</button>
     <button class="tab whitespace-nowrap px-3 py-3 border-b-4 border-transparent text-gray70 hover:bg-gray10" data-view="aks">4. Azure AKS</button>
+    <button class="tab whitespace-nowrap px-3 py-3 border-b-4 border-transparent text-gray70 hover:bg-gray10" data-view="eks">5. AWS EKS</button>
     <button class="tab whitespace-nowrap px-3 py-3 border-b-4 border-transparent text-gray70 hover:bg-gray10" data-view="cert">Certificate</button>
   </div>
 </nav>
@@ -129,7 +130,7 @@
 <!-- ======================= START ======================= -->
 <section id="view-start" class="view txt">
   <h1 class="text-4xl font-light text-navy leading-tight mb-3">Learn to run the school kitchen</h1>
-  <p class="text-lg">Kubernetes (people write <strong>K8s</strong>) is a giant school kitchen that runs lots of apps at once. In four lessons you learn to talk to the kitchen, fix lunch boxes that will not start, fix pickup windows that nobody can reach, and connect kubectl to a real cloud kitchen on Azure.</p>
+  <p class="text-lg">Kubernetes (people write <strong>K8s</strong>) is a giant school kitchen that runs lots of apps at once. In five lessons you learn to talk to the kitchen, fix lunch boxes that will not start, fix pickup windows that nobody can reach, and connect kubectl to real cloud kitchens on Azure and AWS.</p>
 
   <p class="font-semibold text-navy mt-6 mb-2">This is what a bad day looks like. Pick a row to jump to the lesson that fixes it.</p>
   <div class="scroll-x border border-gray30">
@@ -194,7 +195,7 @@ kubectl get pods -n web</code></pre>
     <li>Each lesson ends with a quiz. You get <strong>two tries</strong> per question. Miss the first try and a hint pops up.</li>
     <li>Your score saves in this browser. Reach 80% and you can print a certificate.</li>
   </ul>
-  <div class="btn-row no-print"><button class="btn btn-pri" data-view="l1">Start Lesson 1</button><button class="btn btn-sec" data-view="aks">Jump to Azure AKS setup</button></div>
+  <div class="btn-row no-print"><button class="btn btn-pri" data-view="l1">Start Lesson 1</button><button class="btn btn-sec" data-view="aks">Jump to Azure AKS setup</button><button class="btn btn-sec" data-view="eks">Jump to AWS EKS setup</button></div>
 </section>
 
 <!-- ======================= LESSON 1 ======================= -->
@@ -1132,6 +1133,282 @@ kubectl get nodes                       # can I reach it and am I allowed?</code
   <div id="quiz-aks"></div>
 </section>
 
+<!-- ======================= LESSON 5: EKS ======================= -->
+<section id="view-eks" class="view txt hidden">
+  <h1 class="text-4xl font-light text-navy leading-tight mb-3">Lesson 5: A real kitchen in the cloud (AWS EKS)</h1>
+  <p class="text-lg"><strong>Amazon Elastic Kubernetes Service (EKS)</strong> is Amazon&rsquo;s managed Kubernetes. Like AKS, AWS runs the control room and you rent the tables (nodes). Every kubectl and Helm command from Lessons 1 to 3 works the same. Again, the only new skill is <strong>pointing your walkie-talkie at the cloud kitchen</strong>.</p>
+
+  <h2 class="text-2xl font-light text-navy mt-6 mb-3">Three tools, three jobs</h2>
+  <div class="scroll-x">
+    <table>
+      <thead><tr><th>Tool</th><th>Talks to</th><th>Kitchen picture</th><th>Used for</th></tr></thead>
+      <tbody>
+        <tr><td><code>aws</code> (AWS CLI)</td><td>AWS itself</td><td>The school office</td><td>Prove who you are, <strong>fetch the keys</strong> with <code>aws eks update-kubeconfig</code></td></tr>
+        <tr><td><code>eksctl</code></td><td>AWS itself</td><td>The builder the office hires</td><td>Create and delete a whole cluster with one command</td></tr>
+        <tr><td><code>kubectl</code></td><td>The cluster&rsquo;s API server</td><td>The walkie-talkie inside one kitchen</td><td>Everything from Lessons 1 to 3</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Did Lesson 4? Here is the same idea in both clouds:</p>
+  <div class="scroll-x">
+    <table>
+      <thead><tr><th>Job</th><th>Azure AKS</th><th>AWS EKS</th></tr></thead>
+      <tbody>
+        <tr><td>Sign in to the cloud</td><td><code>az login</code></td><td><code>aws configure sso</code> + <code>aws sso login</code> (or <code>aws configure</code>)</td></tr>
+        <tr><td>Who am I?</td><td><code>az account show</code></td><td><code>aws sts get-caller-identity</code></td></tr>
+        <tr><td>What must be right</td><td>Subscription</td><td>Account, <strong>region</strong>, and profile</td></tr>
+        <tr><td>Create a cluster</td><td><code>az aks create</code></td><td><code>eksctl create cluster</code></td></tr>
+        <tr><td><strong>Connect kubectl</strong></td><td><code>az aks get-credentials</code></td><td><code>aws eks update-kubeconfig</code></td></tr>
+        <tr><td>Sign-in helper kubectl runs</td><td><code>kubelogin</code></td><td><code>aws eks get-token</code> (built into the AWS CLI)</td></tr>
+        <tr><td>Who may enter the cluster</td><td>Entra ID + Azure RBAC roles</td><td>IAM + EKS <strong>access entries</strong></td></tr>
+        <tr><td>Pause to save money</td><td><code>az aks stop</code></td><td>No pause button. Scale nodes to 0, or delete.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="btn-row no-print">
+    <button class="btn btn-sec" data-pop="eks-bg">Background: what EKS is, pros and cons</button>
+    <button class="btn btn-sec" data-pop="eks-iam">AWS words: account, region, IAM, profile, ARN</button>
+    <button class="btn btn-sec" data-pop="eks-cost">Cost: read before you create anything</button>
+  </div>
+
+  <details class="sec" open>
+    <summary>Step-by-step: from nothing to kubectl get nodes</summary>
+    <div class="body">
+      <div class="note warn"><strong>EKS has no free tier.</strong> The control room alone is billed every hour the cluster exists, plus nodes and network. Use a school or sandbox account, ask a teacher first, and do step 8 (delete) the same day.</div>
+      <ol>
+        <li><strong>Install the AWS CLI (version 2)</strong> from the <a href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html" target="_blank" rel="noopener">official install page</a>, then check it:
+<pre><code>aws --version        # should start with aws-cli/2</code></pre></li>
+        <li><strong>Install kubectl and eksctl.</strong> kubectl you know from the Start page. <code>eksctl</code> is the official cluster builder for EKS: <a href="https://docs.aws.amazon.com/eks/latest/eksctl/installation.html" target="_blank" rel="noopener">eksctl install page</a>.
+<pre><code>kubectl version --client
+eksctl version</code></pre></li>
+        <li><strong>Sign in to AWS.</strong> Your school or company probably uses IAM Identity Center (single sign-on). That is the recommended way, because the keys expire by themselves:
+<pre><code>aws configure sso            # one-time setup: answer the questions, name the profile "class"
+aws sso login --profile class
+export AWS_PROFILE=class     # Windows PowerShell:  $env:AWS_PROFILE = "class"</code></pre>
+          If your teacher gave you an access key instead:
+<pre><code>aws configure                # paste the key ID, the secret key, region us-east-1, output json</code></pre></li>
+        <li><strong>Prove who you are, and set the region.</strong> This is the most useful AWS command for debugging:
+<pre><code>aws sts get-caller-identity
+aws configure get region</code></pre>
+<pre><code>{
+    "UserId": "AROAEXAMPLE:you@school.example",
+    "Account": "111122223333",
+    "Arn": "arn:aws:sts::111122223333:assumed-role/ClassStudent/you@school.example"
+}</code></pre>
+          Remember the <code>Arn</code> line. It is the name the cluster will know you by.</li>
+        <li><strong>Create the cluster.</strong> This takes 15 to 20 minutes. Already have a cluster from your teacher? Skip to step 6.
+<pre><code>eksctl create cluster \
+  --name eks-class \
+  --region us-east-1 \
+  --nodes 1 \
+  --node-type t3.medium</code></pre>
+          eksctl builds the network (VPC), the control room, and one managed node. When it finishes, it also writes your kubeconfig for you, and the person who created the cluster is made its admin automatically.</li>
+        <li><strong>Fetch the keys.</strong> This is the connection step. Run it for any cluster you did not create yourself, on a new computer, or after your kubeconfig was lost:
+<pre><code>aws eks list-clusters --region us-east-1
+aws eks update-kubeconfig --region us-east-1 --name eks-class</code></pre>
+          You should see:
+<pre><code>Added new context arn:aws:eks:us-east-1:111122223333:cluster/eks-class to /home/you/.kube/config</code></pre>
+          Like AKS, this <em>merges</em> into your kubeconfig, keeps minikube and AKS, and switches the current context. The context name is the cluster&rsquo;s long ARN. The next section shows how <code>--alias</code> gives it a short name.</li>
+        <li><strong>Prove the connection:</strong>
+<pre><code>kubectl config current-context
+kubectl get nodes
+kubectl cluster-info</code></pre>
+          A node named like <code>ip-192-168-23-51.ec2.internal</code> with status <code>Ready</code> means you are talking to AWS.</li>
+        <li><strong>Clean up.</strong> First delete any LoadBalancer Services, then the cluster:
+<pre><code>kubectl get svc -A | grep LoadBalancer
+kubectl delete svc shop -n web
+
+eksctl delete cluster --name eks-class --region us-east-1
+kubectl config delete-context arn:aws:eks:us-east-1:111122223333:cluster/eks-class</code></pre>
+          Wait for eksctl to finish, then check the EKS and EC2 pages of the AWS console to be sure nothing is left running.</li>
+      </ol>
+      <div class="btn-row no-print"><button class="btn btn-sec" data-pop="eks-create">eksctl, console, or Auto Mode? Pros and cons</button></div>
+    </div>
+  </details>
+
+  <details class="sec">
+    <summary>How the sign-in works, and handy update-kubeconfig options</summary>
+    <div class="body">
+      <p>EKS does not put a password in your kubeconfig. It writes a note that says &ldquo;before each command, run <code>aws eks get-token</code>.&rdquo; The AWS CLI makes a short pass (good for about 15 minutes) signed with your AWS identity, and kubectl shows it to the cluster. It renews by itself, so you never notice, as long as your <strong>AWS sign-in is still fresh</strong>.</p>
+<pre><code>users:
+  - name: arn:aws:eks:us-east-1:111122223333:cluster/eks-class
+    user:
+      exec:
+        command: aws
+        args: [--region, us-east-1, eks, get-token, --cluster-name, eks-class]</code></pre>
+      <p>That means kubectl uses <em>whatever AWS identity your terminal has right now</em>. A different <code>AWS_PROFILE</code> means a different person knocking on the door.</p>
+      <h4>Useful options</h4>
+<pre><code>aws eks update-kubeconfig --region us-east-1 --name eks-class --alias class-aws     # short context name
+aws eks update-kubeconfig --region us-east-1 --name eks-class --profile class       # bake the profile into the entry
+aws eks update-kubeconfig --region us-east-1 --name eks-class --role-arn arn:aws:iam::111122223333:role/EksViewer
+aws eks update-kubeconfig --region us-east-1 --name eks-class --kubeconfig ./eks.config
+aws eks update-kubeconfig --region us-east-1 --name eks-class --dry-run             # print it, change nothing</code></pre>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>Option</th><th>Pros</th><th>Cons</th></tr></thead>
+          <tbody>
+            <tr><td><code>--alias</code></td><td>Short, clear context names</td><td>None. Use it.</td></tr>
+            <tr><td><code>--profile</code></td><td>kubectl always uses the right AWS identity for this cluster, whatever the terminal says</td><td>Breaks for teammates if you share the file and they named their profile differently</td></tr>
+            <tr><td><code>--role-arn</code></td><td>Step into a special role (like &ldquo;viewer&rdquo;) only for this cluster</td><td>You need permission to assume that role</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h4>Switching between all your kitchens</h4>
+<pre><code>kubectl config get-contexts
+kubectl config use-context minikube
+kubectl config use-context aks-class
+kubectl config use-context class-aws</code></pre>
+      <div class="note warn">Three clusters in one file means three chances to delete the wrong thing. Run <code>kubectl config current-context</code> before anything that changes or deletes.</div>
+    </div>
+  </details>
+
+  <details class="sec">
+    <summary>Who may enter: IAM and EKS access entries</summary>
+    <div class="body">
+      <p>AWS checks you three times, and each has its own error. Learning which is which saves hours.</p>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>Check</th><th>Question</th><th>If it fails</th></tr></thead>
+          <tbody>
+            <tr><td>1. IAM permission</td><td>May you <em>ask AWS about</em> the cluster? (needs <code>eks:DescribeCluster</code>)</td><td><code>update-kubeconfig</code> fails with <code>AccessDeniedException</code></td></tr>
+            <tr><td>2. Access entry</td><td>Is your IAM identity on the cluster&rsquo;s <em>guest list</em>?</td><td>kubectl says <code>You must be logged in to the server (Unauthorized)</code></td></tr>
+            <tr><td>3. Access policy</td><td>What may you <em>do</em> inside?</td><td>kubectl says <code>Error from server (Forbidden)</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note"><strong>The classic EKS surprise:</strong> a teammate creates the cluster and it works for them. You run the same <code>update-kubeconfig</code>, it succeeds, and kubectl says <code>Unauthorized</code>. Nothing is broken. Only the creator is on the guest list. An admin must add you with an <strong>access entry</strong>.</div>
+      <h4>An admin adds a student as a viewer of one namespace</h4>
+<pre><code>aws eks create-access-entry \
+  --cluster-name eks-class --region us-east-1 \
+  --principal-arn arn:aws:iam::111122223333:role/ClassStudent
+
+aws eks associate-access-policy \
+  --cluster-name eks-class --region us-east-1 \
+  --principal-arn arn:aws:iam::111122223333:role/ClassStudent \
+  --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy \
+  --access-scope type=namespace,namespaces=web</code></pre>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>Access policy</th><th>Lets you</th></tr></thead>
+          <tbody>
+            <tr><td><code>AmazonEKSViewPolicy</code></td><td>Look at most things. Cannot see Secrets.</td></tr>
+            <tr><td><code>AmazonEKSEditPolicy</code></td><td>Create and change apps</td></tr>
+            <tr><td><code>AmazonEKSAdminPolicy</code></td><td>Edit, plus manage permissions in a namespace</td></tr>
+            <tr><td><code>AmazonEKSClusterAdminPolicy</code></td><td>Everything, everywhere</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>aws eks list-access-entries --cluster-name eks-class --region us-east-1
+kubectl auth can-i list pods -n web
+kubectl auth whoami</code></pre>
+      <div class="btn-row no-print"><button class="btn btn-sec" data-pop="eks-access">Access entries vs the old aws-auth ConfigMap</button></div>
+    </div>
+  </details>
+
+  <details class="sec">
+    <summary>Try it: the shop app with a real public address</summary>
+    <div class="body">
+<pre><code>kubectl create namespace web
+kubectl create deployment shop --image=nginx:1.27 --replicas=2 -n web
+kubectl expose deployment shop --type=LoadBalancer --port=80 -n web
+kubectl get svc shop -n web -w</code></pre>
+<pre><code>NAME   TYPE           CLUSTER-IP      EXTERNAL-IP                                          PORT(S)
+shop   LoadBalancer   10.100.45.12    a1b2c3d4e5-1234567890.us-east-1.elb.amazonaws.com    80:31234/TCP</code></pre>
+      <p>One difference from Azure: AWS gives you a long <strong>host name</strong>, not an IP number. It can take two or three minutes after it appears before the name works everywhere. Then open <code>http://THAT-LONG-NAME</code> in a browser.</p>
+      <div class="note warn">Each LoadBalancer Service is a real AWS load balancer that bills by the hour. Delete the Service <em>before</em> you delete the cluster. A leftover load balancer can block the network cleanup and keep costing money.</div>
+      <div class="btn-row no-print">
+        <button class="btn btn-sec" data-pop="eks-lb">More info: load balancers on EKS</button>
+        <button class="btn btn-sec" data-pop="eks-ecr">Private images on EKS: Amazon ECR</button>
+      </div>
+    </div>
+  </details>
+
+  <details class="sec">
+    <summary>Other ways to connect: pros and cons</summary>
+    <div class="body">
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>Way</th><th>How</th><th>Pros</th><th>Cons</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Laptop + AWS CLI</strong> (this lesson)</td><td><code>aws eks update-kubeconfig</code></td><td>Your own tools and files. Works with Helm and scripts.</td><td>Three tools to install. Sign-in setup takes a few minutes the first time.</td></tr>
+            <tr><td><strong>eksctl</strong></td><td><code>eksctl utils write-kubeconfig --cluster eks-class --region us-east-1</code></td><td>Same result. Handy if you already use eksctl.</td><td>One more tool to keep updated.</td></tr>
+            <tr><td><strong>AWS CloudShell</strong></td><td>The terminal icon at the top of the AWS console, then the same <code>update-kubeconfig</code></td><td>Nothing to install. Already signed in. Works on a Chromebook.</td><td>Closes after idle time. Small storage. Check <code>kubectl version --client</code> and install kubectl or Helm there if missing.</td></tr>
+            <tr><td><strong>EKS console, Resources tab</strong></td><td>AWS console &rarr; EKS &rarr; your cluster &rarr; Resources</td><td>Point and click view of pods and deployments.</td><td>Not kubectl. Needs an access entry too, or the page shows a permission error.</td></tr>
+            <tr><td><strong>Bastion / VPN</strong> for private clusters</td><td>Connect into the VPC first, then run kubectl from there</td><td>The API server is never on the public internet.</td><td>More setup. A teacher or admin task.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="sec">
+    <summary>When the connection fails: error messages decoded</summary>
+    <div class="body">
+      <p>Work outward: tool &rarr; AWS sign-in &rarr; region &rarr; kubeconfig &rarr; network &rarr; guest list &rarr; permission.</p>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>You see</th><th>It means</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td><code>aws: command not found</code>, or kubectl says <code>executable aws not found</code></td><td>AWS CLI missing. kubectl needs it for <em>every</em> command, not only setup.</td><td>Install AWS CLI v2, open a new terminal</td></tr>
+            <tr><td><code>Unable to locate credentials</code></td><td>Not signed in, or the wrong profile is selected</td><td><code>aws sso login --profile class</code>, set <code>AWS_PROFILE</code></td></tr>
+            <tr><td><code>Token has expired</code> / <code>ExpiredToken</code> / <code>Error loading SSO Token</code></td><td>Your AWS sign-in timed out</td><td><code>aws sso login</code> again. No need to redo <code>update-kubeconfig</code>.</td></tr>
+            <tr><td><code>ResourceNotFoundException: No cluster found for name: eks-class</code></td><td>Typo, wrong account, or the <strong>wrong region</strong></td><td><code>aws eks list-clusters --region us-east-1</code>; add <code>--region</code></td></tr>
+            <tr><td><code>AccessDeniedException ... eks:DescribeCluster</code></td><td>Check 1: IAM does not let you ask about the cluster</td><td>Ask an admin for that IAM permission</td></tr>
+            <tr><td>kubectl shows minikube or AKS nodes</td><td>Wrong context</td><td><code>kubectl config use-context class-aws</code></td></tr>
+            <tr><td><code>You must be logged in to the server (Unauthorized)</code></td><td>Check 2: your IAM identity is not on the guest list, or kubectl is using a different identity than you think</td><td><code>aws sts get-caller-identity</code>, then ask an admin for an access entry for that ARN</td></tr>
+            <tr><td><code>Error from server (Forbidden)</code></td><td>Check 3: on the list, but not allowed to do this</td><td>Ask an admin to associate an access policy</td></tr>
+            <tr><td><code>Unable to connect to the server: dial tcp ... i/o timeout</code></td><td>The API server is private, or only allows certain IP addresses</td><td>Use the VPN / bastion, or ask an admin to allow your IP</td></tr>
+            <tr><td><code>no such host</code></td><td>The cluster was deleted or recreated</td><td>Run <code>update-kubeconfig</code> again</td></tr>
+            <tr><td><code>get nodes</code> says <code>No resources found</code></td><td>Auto Mode or a node group scaled to 0: no nodes until pods need them</td><td>Deploy an app and watch <code>kubectl get nodes -w</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h4>The 1-minute connection check</h4>
+<pre><code>aws sts get-caller-identity                     # who does AWS think I am?
+aws eks list-clusters --region us-east-1        # does the cluster exist in this region?
+kubectl config current-context                  # is kubectl aimed at it?
+kubectl get nodes                               # can I reach it and am I allowed?</code></pre>
+    </div>
+  </details>
+
+  <details class="sec">
+    <summary>Best practices and cheat card</summary>
+    <div class="body">
+      <ul>
+        <li>Sign in with IAM Identity Center (SSO) so keys expire by themselves. Avoid long-lived access keys. Never use the root account.</li>
+        <li>Always pass <code>--region</code>, or set a default, so commands never look in the wrong place.</li>
+        <li>Use <code>--alias</code> for short, clear context names.</li>
+        <li>Use access entries with the smallest policy that works: View for looking, Edit for deploying.</li>
+        <li>Run <code>aws sts get-caller-identity</code> first whenever kubectl says Unauthorized.</li>
+        <li>Never put a kubeconfig or an access key in Git, email, or chat.</li>
+        <li>Delete LoadBalancer Services, then the cluster, the same day. Check the console afterward.</li>
+      </ul>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>You want to&hellip;</th><th>Command</th></tr></thead>
+          <tbody>
+            <tr><td>Sign in to AWS</td><td><code>aws sso login --profile NAME</code></td></tr>
+            <tr><td>See who you are</td><td><code>aws sts get-caller-identity</code></td></tr>
+            <tr><td>Create a cluster</td><td><code>eksctl create cluster --name NAME --region REGION</code></td></tr>
+            <tr><td>List your clusters</td><td><code>aws eks list-clusters --region REGION</code></td></tr>
+            <tr><td><strong>Connect kubectl</strong></td><td><code>aws eks update-kubeconfig --region REGION --name NAME --alias SHORT</code></td></tr>
+            <tr><td>Check where kubectl points</td><td><code>kubectl config current-context</code></td></tr>
+            <tr><td>Switch clusters</td><td><code>kubectl config use-context NAME</code></td></tr>
+            <tr><td>See the guest list</td><td><code>aws eks list-access-entries --cluster-name NAME</code></td></tr>
+            <tr><td>Scale nodes to zero</td><td><code>eksctl scale nodegroup --cluster NAME --name NG --nodes 0 --nodes-min 0</code></td></tr>
+            <tr><td>Delete everything</td><td><code>eksctl delete cluster --name NAME --region REGION</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <p class="no-print mt-4">Official references: <a href="https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html" target="_blank" rel="noopener">Get started with EKS using eksctl</a>, <a href="https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html" target="_blank" rel="noopener">Connect kubectl to an EKS cluster</a>, <a href="https://docs.aws.amazon.com/cli/latest/reference/eks/update-kubeconfig.html" target="_blank" rel="noopener">update-kubeconfig reference</a>, <a href="https://docs.aws.amazon.com/eks/latest/userguide/access-entries.html" target="_blank" rel="noopener">EKS access entries</a>, <a href="https://docs.aws.amazon.com/eks/latest/userguide/troubleshooting.html" target="_blank" rel="noopener">EKS troubleshooting</a>.</p>
+
+  <h2 class="text-2xl font-light text-navy mt-10 mb-1">Lesson 5 quiz</h2>
+  <div id="quiz-eks"></div>
+</section>
+
 <!-- ======================= CERTIFICATE ======================= -->
 <section id="view-cert" class="view hidden">
   <div class="no-print txt">
@@ -1155,7 +1432,7 @@ kubectl get nodes                       # can I reach it and am I allowed?</code
     <p class="text-3xl sm:text-4xl font-light text-navy mt-2">Kubernetes Class: kubectl + Helm</p>
     <p class="mt-8 text-gray70">This certifies that</p>
     <p id="cert-who" class="text-3xl font-semibold text-ink mt-2 border-b border-gray30 inline-block px-6 pb-1 break-words max-w-full">Your name</p>
-    <p class="mt-6 max-w-xl mx-auto leading-relaxed">can talk to a cluster with kubectl, install apps with Helm, fix pods that will not start, fix Services that will not connect, and connect kubectl to Azure AKS.</p>
+    <p class="mt-6 max-w-xl mx-auto leading-relaxed">can talk to a cluster with kubectl, install apps with Helm, fix pods that will not start, fix Services that will not connect, and connect kubectl to Azure AKS and AWS EKS.</p>
     <p class="mt-6 font-mono text-navy"><span id="cert-score"></span></p>
     <p id="cert-detail" class="mt-1 text-gray70 text-sm"></p>
     <p id="cert-date" class="mt-8 text-gray70"></p>
@@ -1886,6 +2163,171 @@ az aks update -g rg-k8s-class -n aks-class --attach-acr myclassregistry123</code
     </table></div>
     ${refs(doc('https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration', 'Authenticate with ACR from AKS'))}` },
 
+  'eks-bg': { t: 'What EKS is: pros and cons', h: `
+    <p>EKS is Amazon&rsquo;s managed Kubernetes. AWS runs the control room (API server, scheduler, database) across several data centers and repairs it for you. You bring the nodes, or let AWS manage those too.</p>
+    <div class="scroll-x"><table>
+      <thead><tr><th></th><th>minikube / kind</th><th>AWS EKS</th><th>Azure AKS</th></tr></thead>
+      <tbody>
+        <tr><td>Control room cost</td><td>Free</td><td>Hourly fee, no free tier</td><td>Free tier available</td></tr>
+        <tr><td>Setup time</td><td>2 minutes</td><td>15 to 20 minutes</td><td>5 to 10 minutes</td></tr>
+        <tr><td>Pause button</td><td><code>minikube stop</code></td><td>None. Scale nodes to 0 or delete.</td><td><code>az aks stop</code></td></tr>
+        <tr><td>LoadBalancer address</td><td>Needs a tunnel</td><td>A DNS host name</td><td>An IP address</td></tr>
+        <tr><td>Identity</td><td>None</td><td>AWS IAM + access entries</td><td>Microsoft Entra ID + Azure RBAC</td></tr>
+        <tr><td>Networking you must think about</td><td>None</td><td>VPC, subnets, security groups</td><td>Mostly hidden for simple clusters</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Pros of EKS:</strong> very widely used in industry, deep links to other AWS services, standard upstream Kubernetes.</p>
+    <p><strong>Cons for a student:</strong> costs from the first minute, slower to create, and more AWS background needed (IAM, regions, VPCs).</p>
+    <p><strong>Suggestion:</strong> learn commands on minikube. Use EKS to learn the AWS parts: identity, regions, access entries, and load balancers.</p>
+    ${refs(doc('https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html', 'What is Amazon EKS?'), doc('https://docs.aws.amazon.com/eks/latest/userguide/eks-architecture.html', 'EKS architecture'), doc('https://docs.aws.amazon.com/eks/latest/best-practices/introduction.html', 'EKS best practices guide'))}` },
+
+  'eks-iam': { t: 'AWS words: account, region, IAM, profile, ARN', h: `
+    <ul>
+      <li><strong>Account</strong>: a 12-digit number that owns things and pays the bill, like <code>111122223333</code>.</li>
+      <li><strong>Region</strong>: a group of data centers in one part of the world, like <code>us-east-1</code> (Virginia) or <code>eu-west-1</code> (Ireland). A cluster lives in exactly one region. Looking in the wrong region is like looking for your classroom in the wrong building: it is simply not there.</li>
+      <li><strong>IAM</strong> (Identity and Access Management): the system that decides who you are and what you may do in AWS. You are either a <em>user</em> (a person with long-lived keys) or, more often today, you step into a <em>role</em> (a temporary hat with permissions).</li>
+      <li><strong>ARN</strong> (Amazon Resource Name): the full, unique name of anything in AWS. Yours looks like <code>arn:aws:iam::111122223333:role/ClassStudent</code>. The cluster&rsquo;s guest list is a list of ARNs.</li>
+      <li><strong>Profile</strong>: a named set of sign-in settings on your laptop, saved in <code>~/.aws/config</code>. Choose one with <code>--profile NAME</code> or <code>export AWS_PROFILE=NAME</code>.</li>
+    </ul>
+    <h4>Sign-in ways: pros and cons</h4>
+    <div class="scroll-x"><table>
+      <thead><tr><th>Way</th><th>Pros</th><th>Cons</th></tr></thead>
+      <tbody>
+        <tr><td><strong>IAM Identity Center (SSO)</strong>: <code>aws configure sso</code>, <code>aws sso login</code></td><td>Keys are temporary and expire by themselves. One login for many accounts. Recommended by AWS.</td><td>An admin must set it up. You log in again every few hours.</td></tr>
+        <tr><td><strong>Access keys</strong>: <code>aws configure</code></td><td>Simple. Works anywhere.</td><td>Keys never expire. If they leak (for example into Git), strangers can run up a huge bill.</td></tr>
+        <tr><td><strong>Root account</strong></td><td>None</td><td>All-powerful and impossible to limit. Never use it for daily work.</td></tr>
+      </tbody>
+    </table></div>
+    <h4>See your settings</h4>
+<pre><code>aws configure list
+aws configure list-profiles
+aws sts get-caller-identity --profile class</code></pre>
+    ${refs(doc('https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html', 'Configure the AWS CLI with IAM Identity Center'), doc('https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html', 'AWS CLI configuration and credential files'), doc('https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html', 'IAM security best practices'))}` },
+
+  'eks-cost': { t: 'Cost: read before you create anything', h: `
+    <h4>What costs money on EKS</h4>
+    <ul>
+      <li><strong>The control room:</strong> an hourly fee for every cluster, from the minute it exists, even with zero nodes. Roughly the price of a few snacks per day. Clusters left on an old Kubernetes version past standard support cost several times more.</li>
+      <li><strong>Nodes</strong> (EC2 virtual machines): per hour, busy or idle.</li>
+      <li><strong>NAT gateway:</strong> eksctl&rsquo;s default network includes one. It bills per hour plus per gigabyte, and surprises many beginners.</li>
+      <li><strong>Load balancers</strong> from LoadBalancer Services, and <strong>disks</strong> (EBS volumes) from PVCs.</li>
+    </ul>
+    <h4>Ways to keep it small</h4>
+    <ul>
+      <li>One small node: <code>--nodes 1 --node-type t3.medium</code>.</li>
+      <li>There is <strong>no stop command</strong>. For a short break, scale the nodes to zero (the control room still bills):
+<pre><code>eksctl get nodegroup --cluster eks-class --region us-east-1
+eksctl scale nodegroup --cluster eks-class --region us-east-1 --name NG_NAME --nodes 0 --nodes-min 0</code></pre></li>
+      <li>For anything longer than a lunch break, <strong>delete the cluster</strong>. Recreating takes 20 minutes and one command.</li>
+      <li>Set an AWS Budgets alert, so you get an email if spending passes a few dollars.</li>
+      <li>After deleting, look at the EC2 console for leftover load balancers, volumes, and NAT gateways in your region.</li>
+    </ul>
+    ${refs(doc('https://aws.amazon.com/eks/pricing/', 'Amazon EKS pricing'), doc('https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html', 'AWS Budgets'), doc('https://docs.aws.amazon.com/eks/latest/userguide/delete-cluster.html', 'Delete an EKS cluster'))}` },
+
+  'eks-create': { t: 'eksctl, console, or Auto Mode? Pros and cons', h: `
+    <div class="scroll-x"><table>
+      <thead><tr><th>Way</th><th>Pros</th><th>Cons</th></tr></thead>
+      <tbody>
+        <tr><td><strong>eksctl</strong> (this lesson)</td><td>One command builds network, cluster, and nodes. One command deletes it all. Official tool.</td><td>Hides a lot. You do not see the network it builds unless you look.</td></tr>
+        <tr><td><strong>AWS console</strong></td><td>Visual. Good for seeing every option once.</td><td>Many screens. You must create IAM roles and a VPC first. Hard to repeat exactly.</td></tr>
+        <tr><td><strong>Terraform / CloudFormation / CDK</strong></td><td>The cluster is written as code in Git. What real teams use.</td><td>A whole extra tool to learn.</td></tr>
+      </tbody>
+    </table></div>
+    <h4>eksctl with a config file (best practice)</h4>
+<pre><code># cluster.yaml
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: eks-class
+  region: us-east-1
+managedNodeGroups:
+  - name: ng-1
+    instanceType: t3.medium
+    desiredCapacity: 1</code></pre>
+<pre><code>eksctl create cluster -f cluster.yaml
+eksctl delete cluster -f cluster.yaml</code></pre>
+    <h4>EKS Auto Mode</h4>
+    <p>In Auto Mode, AWS also manages the nodes: it adds them when pods need room, removes them when they do not, and patches them for you.</p>
+<pre><code>eksctl create cluster --name eks-class --region us-east-1 --enable-auto-mode</code></pre>
+    <ul>
+      <li><strong>Pros:</strong> no node sizes to pick, fewer add-ons to install, idle nodes disappear.</li>
+      <li><strong>Cons:</strong> an extra management fee per node, and fewer knobs to turn.</li>
+      <li><strong>Surprise:</strong> right after creation <code>kubectl get nodes</code> says <code>No resources found</code>. That is normal. Deploy an app and a node appears in about a minute. Your <em>connection</em> is fine if <code>kubectl get namespaces</code> answers.</li>
+    </ul>
+    ${refs(doc('https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html', 'Get started with eksctl'), doc('https://docs.aws.amazon.com/eks/latest/eksctl/what-is-eksctl.html', 'eksctl user guide'), doc('https://docs.aws.amazon.com/eks/latest/userguide/automode.html', 'EKS Auto Mode'))}` },
+
+  'eks-access': { t: 'Access entries vs the old aws-auth ConfigMap', h: `
+    <p>There are two ways to keep the cluster&rsquo;s guest list. You will see both in tutorials.</p>
+    <div class="scroll-x"><table>
+      <thead><tr><th></th><th>Access entries (current)</th><th><code>aws-auth</code> ConfigMap (old, deprecated)</th></tr></thead>
+      <tbody>
+        <tr><td>Where the list lives</td><td>In AWS, outside the cluster</td><td>A ConfigMap inside <code>kube-system</code></td></tr>
+        <tr><td>Managed with</td><td><code>aws eks create-access-entry</code>, console, Terraform</td><td><code>kubectl edit configmap aws-auth -n kube-system</code></td></tr>
+        <tr><td>If you make a typo</td><td>The command is rejected</td><td>You can lock <em>everyone</em> out, including yourself</td></tr>
+        <tr><td>If you are locked out</td><td>An AWS admin fixes it from outside</td><td>Very hard to recover</td></tr>
+        <tr><td>Ready-made permissions</td><td>Yes: View, Edit, Admin, ClusterAdmin policies</td><td>No. You write Kubernetes RBAC yourself.</td></tr>
+      </tbody>
+    </table></div>
+    <p>The cluster&rsquo;s <strong>authentication mode</strong> decides which is used: <code>API</code> (access entries only, recommended for new clusters), <code>API_AND_CONFIG_MAP</code> (both), or <code>CONFIG_MAP</code> (old only).</p>
+<pre><code>aws eks describe-cluster --name eks-class --region us-east-1 \\
+  --query cluster.accessConfig.authenticationMode</code></pre>
+    <h4>Why the creator always gets in</h4>
+    <p>When a cluster is created, the IAM identity that created it is given cluster admin automatically. Everyone else, even an AWS account administrator, starts with nothing until an entry is added.</p>
+    <h4>More examples</h4>
+<pre><code># whole-cluster admin for a teacher role
+aws eks associate-access-policy --cluster-name eks-class --region us-east-1 \\
+  --principal-arn arn:aws:iam::111122223333:role/Teacher \\
+  --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy \\
+  --access-scope type=cluster
+
+# remove someone
+aws eks delete-access-entry --cluster-name eks-class --region us-east-1 \\
+  --principal-arn arn:aws:iam::111122223333:role/ClassStudent</code></pre>
+    <p>Tip: for SSO roles, use the plain role ARN (<code>arn:aws:iam::ACCOUNT:role/...</code>), not the longer <code>assumed-role</code> ARN that <code>get-caller-identity</code> prints.</p>
+    ${refs(doc('https://docs.aws.amazon.com/eks/latest/userguide/access-entries.html', 'Grant IAM users access with EKS access entries'), doc('https://docs.aws.amazon.com/eks/latest/userguide/access-policies.html', 'Access policy permissions'), doc('https://docs.aws.amazon.com/eks/latest/userguide/cluster-auth.html', 'Learn how access control works in EKS'))}` },
+
+  'eks-lb': { t: 'Load balancers on EKS', h: `
+    <p>When you create a <code>type: LoadBalancer</code> Service, a controller asks AWS for a real load balancer. Which kind you get depends on how the cluster is set up.</p>
+    <div class="scroll-x"><table>
+      <thead><tr><th>Setup</th><th>What you get</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Plain eksctl cluster, nothing extra</td><td>A Classic Load Balancer from the built-in controller</td><td>Fine for class. Old technology.</td></tr>
+        <tr><td><strong>AWS Load Balancer Controller</strong> installed (usually with Helm)</td><td>Network Load Balancers for Services, Application Load Balancers for Ingress</td><td>What real teams use. Best practice.</td></tr>
+        <tr><td>EKS Auto Mode</td><td>Load balancing is built in and managed by AWS</td><td>Services may need a <code>loadBalancerClass</code>. See the Auto Mode docs.</td></tr>
+      </tbody>
+    </table></div>
+    <h4>If EXTERNAL-IP stays pending</h4>
+<pre><code>kubectl describe svc shop -n web      # read Events, just like Lesson 2</code></pre>
+    <p>Common reasons: the subnets are missing the tags that tell AWS where load balancers may go, or the account hit a load balancer limit.</p>
+    <h4>Why a host name and not an IP?</h4>
+    <p>AWS load balancers live in several data centers at once and can change their IP addresses. The host name always points at the right ones. For a friendly address like <code>shop.example.com</code>, you add a DNS record that points at the long name.</p>
+    ${refs(doc('https://docs.aws.amazon.com/eks/latest/userguide/network-load-balancing.html', 'Route TCP and UDP traffic with Network Load Balancers'), doc('https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html', 'AWS Load Balancer Controller'), doc('https://docs.aws.amazon.com/eks/latest/userguide/auto-configure-nlb.html', 'Auto Mode: load balancer Services'))}` },
+
+  'eks-ecr': { t: 'Private images on EKS: Amazon ECR', h: `
+    <p>On AWS, private images usually live in <strong>Amazon Elastic Container Registry (ECR)</strong>. Good news for Lesson 2&rsquo;s ImagePullBackOff: nodes made by eksctl or Auto Mode already carry an IAM permission to <em>read</em> ECR in the same account. No pull secret needed.</p>
+<pre><code>aws ecr create-repository --repository-name shop --region us-east-1
+
+aws ecr get-login-password --region us-east-1 | \\
+  docker login --username AWS --password-stdin 111122223333.dkr.ecr.us-east-1.amazonaws.com
+
+docker tag shop:2.1 111122223333.dkr.ecr.us-east-1.amazonaws.com/shop:2.1
+docker push 111122223333.dkr.ecr.us-east-1.amazonaws.com/shop:2.1</code></pre>
+    <p>Then in your pod: <code>image: 111122223333.dkr.ecr.us-east-1.amazonaws.com/shop:2.1</code></p>
+    <h4>Still ImagePullBackOff?</h4>
+    <ul>
+      <li>The region or account number in the image name is wrong (the most common typo).</li>
+      <li>The repository is in a <em>different</em> AWS account, which needs a repository policy that allows yours.</li>
+      <li>Nodes in private subnets have no path to ECR (no NAT gateway and no VPC endpoints).</li>
+    </ul>
+    <div class="scroll-x"><table>
+      <thead><tr><th>Way</th><th>Pros</th><th>Cons</th></tr></thead>
+      <tbody>
+        <tr><td>ECR + node IAM role</td><td>No passwords stored. Works in every namespace.</td><td>ECR only.</td></tr>
+        <tr><td>Pull secret (Lesson 2)</td><td>Works with any registry.</td><td>A password to store, copy, and rotate.</td></tr>
+      </tbody>
+    </table></div>
+    ${refs(doc('https://docs.aws.amazon.com/AmazonECR/latest/userguide/ECR_on_EKS.html', 'Using Amazon ECR images with Amazon EKS'), doc('https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-cli.html', 'Get started with ECR using the AWS CLI'))}` },
+
   'l3-netpol': { t: 'A NetworkPolicy example', h: `
     <p>By default, every pod can talk to every pod. A NetworkPolicy narrows that. Once <em>any</em> policy selects a pod, everything not explicitly allowed to that pod is dropped silently, which shows up as a <strong>timeout</strong>.</p>
 <pre><code>apiVersion: networking.k8s.io/v1
@@ -2142,6 +2584,58 @@ const LESSONS = [
     hint: 'You put everything in one Azure &ldquo;folder&rdquo; in step 5. Delete the folder.',
     why: 'Deleting the resource group deletes the cluster, nodes, disks, and IPs. <code>delete-context</code> only tidies your laptop&rsquo;s kubeconfig. The cluster would keep running and billing.',
     more: 'Just taking a break? <code>az aks stop</code> pauses node charges and keeps your apps for next time.' }
+ ]},
+ { id: 'eks', name: 'Lesson 5: AWS EKS', qs: [
+  { q: 'Which command connects kubectl to an existing EKS cluster by writing it into your kubeconfig?',
+    o: ['<code>aws configure</code>', '<code>aws eks update-kubeconfig --region us-east-1 --name eks-class</code>', '<code>aws sts get-caller-identity</code>', '<code>kubectl config use-context eks-class</code>'], a: 1,
+    hint: 'The file kubectl reads is the kubeconfig. Which command has that word in it?',
+    why: '<code>update-kubeconfig</code> adds the cluster&rsquo;s address and sign-in instructions, and switches the current context. It is the EKS twin of <code>az aks get-credentials</code>.',
+    more: 'Add <code>--alias class-aws</code> to get a short context name instead of the long ARN.' },
+  { q: 'What does <code>aws sts get-caller-identity</code> tell you?',
+    o: ['Which AWS account and IAM identity your terminal is using right now', 'Which pods are running', 'The cluster&rsquo;s Kubernetes version', 'Your Helm release history'], a: 0,
+    hint: 'Read the command as a sentence: &ldquo;get the identity of the caller.&rdquo; Who is the caller?',
+    why: 'It prints your account number and ARN. Because kubectl signs in with whatever AWS identity is active, this is the first check when kubectl says Unauthorized.',
+    more: 'Try <code>aws sts get-caller-identity --profile class</code> and again with another profile. Different ARN, different person at the cluster door.' },
+  { q: '<code>aws eks update-kubeconfig --name eks-class</code> says <code>No cluster found for name: eks-class</code>. The spelling is right. What do you check first?',
+    o: ['The readiness probe', 'The Helm chart version', 'The region (and account) you are looking in', 'The pod&rsquo;s memory limit'], a: 2,
+    hint: 'A cluster lives in exactly one group of data centers. Did you say which one?',
+    why: 'Without <code>--region</code> the CLI uses your default region. A cluster in <code>us-east-1</code> does not exist as far as <code>us-west-2</code> is concerned.',
+    more: '<code>aws eks list-clusters --region us-east-1</code> shows what really exists there. On Azure the matching mistake is the wrong subscription.' },
+  { q: 'After <code>update-kubeconfig</code>, how does kubectl prove who you are to EKS?',
+    o: ['A permanent password is saved in the kubeconfig', 'It asks you for a device code every time', 'It uses your Docker login', 'It runs <code>aws eks get-token</code> to get a short pass signed with your AWS identity'], a: 3,
+    hint: 'Look at the <code>exec:</code> block in the kubeconfig. Which program does it run?',
+    why: 'No secret is stored. The AWS CLI makes a fresh pass (about 15 minutes) each time it is needed. That is why kubectl needs the AWS CLI installed and a fresh AWS sign-in.',
+    more: 'If <code>aws</code> is missing from your PATH, <em>every</em> kubectl command fails with <code>executable aws not found</code>, even <code>get pods</code>.' },
+  { q: 'Your teammate created the cluster and kubectl works for them. Your <code>update-kubeconfig</code> succeeds, but kubectl says <code>You must be logged in to the server (Unauthorized)</code>. Most likely cause?',
+    o: ['The cluster is broken', 'Your IAM identity has no access entry on the cluster. Only the creator is on the guest list.', 'You need to reinstall kubectl', 'The nodes are out of memory'], a: 1,
+    hint: 'Who gets admin automatically when a cluster is created? Who does not?',
+    why: 'The creator is added automatically. Everyone else needs an admin to run <code>aws eks create-access-entry</code> and <code>associate-access-policy</code> for their ARN.',
+    more: 'An admin can check the list with <code>aws eks list-access-entries --cluster-name eks-class</code>.' },
+  { q: 'What is the difference between <code>Unauthorized</code> and <code>Forbidden</code> on EKS?',
+    o: ['They mean the same thing', 'Unauthorized = wrong region. Forbidden = wrong account.', 'Unauthorized = the cluster does not accept who you are (no access entry, or expired sign-in). Forbidden = it knows you, but you lack permission for that action.', 'Unauthorized = network timeout. Forbidden = DNS failure.'], a: 2,
+    hint: 'One is &ldquo;who are you?&rdquo; The other is &ldquo;I know you, and the answer is no.&rdquo;',
+    why: 'Unauthorized is fixed with an access entry or a fresh sign-in. Forbidden is fixed with an access policy such as AmazonEKSViewPolicy or AmazonEKSEditPolicy.',
+    more: 'Test permissions yourself: <code>kubectl auth can-i create deployments -n web</code>.' },
+  { q: 'It worked this morning. After lunch kubectl says <code>Token has expired</code> or <code>Error loading SSO Token</code>. What is the quickest fix?',
+    o: ['<code>aws sso login</code> again', 'Delete and recreate the cluster', 'Run <code>eksctl create cluster</code>', 'Reinstall Helm'], a: 0,
+    hint: 'SSO keys expire by themselves on purpose. What refreshes them?',
+    why: 'Your AWS sign-in timed out. Sign in again and kubectl works. The kubeconfig is still fine, so no need to run <code>update-kubeconfig</code>.',
+    more: 'Expiring keys are a feature. If a laptop is lost, the keys on it are useless within hours.' },
+  { q: 'On EKS, <code>kubectl get svc</code> shows EXTERNAL-IP as <code>a1b2c3-123.us-east-1.elb.amazonaws.com</code>. What is that?',
+    o: ['An error message', 'The name of a pod', 'The cluster&rsquo;s API server', 'The DNS host name of a real AWS load balancer. Open it in a browser after a minute or two.'], a: 3,
+    hint: '&ldquo;elb&rdquo; stands for Elastic Load Balancer.',
+    why: 'AWS load balancers are addressed by host name, not by a fixed IP. New names take a couple of minutes to work everywhere.',
+    more: 'On AKS the same Service shows an IP number. Same Kubernetes YAML, different cloud behind it.' },
+  { q: 'Why is EKS riskier for your wallet than AKS or minikube if you forget about it?',
+    o: ['It is not. EKS is always free.', 'The control room bills every hour with no free tier, and there is no stop button', 'kubectl charges per command', 'Helm charts cost money on AWS'], a: 1,
+    hint: 'AKS has <code>az aks stop</code> and a free tier. What does EKS have?',
+    why: 'An idle EKS cluster still costs money for the control room, nodes, and the NAT gateway. Scale nodes to zero for a short break. Delete for anything longer.',
+    more: 'Set an AWS Budgets alert for a few dollars. An email on day one beats a surprise at the end of the month.' },
+  { q: 'Class is over. What is the right clean-up order?',
+    o: ['<code>kubectl config delete-context</code>, and you are done', '<code>aws sso logout</code>, and you are done', 'Delete LoadBalancer Services, then <code>eksctl delete cluster</code>, then check the console for leftovers', 'Close the terminal window'], a: 2,
+    hint: 'Some things were created by Kubernetes <em>in AWS</em>. Remove those first, then the cluster.',
+    why: 'Load balancers made by Services can block the network cleanup and keep billing. Deleting a context or logging out only changes your laptop. The cluster keeps running.',
+    more: 'Find them all: <code>kubectl get svc -A | grep LoadBalancer</code>. Also delete PVCs you no longer need, since their disks can outlive the cluster.' }
  ]}
 ];
 
