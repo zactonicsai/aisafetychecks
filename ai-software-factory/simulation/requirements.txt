@@ -1,2 +1,0 @@
-# No third-party packages. app.py uses the Python 3 standard library only.
-# Optional later: flask

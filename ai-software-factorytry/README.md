@@ -6,27 +6,16 @@ This repository contains:
 
 1. Architecture, tool choices, flows, design patterns, pros/cons, and gotchas (`ARCHITECTURE.md`)
 2. Infrastructure blueprints (OpenTofu, Ansible, shell, cloud CLIs, sample pipelines)
-3. A **static simulation** (`simulation/static`) — HTML + localStorage, deployable on Vercel
-4. Optional Python API (`simulation/app.py`) if you want a process-side backend
+3. A **local simulation** (`simulation/`) — Python API + static HTML factory floor
 
 > Azure does **not** have EKS. EKS is AWS. Azure’s managed Kubernetes is **AKS**. This factory treats AWS EKS, Azure AKS, and GCP GKE as interchangeable Kubernetes substrates.
 
 ## Quick start (simulation)
 
-Static (Vercel / any static host / localStorage):
-
-```bash
-cd simulation/static
-python3 -m http.server 8080
-```
-
-Or deploy the repo to Vercel (`vercel.json` is at the root). See `DEPLOY.md`.
-
-Optional Python API:
-
 ```bash
 cd simulation
 python3 app.py
+# stdlib only — no pip install required
 ```
 
 Open http://127.0.0.1:8080

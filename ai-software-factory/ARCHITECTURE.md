@@ -1,364 +1,316 @@
-# Aether Forge Architecture
+# AI Software Factory Architecture and Decision Guide
 
-## 1. Goal and operating model
+## 1. Outcome
 
-Build an **inner-source software factory** that:
+The software factory gives each developer a prepared Linux workspace, trusted package sources, repeatable build templates, shared test evidence, model lineage, and controlled promotion to Kubernetes. It favors a small core and optional capabilities over a single giant platform.
 
-- Gives every developer a **configured Linux workspace** (local Mac via container/VM, or remote CDE)
-- Preinstalls language and test toolchains (Java, C/C++, Python, Go, Rust, web)
-- Hosts a **package repo** so teams pull approved tools instead of the public internet
-- Lets a developer **compose a custom pipeline** for their testing-tool or model project
-- Builds, tests, stage-tests, and ships a **Linux image** (Docker or Podman)
-- Deploys that image to local k3s, then Azure **AKS**, GCP **GKE**, or AWS **EKS**
-- Shares knowledge across teams
-- Tracks every change and supports **rollback**
-- Uses **single sign-on** for every tool
-- Stays **open source**, simple to operate, and easy to add access controls
+### Goals
 
-Metaphor that must stay literal in the design:
+- Build and test Java, C/C++, Python, Go, Rust, web applications, containers, and AI models.
+- Work on a Mac while matching the Linux build environment used in CI.
+- Keep source, test results, model versions, packages, images, SBOMs, and deployment history traceable.
+- Use one sign-on, group-based access, short-lived cloud identity, and auditable changes.
+- Run the same workload contract on local `kind`, AKS, GKE, and EKS.
+- Roll back by digest and Git commit without rebuilding.
+- Let teams extend pipelines without granting them control of the shared factory.
 
-| Factory term | Platform meaning |
+### Non-goals for the starter
+
+- A turnkey regulated-production landing zone.
+- One-click installation of every optional tool on a laptop.
+- Training large foundation models on a Mac.
+- Making cloud-specific storage, GPU, load balancer, or identity behavior identical.
+
+## 2. The factory analogy
+
+| Factory concept | Platform equivalent |
 |---|---|
-| Floor | Control plane + portal (this simulation) |
-| Stations | Git, packages, CI, model lab, registry, deploy |
-| Workbench | Developer Linux workspace |
-| Bill of materials | SBOM + lockfiles + ModelKit |
-| Batch | A pipeline run |
-| Shipping dock | Image registry + GitOps to Kubernetes |
-| Foreman | Platform team + policy as code |
+| Factory floor | Linux VM, containers, Kubernetes, networks, storage |
+| Tool crib | Package repositories, base images, compiler images, templates |
+| Blueprint | Source repository, model card, pipeline definition, deployment manifest |
+| Assembly line | Tekton pipeline stages |
+| Quality station | Unit, integration, security, AI evaluation, and policy tests |
+| Warehouse | Harbor, package repository, MinIO, MLflow registry |
+| Shipping manifest | GitOps environment repository |
+| Badge office | Keycloak SSO and role/group mappings |
+| Safety office | Policy engine, signing, SBOM, vulnerability and secret scanning |
+| Maintenance log | Git, audit events, metrics, logs, traces, incident records |
 
-## 2. Design principles (keep it simple)
+## 3. Logical architecture
 
-1. **One source of truth: Git.** Code, pipeline YAML, cluster desired state, workspace images, and docs live in Git. Rollback = revert + GitOps sync.
-2. **Three portable contracts only.** Git repo, OCI image (and ModelKit), Kubernetes manifests. Do not invent a fourth.
-3. **Identity first.** Keycloak OIDC is the only login. No local passwords on tools after bootstrap.
-4. **Golden paths, not platforms-of-platforms.** One recommended stack. Swappable adapters at the edges.
-5. **Policy at the gate, not in tribal knowledge.** Admission + CI checks, not wiki pages.
-6. **Workspace is disposable.** Home/project volume persists; the image is rebuilt from Git.
-7. **Least privilege + short-lived creds.** Workload identity on each cloud. No long-lived cloud keys in pipelines.
-8. **Same pipeline locally and in the cloud.** `make test` and Tekton/Woodpecker steps call the same scripts.
-
-### Design patterns used
-
-| Pattern | Where |
-|---|---|
-| **Platform / paved road** | Factory floor exposes golden templates; teams fork them |
-| **Sidecar / workspace image** | Toolchains baked into `forge-workbench` image |
-| **Pipeline as code** | YAML in the app repo, reusable catalog of tasks |
-| **GitOps** | Desired state in `gitops/` watched by Argo CD or Flux |
-| **Strangler + adapters** | Cloud-specific modules behind a common interface |
-| **Inner source** | Shared task library and test harnesses across teams |
-| **Hexagonal ports** | “Deploy target” port: docker / podman / k3s / aks / gke / eks |
-| **Package by capability** | Repos: `platform/`, `workspaces/`, `catalog/`, `apps/` |
-| **RBAC + SSO federation** | Keycloak groups → Git, CI, K8s, registries |
-| **Immutable artifacts** | Content-addressed images + model versions; promote, never mutate |
-| **Canary + automatic rollback** | GitOps + health metrics; revert Git SHA |
-
-Avoid: a different CI per language, per-cloud snowflake pipelines, storing models only on laptops, ClickOps clusters.
-
-## 3. Layered architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  People & access                                                 │
-│  Keycloak SSO (OIDC/SAML) + MFA  ·  groups  ·  SCIM optional     │
-└────────────────────────────┬────────────────────────────────────┘
-                             │ tokens
-┌────────────────────────────▼────────────────────────────────────┐
-│  Factory floor (control plane / portal)                          │
-│  Catalog · workspaces · pipeline composer · promotions · audit   │
-└──────┬────────────┬──────────────┬──────────────┬───────────────┘
-       │            │              │              │
-┌──────▼─────┐ ┌────▼─────┐ ┌──────▼─────┐ ┌──────▼──────────────┐
-│ Source     │ │ Packages │ │ Knowledge  │ │ Observability       │
-│ Forgejo    │ │ Nexus or │ │ Outline +  │ │ Prometheus Grafana  │
-│ + DVC      │ │ Harbor   │ │ Mattermost │ │ Loki Tempo Falco    │
-└──────┬─────┘ └────┬─────┘ └────────────┘ └─────────────────────┘
-       │            │
-┌──────▼────────────▼─────────────────────────────────────────────┐
-│  Workbenches                                                     │
-│  Mac: Colima/Podman/Lima VM  ·  Remote: Coder / DevSpace / k3s   │
-│  Preinstalled compilers, testers, linters, browsers              │
-└──────┬──────────────────────────────────────────────────────────┘
-       │ git push
-┌──────▼──────────────────────────────────────────────────────────┐
-│  Build & test factory (Tekton or Woodpecker + reusable tasks)    │
-│  build → unit → integration → model-eval / web-e2e → image scan  │
-└──────┬──────────────────────────────────────────────────────────┘
-       │ OCI + ModelKit
-┌──────▼──────────────────────────────────────────────────────────┐
-│  Registries                                                      │
-│  Harbor (images, Helm, ModelKits) · MLflow · MinIO/DVC remote    │
-└──────┬──────────────────────────────────────────────────────────┘
-       │ GitOps
-┌──────▼──────────────────────────────────────────────────────────┐
-│  Runtime floors                                                  │
-│  local k3s/kind  ·  Azure AKS  ·  GCP GKE  ·  AWS EKS            │
-│  KServe / standard Deployments  ·  canary  ·  rollback           │
-└─────────────────────────────────────────────────────────────────┘
-
-Under the floor: OpenTofu + Ansible + thin cloud CLIs + signed images
+```mermaid
+flowchart TB
+    subgraph Experience["Developer experience"]
+      W["Lima Linux workspace"]
+      P["Backstage portal (optional)"]
+      J["JupyterLab / IDE"]
+    end
+    subgraph Control["Factory control plane"]
+      K["Keycloak SSO"]
+      G["Gitea Git"]
+      T["Tekton CI"]
+      R["Argo CD GitOps"]
+      B["OpenBao secrets"]
+    end
+    subgraph Evidence["Artifact and evidence plane"]
+      H["Harbor images + OCI"]
+      N["Nexus/Reposilite packages"]
+      M["MLflow registry"]
+      S["MinIO object data"]
+    end
+    subgraph Runtime["Runtime plane"]
+      L["kind local"]
+      C["AKS / GKE / EKS"]
+      O["OpenTelemetry + Prometheus stack"]
+    end
+    W --> G
+    J --> G
+    P --> T
+    K --> W
+    K --> G
+    K --> T
+    B --> T
+    G --> T
+    T --> H
+    T --> N
+    T --> M
+    M --> S
+    H --> R
+    R --> L
+    R --> C
+    L --> O
+    C --> O
 ```
 
-## 4. Recommended open-source tool set (golden path)
+Keep the control plane separate from workload namespaces. A broken experiment must not take down Git, identity, the registry, or deployment reconciliation. At enterprise scale, run core services in a dedicated platform cluster and production workloads in separate clusters/accounts.
 
-Keep **one primary** per job. Alternatives are listed with tradeoffs.
+## 4. Recommended open-source tool set
 
-### Identity and access
-
-| Job | Primary (OSS) | Alternative | Notes |
+| Capability | Default | Alternatives | Why / tradeoff |
 |---|---|---|---|
-| SSO / IdP | **Keycloak** | Authentik, Zitadel | OIDC to every tool. Groups: `platform`, `dev`, `ml`, `reviewer`, `read-only` |
-| Secrets | **OpenBao** | Infisical, SOPS+age only | Terraform/Vault are BSL/BUSL — not OSI OSS. OpenBao is the Vault fork |
-| Policy | **Open Policy Agent + Kyverno** | Gatekeeper | Kyverno is easier for K8s-shaped rules |
+| Source control | Gitea | Forgejo, GitLab CE | Gitea is small and easy. GitLab has deeper built-in workflows but needs more resources and is open-core. |
+| SSO | Keycloak | Authentik, Dex | Mature OIDC/SAML and federation. Keycloak needs database care and upgrade testing. |
+| CI pipeline | Tekton | Woodpecker, Jenkins | Kubernetes-native, reusable Tasks, strong provenance path. More YAML and cluster concepts than Woodpecker. |
+| GitOps CD | Argo CD | Flux | Excellent UI and app model. Protect admin and ApplicationSet privileges. |
+| Container/OCI registry | Harbor | CNCF Distribution | Harbor adds scanning, replication, retention, signing integrations, and RBAC; it is heavier. |
+| Language packages | Nexus Repository OSS | Reposilite, Pulp, native registries | Nexus covers many ecosystems; support depth and edition features vary by format. Use proxy allowlists. |
+| Experiment/model tracking | MLflow | Kubeflow metadata | Broad adoption and simple start. Registry governance and HA need deliberate design. |
+| Object storage | MinIO | Ceph, cloud object storage | S3-compatible and portable. Production erasure coding, TLS, backup, and licensing review matter. |
+| Secrets | OpenBao | External Secrets plus cloud secret manager, SOPS | Truly open source and centralized. It is a critical stateful service; unseal, backup, and HA are real work. |
+| Policy | Kyverno | OPA Gatekeeper | Kubernetes-friendly policies and reports. Start audit-only, then enforce. |
+| Image build | BuildKit | Podman/Buildah, Kaniko | Fast, rootless-capable builds. Avoid privileged Docker-in-Docker. |
+| SBOM/signing | Syft + Cosign | Trivy SBOM, Notation | Open formats and keyless signing options. Verification policy is as important as signing. |
+| Vulnerability scan | Trivy + Grype | Clair | Good coverage, but scanners disagree and databases can be stale. Define severity and exception policy. |
+| Static/security tests | Semgrep CE, Gitleaks, ZAP | CodeQL where licensed, language linters | Useful defaults; no scanner proves software safe. Tune rules to control false positives. |
+| AI evaluation | pytest + promptfoo + Giskard OSS | Deepchecks, custom harness | Tests quality, attacks, robustness, and regression. Metrics and data must be project-specific. |
+| Observability | OpenTelemetry, Prometheus, Grafana, Loki, Tempo | VictoriaMetrics | Open standards and broad support. Set retention and label-cardinality limits early. |
+| Developer portal | Backstage, optional | Port, custom UI | Great catalog and templates at scale; too much overhead for a small team. Start with README/templates. |
+| Dev workspace | Lima VM + Ansible | Dev Containers, Coder/Code-Server | Lima is friendly on macOS; remote workspaces improve isolation but require a service. |
+| IaC | OpenTofu | Terraform | OpenTofu is open source and Terraform-compatible. Terraform uses a source-available BUSL license for current releases. |
 
-**Gotcha:** Keycloak is powerful and easy to misconfigure. Start with two realms max (`internal`, `ci-bots`). Never let tools keep their own user databases after cutover.
+### Language toolchains
 
-### Source, review, knowledge
-
-| Job | Primary | Alternative |
-|---|---|---|
-| Git + PRs | **Forgejo** | GitLab CE (heavier), Gitea |
-| Large data/models in Git flow | **DVC** + MinIO | Git LFS (hits size walls) |
-| Docs / runbooks | **Outline** or Grav | Wiki.js |
-| Team chat | **Mattermost** | Zulip |
-| Architecture decision records | Markdown in `docs/adr/` | — |
-
-**Gotcha:** Do not use GitHub.com as the system of record if the requirement is “we operate the factory.” Mirror is fine.
-
-### Package and artifact repositories
-
-| Job | Primary | Alternative |
-|---|---|---|
-| Language packages (PyPI, Maven, npm, crates, Go proxy, apt) | **Nexus OSS** or **JFrog-less** mix | **Google Artifact Registry** is not OSS; **Nexus** or **Harbor + Pulp** |
-| Container / OCI / Helm / ModelKit | **Harbor** | Zot (lighter) |
-| Generic blobs | **MinIO** | SeaweedFS |
-| AI project pack | **KitOps ModelKit** on Harbor | MLflow artifacts only |
-
-Recommended split: **Harbor for OCI**, **Nexus for language/apt**, **MinIO for DVC/MLflow artifacts**. That is two extra boxes — worth it. One Nexus-for-everything is simpler but weaker for container CVE scanning.
-
-**Gotcha:** Developers will bypass the proxy the first day if `pip`/`npm` are not preconfigured in the workspace image. Bake registry URLs into the workbench.
-
-### Workspaces (the “Linux configure VM”)
-
-| Job | Primary | Alternative |
-|---|---|---|
-| Local on Mac | **Colima** or **Podman Machine** + `forge-workbench` image | Lima, UTM full VM, Nix + direnv only |
-| Remote CDE | **Coder** (OSS) on k3s/K8s | DevSpace, Gitpod self-hosted, Eclipse Che |
-| Strong isolation | Kata / Firecracker microVMs | Plain containers (weaker) |
-| Host config (rare bare metal) | **Ansible** | NixOS (steeper) |
-
-Workbench image contains:
-
-- Compilers: JDK 21, gcc/clang, Python 3.12, Go, Rust stable
-- Build: Maven/Gradle, CMake/Ninja, pip/uv, cargo, go
-- Test: JUnit/TestNG, GoogleTest, pytest, gotest, cargo test, Playwright/Cypress, k6, Testcontainers
-- AI: uv, jupyterlab, MLflow CLI, DVC, kit CLI
-- Containers: Docker *or* Podman + buildah + kind/k3d
-- Quality: ruff, clang-tidy, spotbugs, golangci-lint, clippy
-- Supply chain: syft, grype, cosign
-
-**Mac gotchas:**
-
-- Docker Desktop licensing may not be acceptable — prefer **Colima** or **Podman Desktop**
-- Volume performance on virtiofs vs osxfs: put heavy builds on a Linux VM disk, not a bind-mounted macOS directory
-- Apple Silicon: multi-arch (`linux/amd64` + `linux/arm64`) images or you will surprise EKS/GKE/AKS amd64 nodes
-- Nested Kubernetes on Mac is fine for *compose*, not for load tests
-
-### CI / custom pipeline factory
-
-| Job | Primary | Alternative | When |
+| Stack | Build | Unit/quality | Integration/web |
 |---|---|---|---|
-| Kubernetes-native pipelines | **Tekton** + Tekton Dashboard / Pipelines-as-Code | Argo Workflows | You already run K8s for CI |
-| Lightweight CI | **Woodpecker** | Gitea Actions | Small teams, simple YAML |
-| Reusable tasks | Tekton ClusterTasks / Woodpecker plugins | Jenkins shared libs | Avoid Jenkins unless you already own it |
+| Java | Maven or Gradle | JUnit 5, SpotBugs, Checkstyle, JaCoCo | Testcontainers, REST Assured |
+| C/C++ | CMake + Ninja, GCC/Clang | Catch2 or GoogleTest, clang-tidy, sanitizers | Testcontainers or Compose fixtures |
+| Python/AI | uv/pip, wheel | pytest, Ruff, mypy, coverage, hypothesis | MLflow, promptfoo/Giskard, Testcontainers |
+| Go | Go modules | `go test`, govulncheck, staticcheck, golangci-lint | Testcontainers-Go |
+| Rust | Cargo | `cargo test`, Clippy, rustfmt, cargo-audit | testcontainers-rs |
+| Web | pnpm/npm | Vitest, ESLint, axe | Playwright; Cypress is an alternative |
 
-Pipeline stages (fixed contract, custom steps inside):
+Pin toolchain images by digest and dependency lockfiles. The VM provides common tools, while builds run in versioned containers so a golden-image update does not silently change old pipelines.
 
-1. `fetch` — git + DVC pull
-2. `build` — language matrix
-3. `unit`
-4. `integration` / `contract`
-5. `eval` — model metrics vs baseline, or Playwright against staging
-6. `package` — OCI image + SBOM + (optional) ModelKit
-7. `scan` — grype + policy
-8. `publish` — Harbor
-9. `stage` — deploy to `ns-stage` via GitOps PR
-10. `promote` — same image digest to `ns-prod`
-11. `rollback` — previous Git SHA / previous digest
+## 5. End-to-end flow
 
-Developers do **not** write cloud-specific YAML. They pick tasks from the catalog and set parameters.
+1. **Request a workspace.** Platform automation creates a Linux VM from a golden definition and maps the developer's Keycloak groups.
+2. **Pull only trusted dependencies.** Maven, npm, Python, Go, Cargo, APT, and container clients use approved proxy repositories. Quarantine new packages if policy requires it.
+3. **Create from a template.** A service or model repository starts with owners, build file, test policy, SBOM/signing steps, model card, and deployment base.
+4. **Develop locally.** The same test commands run in the VM and CI containers. No long-lived cloud keys are copied into the VM.
+5. **Review a change.** Protected branches require peer review, passing checks, and signed commits/tags where appropriate.
+6. **Build once.** CI resolves locked dependencies, compiles, tests, scans, produces an SBOM and provenance, signs the artifact, and pushes it under an immutable digest.
+7. **Record model evidence.** Dataset snapshot ID, code commit, parameters, metrics, evaluation thresholds, approval, and model artifact are linked in MLflow/object storage.
+8. **Deploy to test.** CI proposes a change to the environment Git repository. Argo CD deploys the exact digest.
+9. **Promote, do not rebuild.** Approval changes the desired digest for staging and production. Policy verifies signature, SBOM, and required evidence.
+10. **Observe.** OpenTelemetry connects metrics, logs, traces, model quality, drift, latency, token/cost use, and deployment metadata.
+11. **Roll back.** Revert the GitOps commit or select the previous known-good digest. Database/schema changes require expand-contract design and a separate recovery plan.
 
-**Gotcha:** Letting every team invent YAML from scratch recreates the snowflake problem. Ship **pipeline templates** (`lang-python-ml`, `lang-java-svc`, `lang-cpp-lib`, `lang-go-api`, `lang-rust-cli`, `web-frontend`, `custom-test-tool`).
+## 6. AI-specific test gates
 
-### ML / AI specific
+Traditional application gates remain mandatory. Add these model gates:
 
-| Job | Primary | Alternative |
+| Gate | Example evidence | Common gotcha |
 |---|---|---|
-| Experiment tracking + registry | **MLflow** | Aim, Weight & Biases (not OSS core) |
-| Data/model versioning | **DVC** | LakeFS |
-| Feature store (only if needed) | **Feast** | Skip until two+ models share features |
-| Serving | **KServe** | BentoML + vanilla Deployment |
-| Orchestration on K8s | **Argo Workflows** or Tekton | Kubeflow (heavy) |
-| Eval harness | pytest + custom metrics + Promptfoo (OSS) | — |
+| Data contract | schema, ranges, null rates, source/version | Training-serving skew hides behind compatible schemas. |
+| Reproducibility | commit, data snapshot, seed, environment, parameters | GPU operations and external APIs may be nondeterministic. |
+| Quality | accuracy/F1/recall or task rubric vs baseline | A single aggregate metric hides subgroup failures. |
+| Robustness | corrupted inputs, edge cases, distribution shifts | Test data can leak into training or prompt tuning. |
+| Safety/security | prompt injection, tool misuse, output handling, model-file scanning | Treat model files and prompts as untrusted input. |
+| Fairness/privacy | subgroup metrics, PII checks, memorization tests | Legal and ethical thresholds require owners, not tool defaults. |
+| Operations | p95 latency, memory/GPU, failure mode, cost budget | A better model may be operationally worse. |
+| Human approval | model card, risk tier, owner acceptance | Automation cannot accept business risk for a person. |
 
-**Gotcha:** Kubeflow is a platform, not a library. Most teams only needed notebooks + pipelines + serving. Start with Jupyter on Coder + Tekton + MLflow + KServe.
+Use risk tiers. A spelling helper and an autonomous financial action agent should not share the same approval path.
 
-### Deploy / GitOps / IaC
+## 7. Access model
 
-| Job | Primary | Why not the other |
+### Human identity
+
+- Keycloak is the identity broker; connect it to the organization's authoritative directory and MFA.
+- Map directory groups to platform roles; never assign most permissions user by user.
+- Use OIDC Authorization Code flow with PKCE. Tools without OIDC sit behind an OIDC-aware proxy.
+- Separate `developer`, `maintainer`, `security-reviewer`, `release-approver`, `platform-admin`, and `auditor` roles.
+- Use time-limited elevation and log every admin action.
+
+### Workload identity
+
+- Use Kubernetes service accounts plus cloud workload identity: AKS Workload Identity, GKE Workload Identity Federation, and EKS Pod Identity/IRSA.
+- Do not place cloud access keys in Kubernetes Secrets, Git, images, or VM dotfiles.
+- OpenBao issues short-lived credentials for internal systems. External Secrets may copy or synchronize values where an application cannot fetch them directly.
+
+### Recommended role boundaries
+
+| Role | Allowed | Not allowed |
 |---|---|---|
-| IaC | **OpenTofu** | Terraform is BUSL (IBM). OpenTofu is MPL OSS |
-| Config management | **Ansible** | For image hardening and rare VMs, not for K8s apps |
-| Cluster apps | **Helm + Kustomize (pick one overlay style)** | Running both without rules duplicates replica counts |
-| GitOps | **Argo CD** *or* **Flux** | Argo = UI; Flux = smaller, Git-only. Pick one |
-| Multi-cloud control | OpenTofu modules + optional **Crossplane** | Don’t start with Crossplane |
-| Image sign/verify | **cosign** + Kyverno verify | Unsigned images must not schedule |
+| Developer | create branch, run own pipelines, view non-sensitive logs, deploy ephemeral/test | production approval, policy bypass, platform admin |
+| Maintainer | merge protected repository changes, own component, approve staging | change security policy, direct production mutation |
+| Release approver | approve production GitOps change | alter build evidence after approval |
+| Security reviewer | manage policies/exceptions, inspect evidence | routinely build application code |
+| Platform admin | operate shared services and clusters | self-approve application releases |
+| Auditor | read evidence and audit history | mutate resources |
 
-Cloud CLIs (not platforms — just actuators):
+## 8. Design patterns
 
-- `aws`, `az`, `gcloud`, `kubectl`, `helm`, `tofu`, `ansible-playbook`
+1. **Paved road, not a prison.** A small set of supported templates handles most projects. Exceptions have an owner and expiration date.
+2. **Ports and adapters.** Pipeline contracts say “source, artifact, evidence, deploy” while adapters implement Harbor, MLflow, or a cloud provider.
+3. **GitOps reconciliation.** Git records desired state; controllers converge the cluster. Emergency changes must be back-ported immediately.
+4. **Build once, promote by digest.** Never rebuild for each environment.
+5. **Immutable evidence envelope.** Bind commit, artifact digest, SBOM, provenance, tests, signature, model/data versions, and approvals.
+6. **Control-plane/data-plane separation.** Shared factory tools and user workloads fail and scale independently.
+7. **Namespace tenancy.** Apply quotas, limits, network policies, pod security, service accounts, and ownership labels per team/environment.
+8. **Expand-contract changes.** Database and API changes remain compatible during rollout and rollback.
+9. **Policy as code.** Version admission, dependency, retention, and approval rules; test policies before enforcement.
+10. **Golden VM plus hermetic builds.** The VM improves experience; containerized, pinned builds provide reproducibility.
+11. **Replaceable stateful services.** Back up data and configuration, test restore, and avoid hidden state on worker nodes.
+12. **Small blast radius.** Separate production accounts/projects/subscriptions and clusters from development.
 
-**Correction:** “Azure EKS” is not a product. Use **Azure AKS**, **Amazon EKS**, **Google GKE**.
+## 9. Deployment options
 
-### Observability and audit
-
-Prometheus, Grafana, Loki, Tempo, OpenTelemetry collector, Falco. Audit log from Keycloak + Forgejo + Harbor + Kubernetes API shipped to Loki.
-
-## 5. Target options — pros, cons, gotchas
-
-### 5.1 Local Mac testing
-
-| Option | Pros | Cons | Gotchas |
+| Option | Best for | Pros | Cons / gotchas |
 |---|---|---|---|
-| Colima + workbench container | Fast, OSS-friendly, matches Linux CI | Not a full VM | File sharing slowness; start Colima with more CPU/RAM |
-| Podman Machine | Daemonless mental model matches prod rootless | Slightly less Docker-compose muscle memory | `docker` alias confusion |
-| Lima / UTM full Ubuntu VM | Closest to “Linux configure VM” | Heavier | Keep the VM golden via Ansible; don’t snowflake it |
-| Nix + direnv on Mac | Reproducible shells | Does not replace Linux images | Still build linux/amd64 in CI |
-| kind / k3d / minikube | Real K8s API locally | Not prod networking or IAM | Never tune prod manifests only against kind |
+| Python simulator | agreeing on workflow | seconds to run, no dependencies | no real SSO, CI, persistence, or cluster actions |
+| Docker/Podman Compose | one developer or demo | simple, portable, inspectable | laptop capacity, weak HA, networking differs from K8s |
+| `kind` on Mac | manifest and pipeline learning | realistic Kubernetes API, cheap, disposable | no cloud IAM/LB/storage behavior; CPU/RAM intensive |
+| One shared managed cluster | small team/non-prod | lower cost and simpler ops | larger blast radius; noisy neighbors; platform upgrades affect workloads |
+| Platform cluster + workload clusters | production teams | stronger isolation and lifecycle control | more networking, GitOps, cost, and operational work |
+| Kubeflow suite | many ML teams and complex workflows | notebooks, pipelines, training operators, metadata | heavy, complex upgrades, overlapping components; avoid as phase one |
 
-**Best practice:** Mac is an editor + thin VM. The workbench **is Linux**. CI is the same Linux.
+### Cloud comparison
 
-### 5.2 Docker / Podman images
-
-| Option | Pros | Cons | Gotchas |
+| Area | AKS | GKE | EKS |
 |---|---|---|---|
-| Docker | Ubiquitous | Desktop license; daemon | Don’t require Docker.sock in every workspace |
-| Podman + buildah | Rootless, OSS | Some Compose gaps | Generate the same OCI index |
-| Multi-stage + distroless | Small attack surface | Harder debug | Ship a `-debug` tag separately |
+| Human/cloud SSO | Microsoft Entra integration | Google IAM | AWS IAM / Identity Center |
+| Pod identity | AKS Workload Identity | Workload Identity Federation for GKE | EKS Pod Identity or IRSA |
+| Registry | ACR | Artifact Registry | ECR |
+| Managed secrets option | Key Vault | Secret Manager | Secrets Manager / Parameter Store |
+| Main gotcha | subscription/RBAC plus Entra layers | IAM plus Kubernetes RBAC and project boundaries | IAM, cluster access entries, VPC/CNI/IP capacity |
 
-Always: SBOM (syft), scan (grype), sign (cosign), pin digest on deploy.
+Use cloud-managed storage and identity through adapters where it meaningfully reduces operational risk. “Portable” should mean a common workload and evidence contract, not refusing every managed capability.
 
-### 5.3 Kubernetes substrates
+## 10. Security and supply-chain baseline
 
-| | Local k3s/k3d | Azure AKS | GCP GKE | AWS EKS |
-|---|---|---|---|---|
-| Role | Dev/stage-like | Enterprise / Entra shops | Most managed / AI-friendly | Deepest ecosystem |
-| Control plane cost | Free | Free tier available | Free / cheap Autopilot | ~$73/mo per cluster |
-| Identity | Keycloak OIDC | Entra + Workload ID | Workload Identity Fed | IRSA / Pod Identity |
-| GPU | Optional | NC/ND | GPU + TPU | P4/P5 etc. |
-| GitOps addon | You install | Flux extension | Config Sync | Flux addon |
-| Pros | Same API, cheap | Entra, Windows nodes, cheap entry | Autopilot, upgrades, AI | IAM, Karpenter, ecosystem |
-| Cons | Not IAM/GPU-real | Azure-shaped networking | GCP lock-in temptation | You assemble more; paid CP |
-| Gotchas | Default Traefik vs prod ingress | “EKS” name mix-up; CNI IP exhaustion | Autopilot rejects some privileged pods | VPC CNI IP exhaustion; IRSA misconfig |
+- Private cluster API and private worker nodes for production; connect through approved VPN/bastion/zero-trust access.
+- Kubernetes Pod Security `restricted`, non-root containers, read-only filesystems, dropped capabilities, seccomp, and resource limits.
+- Default-deny ingress and egress NetworkPolicies; explicitly allow DNS and named dependencies.
+- Admission verifies signed images, approved registries, immutable digests, required labels, and prohibited privilege settings.
+- Isolate untrusted pull-request builds from credentialed release builds. Do not expose secrets to forked code.
+- Generate CycloneDX or SPDX SBOMs; attach provenance; scan source, dependencies, images, IaC, secrets, and licenses.
+- Mirror and allowlist dependencies; set retention and quarantine policies. Avoid `latest` tags.
+- Encrypt in transit and at rest. Back up Keycloak DB, Git, Harbor, package repos, MLflow DB, object storage, OpenBao, and GitOps repositories.
+- Send audit logs to an append-only destination outside the cluster.
+- Patch base images on a cadence and trigger rebuilds; never silently mutate an existing version.
 
-**Multi-cloud rule:** the factory never deploys with `aws eks update-kubeconfig && kubectl apply` as the source of truth. OpenTofu creates the cluster; Argo/Flux applies apps from Git. Cloud modules differ; app manifests do not.
+## 11. Reliability and rollback
 
-### 5.4 IaC and config
+### Rollback ladder
 
-| Tool | Pros | Cons | Gotchas |
-|---|---|---|---|
-| OpenTofu | OSS, Terraform-compatible | Some brand-new TF providers lag | Pin provider + module versions |
-| Ansible | Idempotent VM/image config | Not for app deploy on K8s | Don’t Ansible-mutate running clusters |
-| Shell + CLIs | Good glue | Unreviewed bash becomes production | Every script `set -euo pipefail`; wrap in OpenTofu null_resource only when unavoidable |
-| Crossplane | K8s API for clouds | Cognitive load | Year-two tool, not day-one |
+1. Pause promotion and capture evidence.
+2. Disable risky feature/model route if a switch exists.
+3. Shift traffic to previous model/service revision.
+4. Revert the GitOps commit to the last signed digest.
+5. Roll back application deployment only if data/schema remains compatible.
+6. Restore data only through the tested recovery procedure; never as the first response.
 
-## 6. Access model (simple)
+Canary or blue/green deployment requires a traffic manager such as Argo Rollouts plus gateway/mesh integration. Plain Kubernetes `Deployment` supports rolling updates but not metric-driven promotion.
 
-Keycloak groups map everywhere the same way:
+### Recovery targets to define
 
-| Group | Git | Pipeline | Registry | Cluster | Floor admin |
-|---|---|---|---|---|---|
-| platform | admin | admin | admin | cluster-admin (break-glass) | yes |
-| ml-engineer | write team repos | run + promote stage | push models | ns-stage deploy | no |
-| developer | write team repos | run CI | push app images | ns-dev | no |
-| reviewer | read + approve | no prod promote | pull | read | no |
-| read-only | read | read logs | pull | read | no |
+- RPO: acceptable amount of data/evidence loss.
+- RTO: acceptable time to restore the factory or a workload.
+- Artifact retention: how long an exact image/model/package remains available.
+- Evidence retention: how long tests, approvals, logs, and SBOMs remain auditable.
 
-Promotion to production = **two-person rule**: pipeline produces an immutable digest; a reviewer approves a GitOps PR.
+Test restore at least quarterly. A successful backup job is not proof that recovery works.
 
-SSO integration list (OIDC): Forgejo, Harbor, Nexus, Coder, Woodpecker/Tekton Dashboard, Argo CD, Grafana, MLflow (via oauth proxy), Outline, Mattermost, K8s apiserver OIDC.
+## 12. Major gotchas
 
-**Gotcha:** Kubernetes OIDC + cloud IAM are *different*. Users log into kubectl via OIDC; **pods** use workload identity. Mixing them is a common outage.
+1. **Architecture mismatch on Apple Silicon.** Build multi-architecture images with BuildKit and test `linux/amd64` if production nodes are x86_64.
+2. **Laptop resource pressure.** Keycloak, Harbor, Tekton, Argo CD, MLflow, observability, and scanners together can exceed normal Mac memory. Install in phases.
+3. **Kubernetes is not the portability layer for everything.** Load balancers, persistent volumes, GPUs, identity, DNS, and autoscaling differ by cloud.
+4. **NetworkPolicy needs a supporting CNI.** A manifest alone does not guarantee enforcement.
+5. **Default-deny egress breaks DNS, package downloads, OIDC, and telemetry.** Add explicit destinations and test renewals.
+6. **Rollback can fail after destructive schema or feature changes.** Use expand-contract and forward-fix plans.
+7. **Mutable tags destroy evidence.** Deploy digests and retain the registry data.
+8. **Package proxy is a supply-chain boundary.** Cache poisoning, name confusion, licenses, and deleted upstream versions need policy.
+9. **SSO is not authorization.** Each tool needs correct group/role mapping and periodic access review.
+10. **CI runners execute hostile code.** Use ephemeral workers, separate trust zones, minimal service accounts, no privileged Docker socket.
+11. **Model registry is not a full approval system.** Bind model version to code, data, evaluations, risk owner, and deployment.
+12. **GPU workloads add device plugins, drivers, node pools, quotas, and expensive idle capacity.** Start CPU-only unless the use case proves otherwise.
+13. **Open-source licensing changes.** Record approved versions/licenses; OpenTofu is the strict-OSS IaC default here while remaining Terraform-compatible.
+14. **Tool sprawl creates an integration tax.** Every new UI needs SSO, backup, patching, monitoring, and an owner.
 
-## 7. End-to-end flow
+## 13. Phased implementation
 
-```
-Developer laptop (Mac)
-    │  colima start && forge ws start my-project
-    ▼
-Linux workbench (container or Coder workspace)
-    │  tools already on PATH; extra debs from Nexus apt
-    │  code + tests + optional custom test harness
-    │  git commit && git push origin feat/…
-    ▼
-Forgejo  →  PR checks (lint, unit)
-    │  merge to main
-    ▼
-Pipeline factory (template + extra tasks the team added)
-    build → test → eval → image → sbom/scan/sign → Harbor
-    ▼
-GitOps repo updated with new digest (automated PR)
-    ▼
-Argo CD / Flux
-    ns-dev → ns-stage (smoke + model eval gate) → ns-prod
-    ▼
-If SLO burn: sync previous Git SHA (rollback). Image never overwritten.
-```
+### Phase 0 — workflow simulator
 
-Custom testing-tool development uses the same path. The “unique testing tool” is just another repo from template `custom-test-tool`, published as an image and optionally as a Tekton task so other teams can add it to their pipeline.
+- Run this project locally.
+- Agree on artifact/evidence IDs, roles, environments, test gates, exception process, and rollback owner.
+- Exit criterion: one simulated component can move from commit through rollback with an audit trail.
 
-## 8. Repository layout (platform monorepo + app repos)
+### Phase 1 — developer floor
 
-```
-platform/
-  tofu/                 # clusters, networks, IAM bindings
-    modules/k8s-cluster # abstracts AKS/GKE/EKS
-    modules/identity
-    envs/dev-local
-    envs/azure-aks
-    envs/gcp-gke
-    envs/aws-eks
-  ansible/              # harden workbench AMIs / golden VMs
-  images/workbench/     # Containerfile for developer VM-equivalent
-  catalog/              # Tekton tasks, pipeline templates
-  gitops/               # root apps per cluster
-  policies/             # Kyverno, OPA
-  scripts/              # thin CLI wrappers
+- Lima/Ansible workspace, trusted package proxies, Gitea, Keycloak, and one Python pipeline.
+- Add Java/C++/Go/Rust/web profiles only as teams need them.
+- Exit criterion: a new developer reproduces the build in under one hour without a shared admin password.
 
-apps live in separate Forgejo repos created from templates
-```
+### Phase 2 — trusted delivery
 
-## 9. What not to do
+- Tekton ephemeral tasks, Harbor, SBOM/signing, scans, Argo CD, and a non-production managed cluster.
+- Exit criterion: staging accepts only signed, policy-compliant digests and rollback is rehearsed.
 
-- Do not run three different CI systems “because Java likes Jenkins.”
-- Do not give developers cloud console Admin so they can “just try AKS.”
-- Do not mutate images (`latest` in production).
-- Do not store model weights only in Slack.
-- Do not make the portal a second source of truth — it only *drives Git*.
-- Do not install the entire Kubeflow umbrella on day one.
-- Do not treat Terraform Cloud / Vault Enterprise as OSS.
+### Phase 3 — model lifecycle
 
-## 10. Minimal viable factory (order of build)
+- MLflow, object-store snapshots, model cards, AI evaluations, and workload observability.
+- Exit criterion: every deployed model maps to code, data, metrics, risk approval, and owner.
 
-1. Keycloak + Forgejo + Harbor + MinIO
-2. Workbench image + Colima instructions + Coder optional
-3. One pipeline template (Python) + Woodpecker or Tekton
-4. Local k3s + Argo CD
-5. MLflow + DVC
-6. OpenTofu module for *one* cloud (the one you actually have)
-7. Kyverno + cosign verify
-8. Outline + Mattermost
-9. Second and third clouds only when a real workload needs them
+### Phase 4 — production and scale
 
-The simulation in `simulation/` pretends all of the above exist so teams can learn the floor before the steel is erected.
+- Separate production boundary, HA/backup/restore, SLOs, quotas, cost controls, disaster recovery, and optional Backstage/Kubeflow.
+- Exit criterion: recovery and access-review exercises meet agreed RPO/RTO and audit requirements.
+
+## 14. Decision checklist
+
+Before implementation, answer:
+
+- Which directory is authoritative for identity and MFA?
+- Which teams and data classifications may share a cluster?
+- What makes an AI model releasable, and who accepts residual risk?
+- Must builds work without internet access? If yes, which mirrors and update process are required?
+- Which CPU architectures and GPU types are production targets?
+- What are RPO, RTO, retention, and regional availability requirements?
+- Which cloud is first? Multi-cloud scaffolding should not become three simultaneous production programs.
+- Which components require paid support even if the software is open source?
+- What is the maximum laptop and cluster budget?
+
+Start with one cloud, one team, one Python model, and one web/service component. Prove the evidence chain and rollback path before widening the catalog.
+
