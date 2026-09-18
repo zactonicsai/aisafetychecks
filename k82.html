@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>K8s + Helm Classroom | Three Lessons</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ibm: {
+              blue: "#0f62fe",
+              hover: "#0353e9",
+              pressed: "#002d9c",
+              navy: "#001d6c",
+              ink: "#161616",
+              muted: "#525252",
+              line: "#e0e0e0",
+              wash: "#f4f4f4",
+              help: "#edf5ff",
+              warn: "#f1c21b",
+              danger: "#da1e28",
+              ok: "#198038"
+            }
+          },
+          fontFamily: {
+            plex: ['"IBM Plex Sans"', "system-ui", "sans-serif"],
+            mono: ['"IBM Plex Mono"', "ui-monospace", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --lesson-size: 18px; }
+    html { scroll-behavior: smooth; }
+    body { font-size: var(--lesson-size); }
+    .prose-lesson h2 { scroll-margin-top: 5.5rem; }
+    .prose-lesson h3 { scroll-margin-top: 5.5rem; }
+    pre code, .cmd { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+    .modal-open { overflow: hidden; }
+    @media print {
+      body * { visibility: hidden; }
+      #certificate-print, #certificate-print * { visibility: visible; }
+      #certificate-print { position: absolute; left: 0; top: 0; width: 100%; padding: 24px; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="font-plex bg-white text-ibm-ink">
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-ibm-blue text-white px-3 py-2">Skip to content</a>
+
+  <header class="no-print sticky top-0 z-40 border-b border-ibm-line bg-white">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <button id="menuBtn" class="md:hidden border border-ibm-ink px-3 py-2 text-sm font-semibold" aria-expanded="false" aria-controls="mobileNav">Menu</button>
+      <div>
+        <p class="text-xs tracking-wide uppercase text-ibm-muted font-semibold">Student classroom</p>
+        <h1 class="text-lg sm:text-xl font-semibold text-ibm-navy">Kubernetes + Helm Tutor</h1>
+      </div>
+      <div class="hidden sm:flex items-center gap-2">
+        <label for="fontRange" class="text-sm font-medium">Text</label>
+        <input id="fontRange" type="range" min="14" max="36" value="18" class="w-24 accent-[#0f62fe]" />
+        <span id="fontValue" class="text-sm w-10">18px</span>
+      </div>
+      <button data-open="helpModal" class="border border-ibm-blue text-ibm-blue px-3 py-2 text-sm font-semibold hover:bg-ibm-help">Help</button>
+    </div>
+    <nav id="desktopNav" class="hidden md:block border-t border-ibm-line">
+      <div class="max-w-6xl mx-auto px-4 py-2 flex flex-wrap gap-2 text-sm font-medium">
+        <a class="nav-link px-2 py-1 text-ibm-blue" href="#home">Home</a>
+        <a class="nav-link px-2 py-1 hover:text-ibm-blue" href="#lesson1">Lesson 1</a>
+        <a class="nav-link px-2 py-1 hover:text-ibm-blue" href="#lesson2">Lesson 2</a>
+        <a class="nav-link px-2 py-1 hover:text-ibm-blue" href="#lesson3">Lesson 3</a>
+        <a class="nav-link px-2 py-1 hover:text-ibm-blue" href="#quiz1">Quiz 1</a>
+        <a class="nav-link px-2 py-1 hover:text-ibm-blue" href="#quiz2">Quiz 2</a>
+        <a class="nav-link px-2 py-1 hover:text-ibm-blue" href="#quiz3">Quiz 3</a>
+        <a class="nav-link px-2 py-1 hover:text-ibm-blue" href="#scoreboard">Score + certificate</a>
+        <a class="nav-link px-2 py-1 hover:text-ibm-blue" href="#refs">Official docs</a>
+      </div>
+    </nav>
+    <nav id="mobileNav" class="hidden md:hidden border-t border-ibm-line bg-white">
+      <div class="px-4 py-3 grid gap-2 text-base font-medium">
+        <a href="#home" class="py-1">Home</a>
+        <a href="#lesson1" class="py-1">Lesson 1 · Commands</a>
+        <a href="#lesson2" class="py-1">Lesson 2 · Broken pods</a>
+        <a href="#lesson3" class="py-1">Lesson 3 · Services</a>
+        <a href="#quiz1" class="py-1">Quiz 1</a>
+        <a href="#quiz2" class="py-1">Quiz 2</a>
+        <a href="#quiz3" class="py-1">Quiz 3</a>
+        <a href="#scoreboard" class="py-1">Score + certificate</a>
+        <a href="#refs" class="py-1">Official docs</a>
+        <div class="flex items-center gap-2 pt-2">
+          <label for="fontRangeMobile">Text size</label>
+          <input id="fontRangeMobile" type="range" min="14" max="36" value="18" class="flex-1 accent-[#0f62fe]" />
+          <span id="fontValueMobile">18px</span>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main" class="max-w-6xl mx-auto px-4 py-8 space-y-16">
+    <section id="home" class="prose-lesson">
+      <p class="text-sm font-semibold uppercase tracking-wide text-ibm-blue">Welcome</p>
+      <h2 class="text-3xl font-semibold text-ibm-navy mt-1">Three lessons. One classroom.</h2>
+      <p class="mt-4 max-w-3xl text-ibm-muted">This site teaches Kubernetes the way a patient tutor would: simple words first, then the real commands, then practice. You get two tries on every quiz question. Miss once and you get a hint. Miss twice and the answer pops up with an extra example.</p>
+      <div class="mt-6 grid md:grid-cols-3 gap-4">
+        <a href="#lesson1" class="border border-ibm-line p-4 hover:border-ibm-blue">
+          <p class="text-sm text-ibm-blue font-semibold">Lesson 1</p>
+          <h3 class="font-semibold mt-1">kubectl + Helm commands</h3>
+          <p class="text-ibm-muted mt-2">The walkie-talkie and the cookbook.</p>
+        </a>
+        <a href="#lesson2" class="border border-ibm-line p-4 hover:border-ibm-blue">
+          <p class="text-sm text-ibm-blue font-semibold">Lesson 2</p>
+          <h3 class="font-semibold mt-1">Pending, ImagePull, CrashLoop</h3>
+          <p class="text-ibm-muted mt-2">Why lunch boxes will not start.</p>
+        </a>
+        <a href="#lesson3" class="border border-ibm-line p-4 hover:border-ibm-blue">
+          <p class="text-sm text-ibm-blue font-semibold">Lesson 3</p>
+          <h3 class="font-semibold mt-1">Services that do not connect</h3>
+          <p class="text-ibm-muted mt-2">The front desk number works. Nobody answers.</p>
+        </a>
+      </div>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <button data-open="howModal" class="bg-ibm-blue text-white px-4 py-2 font-semibold hover:bg-ibm-hover">How this class works</button>
+        <button data-open="mapModal" class="border border-ibm-ink px-4 py-2 font-semibold">Picture of the kitchen</button>
+        <a href="#scoreboard" class="border border-ibm-blue text-ibm-blue px-4 py-2 font-semibold">Jump to scoreboard</a>
+      </div>
+    </section>
+
+    <!-- LESSON 1 -->
+    <section id="lesson1" class="prose-lesson space-y-6">
+      <p class="text-sm font-semibold uppercase tracking-wide text-ibm-blue">Lesson 1</p>
+      <h2 class="text-3xl font-semibold text-ibm-navy">Common kubectl and Helm commands</h2>
+      <p class="text-ibm-muted max-w-3xl">Think of <strong class="text-ibm-ink">Kubernetes (K8s)</strong> as a giant school kitchen that runs many apps at once. <strong class="text-ibm-ink">kubectl</strong> is the walkie-talkie you use to talk to that kitchen. <strong class="text-ibm-ink">Helm</strong> is a cookbook: one command can install a whole meal instead of writing every recipe line yourself.</p>
+
+      <div class="overflow-x-auto border border-ibm-line">
+        <table class="min-w-full text-left">
+          <thead class="bg-ibm-wash">
+            <tr><th class="p-3 font-semibold">Kitchen word</th><th class="p-3 font-semibold">K8s word</th><th class="p-3 font-semibold">What it is</th></tr>
+          </thead>
+          <tbody>
+            <tr class="border-t border-ibm-line"><td class="p-3">Lunch box</td><td class="p-3 font-mono">Pod</td><td class="p-3">One running app (usually one or more containers)</td></tr>
+            <tr class="border-t border-ibm-line"><td class="p-3">Recipe that keeps 3 boxes ready</td><td class="p-3 font-mono">Deployment</td><td class="p-3">Keeps the right number of pods alive</td></tr>
+            <tr class="border-t border-ibm-line"><td class="p-3">Pickup window number</td><td class="p-3 font-mono">Service</td><td class="p-3">Stable way to reach a changing set of pods</td></tr>
+            <tr class="border-t border-ibm-line"><td class="p-3">Separate kitchen</td><td class="p-3 font-mono">Namespace</td><td class="p-3">A named room so teams do not mix their stuff</td></tr>
+            <tr class="border-t border-ibm-line"><td class="p-3">Cookbook recipe</td><td class="p-3 font-mono">Helm chart</td><td class="p-3">Packaged YAML + default settings</td></tr>
+            <tr class="border-t border-ibm-line"><td class="p-3">One cooked meal</td><td class="p-3 font-mono">Helm release</td><td class="p-3">One installed copy of a chart</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <button data-open="l1words" class="text-ibm-blue font-semibold underline">More on these words</button>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Step 1 · Check your tools</h3>
+      <p>Before you cook, check the oven. These commands only look. They do not change the cluster.</p>
+      <pre class="bg-ibm-wash border border-ibm-line p-4 overflow-x-auto text-[0.95em]"><code>kubectl version
+kubectl cluster-info
+kubectl get nodes
+helm version</code></pre>
+      <p class="text-ibm-muted">If <span class="font-mono">get nodes</span> fails, your walkie-talkie is not connected to a cluster yet. That is a config problem, not an app problem.</p>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Step 2 · List things with get</h3>
+      <p><span class="font-mono">kubectl get</span> is the command you will use most. It prints a simple table.</p>
+      <pre class="bg-ibm-wash border border-ibm-line p-4 overflow-x-auto text-[0.95em]"><code>kubectl get pods
+kubectl get deployments
+kubectl get services
+kubectl get namespaces
+
+kubectl get pods -A
+kubectl get pods -o wide
+kubectl get pods -n my-app</code></pre>
+      <ul class="list-disc pl-6 space-y-1">
+        <li><span class="font-mono">-A</span> or <span class="font-mono">--all-namespaces</span> = look in every kitchen.</li>
+        <li><span class="font-mono">-n</span> = look in one kitchen only.</li>
+        <li><span class="font-mono">-o wide</span> = extra columns, like which node a pod sits on.</li>
+      </ul>
+      <p>Short names: <span class="font-mono">po</span>, <span class="font-mono">deploy</span>, <span class="font-mono">svc</span>, <span class="font-mono">ns</span>.</p>
+      <button data-open="l1get" class="text-ibm-blue font-semibold underline">More get examples</button>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Step 3 · Read the report card with describe</h3>
+      <pre class="bg-ibm-wash border border-ibm-line p-4 overflow-x-auto text-[0.95em]"><code>kubectl describe pod my-pod
+kubectl describe deployment my-app
+kubectl describe service my-svc</code></pre>
+      <p>Always scroll to <strong>Events</strong> at the bottom. Events are the kitchen’s diary of what just happened.</p>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Step 4 · Create, update, delete</h3>
+      <pre class="bg-ibm-wash border border-ibm-line p-4 overflow-x-auto text-[0.95em]"><code>kubectl apply -f app.yaml
+kubectl delete pod my-pod
+kubectl delete -f app.yaml
+kubectl scale deployment my-app --replicas=3</code></pre>
+      <p><span class="font-mono">apply</span> is the daily tool: if the thing is missing, it creates it. If it exists, it updates it. <span class="font-mono">create</span> often fails when the thing already exists.</p>
+      <button data-open="l1apply" class="text-ibm-blue font-semibold underline">apply vs create vs delete</button>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Step 5 · Logs, exec, port-forward, rollout</h3>
+      <pre class="bg-ibm-wash border border-ibm-line p-4 overflow-x-auto text-[0.95em]"><code>kubectl logs my-pod
+kubectl logs -f my-pod
+kubectl logs my-pod --previous
+kubectl exec -it my-pod -- sh
+kubectl port-forward pod/my-pod 8080:80
+kubectl rollout status deployment/my-app
+kubectl rollout undo deployment/my-app</code></pre>
+      <ul class="list-disc pl-6 space-y-1">
+        <li><span class="font-mono">-f</span> follows logs like a live chat.</li>
+        <li><span class="font-mono">--previous</span> is the last crashed container’s diary.</li>
+        <li><span class="font-mono">exec</span> climbs inside the lunch box.</li>
+        <li><span class="font-mono">port-forward</span> builds a secret tunnel to your laptop.</li>
+        <li><span class="font-mono">rollout undo</span> is the oops button for a Deployment.</li>
+      </ul>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Step 6 · Helm: the cookbook</h3>
+      <pre class="bg-ibm-wash border border-ibm-line p-4 overflow-x-auto text-[0.95em]"><code>helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+helm search repo nginx
+helm install my-web bitnami/nginx -n web --create-namespace
+helm list -A
+helm status my-web
+helm upgrade --install my-web bitnami/nginx -f values.yaml
+helm history my-web
+helm rollback my-web 1
+helm uninstall my-web
+helm create my-chart
+helm lint my-chart
+helm template my-web ./my-chart --dry-run</code></pre>
+      <p>Helm does <strong>not</strong> replace kubectl. Helm packages apps. You still use kubectl to look at pods, logs, and problems.</p>
+      <button data-open="l1helm" class="text-ibm-blue font-semibold underline">More Helm examples</button>
+
+      <div class="bg-ibm-help border-l-4 border-ibm-blue p-4">
+        <p class="font-semibold text-ibm-navy">Tutor memory trick</p>
+        <p class="mt-1">Look = <span class="font-mono">kubectl get</span> / <span class="font-mono">helm list</span>. Why = <span class="font-mono">describe</span> / <span class="font-mono">status</span>. Put in = <span class="font-mono">apply</span> / <span class="font-mono">install</span>. Change = <span class="font-mono">apply</span> or <span class="font-mono">scale</span> / <span class="font-mono">upgrade</span>. Undo = <span class="font-mono">rollout undo</span> / <span class="font-mono">rollback</span>.</p>
+      </div>
+      <p><a class="text-ibm-blue font-semibold underline" href="https://kubernetes.io/docs/reference/kubectl/quick-reference/" target="_blank" rel="noopener">Official kubectl quick reference</a> · <a class="text-ibm-blue font-semibold underline" href="https://helm.sh/docs/intro/cheatsheet/" target="_blank" rel="noopener">Official Helm cheat sheet</a></p>
+    </section>
+
+    <!-- LESSON 2 -->
+    <section id="lesson2" class="prose-lesson space-y-6">
+      <p class="text-sm font-semibold uppercase tracking-wide text-ibm-blue">Lesson 2</p>
+      <h2 class="text-3xl font-semibold text-ibm-navy">Troubleshooting broken pods</h2>
+      <p class="text-ibm-muted max-w-3xl">The status name is a clue, not the answer. Your job is to find the reason <em>under</em> the status. Do not smash <span class="font-mono">kubectl delete pod</span> in a panic loop.</p>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">The detective kit (every time)</h3>
+      <pre class="bg-ibm-wash border border-ibm-line p-4 overflow-x-auto text-[0.95em]"><code>kubectl get pods -A
+kubectl describe pod POD -n NS
+kubectl logs POD -n NS
+kubectl logs POD -n NS --previous
+kubectl get events -n NS --sort-by=.lastTimestamp</code></pre>
+      <div class="overflow-x-auto border border-ibm-line">
+        <table class="min-w-full text-left">
+          <thead class="bg-ibm-wash"><tr><th class="p-3">Status</th><th class="p-3">Did a node get chosen?</th><th class="p-3">Did the image download?</th><th class="p-3">Did the app start?</th><th class="p-3">First deep look</th></tr></thead>
+          <tbody>
+            <tr class="border-t"><td class="p-3 font-semibold">Pending</td><td class="p-3">No</td><td class="p-3">No</td><td class="p-3">No</td><td class="p-3">describe Events</td></tr>
+            <tr class="border-t"><td class="p-3 font-semibold">ImagePullBackOff</td><td class="p-3">Yes</td><td class="p-3">No</td><td class="p-3">No</td><td class="p-3">describe Events</td></tr>
+            <tr class="border-t"><td class="p-3 font-semibold">CrashLoopBackOff</td><td class="p-3">Yes</td><td class="p-3">Yes</td><td class="p-3">Yes, then died</td><td class="p-3">describe + logs --previous</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <button data-open="l2kit" class="text-ibm-blue font-semibold underline">Why this order matters</button>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Case A · Pending</h3>
+      <p>The pod is still in line. Kubernetes has not picked a computer for it. Logs are often empty. That is normal.</p>
+      <p class="font-semibold">Read Events for FailedScheduling.</p>
+      <ul class="list-disc pl-6 space-y-2">
+        <li><strong>Insufficient cpu / memory</strong> — the pod asked for more than any node has free. The scheduler uses <em>requests</em>, not later real use.</li>
+        <li><strong>Untolerated taint</strong> — a node has a keep-out sign and this pod has no matching toleration.</li>
+        <li><strong>nodeSelector / affinity</strong> — the recipe asked for a label no node has.</li>
+        <li><strong>Unbound PVC</strong> — the saved backpack (volume) is not ready, so the pod waits.</li>
+        <li><strong>Quota</strong> — the namespace already used its class limit.</li>
+      </ul>
+      <pre class="bg-ibm-wash border border-ibm-line p-4 overflow-x-auto text-[0.95em]"><code>kubectl describe pod shop -n web
+kubectl describe node worker-1
+kubectl get pvc -n web
+kubectl get nodes --show-labels
+kubectl describe resourcequota -n web</code></pre>
+      <button data-open="l2pending" class="text-ibm-blue font-semibold underline">Pending examples</button>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Case B · ImagePullBackOff</h3>
+      <p>A node was chosen. The image download failed. Kubernetes waits longer each try (that is the BackOff). The app never started, so app logs are usually empty.</p>
+      <ul class="list-disc pl-6 space-y-2">
+        <li>Typo: <span class="font-mono">ngnix</span> instead of <span class="font-mono">nginx</span>, or a tag that was never pushed.</li>
+        <li>Private registry with no pull secret.</li>
+        <li>Nodes cannot reach the registry (firewall / no internet).</li>
+        <li>Registry rate limit.</li>
+      </ul>
+      <pre class="bg-ibm-wash border border-ibm-line p-4 overflow-x-auto text-[0.95em]"><code>kubectl describe pod shop -n web
+kubectl get pod shop -n web -o yaml | grep image:
+kubectl get secrets -n web</code></pre>
+      <p>If your laptop can <span class="font-mono">docker pull</span> the image but the cluster cannot, think <strong>auth or network</strong>, not a typo.</p>
+      <button data-open="l2image" class="text-ibm-blue font-semibold underline">Image pull examples</button>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Case C · CrashLoopBackOff</h3>
+      <p>The image downloaded. The process started, then quit. Kubernetes restarts it and waits longer between tries.</p>
+      <pre class="bg-ibm-wash border border-ibm-line p-4 overflow-x-auto text-[0.95em]"><code>kubectl describe pod shop -n web
+kubectl logs shop -n web --previous
+kubectl logs shop -n web -c CONTAINER --previous</code></pre>
+      <p>In describe, read <strong>Last State</strong> and the <strong>Exit Code</strong>.</p>
+      <div class="overflow-x-auto border border-ibm-line">
+        <table class="min-w-full text-left">
+          <thead class="bg-ibm-wash"><tr><th class="p-3">Exit</th><th class="p-3">Usual meaning</th></tr></thead>
+          <tbody>
+            <tr class="border-t"><td class="p-3 font-mono">1</td><td class="p-3">App error: bad config, missing file, crash</td></tr>
+            <tr class="border-t"><td class="p-3 font-mono">126 / 127</td><td class="p-3">Cannot run command / command not found</td></tr>
+            <tr class="border-t"><td class="p-3 font-mono">137</td><td class="p-3">OOMKilled — hit the memory limit</td></tr>
+            <tr class="border-t"><td class="p-3 font-mono">139</td><td class="p-3">Segfault — app or library bug</td></tr>
+            <tr class="border-t"><td class="p-3 font-mono">0</td><td class="p-3">Process finished “successfully” and left. Servers should stay running.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Also watch for a mean <strong>liveness probe</strong> that kills a slow starter, and for a failed <strong>init container</strong>.</p>
+      <button data-open="l2crash" class="text-ibm-blue font-semibold underline">CrashLoop examples</button>
+      <p><a class="text-ibm-blue font-semibold underline" href="https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/" target="_blank" rel="noopener">Official: debug pods</a> · <a class="text-ibm-blue font-semibold underline" href="https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" target="_blank" rel="noopener">Official: pod lifecycle</a></p>
+    </section>
+
+    <!-- LESSON 3 -->
+    <section id="lesson3" class="prose-lesson space-y-6">
+      <p class="text-sm font-semibold uppercase tracking-wide text-ibm-blue">Lesson 3</p>
+      <h2 class="text-3xl font-semibold text-ibm-navy">Services that look fine but nothing connects</h2>
+      <p class="max-w-3xl">This is the “the phone number exists, but nobody picks up” lesson. Students get stuck here because <span class="font-mono">kubectl get svc</span> is green while the app still fails in the browser.</p>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Background · What a Service really is</h3>
+      <p>Pods die and come back with <strong>new IP addresses</strong>. You cannot tattoo last week’s pod IP on the cafeteria wall. A <strong>Service</strong> is a stable front-desk number. Kubernetes keeps a living list of which pods are allowed to answer that number.</p>
+      <p>That living list is called <strong>Endpoints</strong> (today often <strong>EndpointSlices</strong>). If the list is empty, the number rings into an empty room.</p>
+      <button data-open="l3svc" class="text-ibm-blue font-semibold underline">Service types in plain words</button>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Background · Labels are name tags</h3>
+      <p>Every pod can wear stickers: <span class="font-mono">app=shop</span>, <span class="font-mono">tier=frontend</span>. A Service selector is a rule like “send work only to pods wearing <span class="font-mono">app=shop</span>.”</p>
+      <p>If the stickers do not match the rule — even by one letter — the Service has <strong>zero endpoints</strong>. The Service object still exists. That tricks people.</p>
+      <pre class="bg-ibm-wash border border-ibm-line p-4 overflow-x-auto text-[0.95em]"><code># Service wants this sticker:
+selector:
+  app: shop
+
+# Pod actually wears this sticker:
+labels:
+  app: Shop          # capital S = different sticker</code></pre>
+      <button data-open="l3labels" class="text-ibm-blue font-semibold underline">Label matching examples</button>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Background · Ports are two doors</h3>
+      <ul class="list-disc pl-6 space-y-2">
+        <li><span class="font-mono">port</span> — the door number on the Service (what callers dial).</li>
+        <li><span class="font-mono">targetPort</span> — the door number on the pod (where the app listens).</li>
+        <li><span class="font-mono">containerPort</span> — should match what the app really listens on.</li>
+      </ul>
+      <p>A classic miss: Service <span class="font-mono">port: 80</span> and <span class="font-mono">targetPort: 80</span>, but the app listens on <span class="font-mono">8080</span>. The Service looks perfect. Traffic hits the wrong door.</p>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Background · Readiness is the “open for business” sign</h3>
+      <p>Three health checks students mix up:</p>
+      <ul class="list-disc pl-6 space-y-2">
+        <li><strong>Liveness</strong> — “Are you still alive?” Fail enough times and Kubernetes <em>restarts</em> the container.</li>
+        <li><strong>Readiness</strong> — “Can you take customers right now?” Fail and Kubernetes <em>removes you from the Service</em>. The pod can still be Running.</li>
+        <li><strong>Startup</strong> — “Give this slow app time to boot before you judge it.”</li>
+      </ul>
+      <p>So a pod can be <span class="font-mono">Running</span> and still missing from Endpoints because readiness failed. That is why “the pod looks fine” is not enough.</p>
+      <button data-open="l3probes" class="text-ibm-blue font-semibold underline">Probe examples</button>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Background · DNS names inside the cluster</h3>
+      <p>From another pod in the <em>same</em> namespace you can often use just the Service name:</p>
+      <pre class="bg-ibm-wash border border-ibm-line p-4 overflow-x-auto text-[0.95em]"><code>shop
+shop.web.svc.cluster.local</code></pre>
+      <p>The long name means: service <span class="font-mono">shop</span>, namespace <span class="font-mono">web</span>, then the cluster domain. If your client pod is in <span class="font-mono">default</span> and the Service is in <span class="font-mono">web</span>, the short name <span class="font-mono">shop</span> will not find it. Use the long name, or put them in the same namespace.</p>
+      <p>Your laptop is <em>outside</em> the cluster. Cluster DNS names do not work in Chrome on your laptop unless you use port-forward, Ingress, or a LoadBalancer.</p>
+
+      <h3 class="text-2xl font-semibold text-ibm-navy">Step-by-step · Debug a silent Service</h3>
+      <ol class="list-decimal pl-6 space-y-4">
+        <li>
+          <p class="font-semibold">See the Service.</p>
+          <pre class="bg-ibm-wash border border-ibm-line p-3 overflow-x-auto text-[0.95em]"><code>kubectl get svc -n web
+kubectl describe svc shop -n web</code></pre>
+          <p>Copy the <strong>Selector</strong>, <strong>Port</strong>, and <strong>TargetPort</strong>.</p>
+        </li>
+        <li>
+          <p class="font-semibold">See who is on the call list.</p>
+          <pre class="bg-ibm-wash border border-ibm-line p-3 overflow-x-auto text-[0.95em]"><code>kubectl get endpoints shop -n web
+kubectl get endpointslices -l kubernetes.io/service-name=shop -n web</code></pre>
+          <p>Empty list? The Service is a number with no staff.</p>
+        </li>
+        <li>
+          <p class="font-semibold">See which pods wear the selector stickers.</p>
+          <pre class="bg-ibm-wash border border-ibm-line p-3 overflow-x-auto text-[0.95em]"><code>kubectl get pods -n web --show-labels
+kubectl get pods -n web -l app=shop</code></pre>
+          <p>If this list is empty, fix labels. Do not blame DNS yet.</p>
+        </li>
+        <li>
+          <p class="font-semibold">Check Ready, not just Running.</p>
+          <pre class="bg-ibm-wash border border-ibm-line p-3 overflow-x-auto text-[0.95em]"><code>kubectl get pods -n web
+kubectl describe pod POD -n web</code></pre>
+          <p>Look at <span class="font-mono">READY 0/1</span> and Events for failed readiness probes.</p>
+        </li>
+        <li>
+          <p class="font-semibold">Check ports.</p>
+          <p>Does <span class="font-mono">targetPort</span> match the app’s listen port? A wrong targetPort can still show endpoints, but traffic dies at the door.</p>
+        </li>
+        <li>
+          <p class="font-semibold">Test from inside the cluster.</p>
+          <pre class="bg-ibm-wash border border-ibm-line p-3 overflow-x-auto text-[0.95em]"><code>kubectl run tmp --rm -it --restart=Never --image=busybox:1.36 -n web -- sh
+# inside that shell:
+nslookup shop
+nslookup shop.web.svc.cluster.local
+wget -qO- http://shop:80/</code></pre>
+          <p>If DNS works and HTTP fails, the name is fine. The app, port, or readiness is the problem.</p>
+        </li>
+        <li>
+          <p class="font-semibold">Test one pod directly.</p>
+          <pre class="bg-ibm-wash border border-ibm-line p-3 overflow-x-auto text-[0.95em]"><code>kubectl port-forward pod/POD 8080:8080 -n web</code></pre>
+          <p>If the pod works but the Service does not, the bug is the Service path (selector, endpoints, kube-proxy), not the app code.</p>
+        </li>
+        <li>
+          <p class="font-semibold">Last doors students forget.</p>
+          <ul class="list-disc pl-6 mt-2 space-y-1">
+            <li>App listening only on <span class="font-mono">127.0.0.1</span> instead of <span class="font-mono">0.0.0.0</span>.</li>
+            <li>NetworkPolicy blocking the client namespace.</li>
+            <li>Wrong Service type: ClusterIP is only inside the cluster.</li>
+            <li>Calling the Service from your laptop without Ingress / port-forward / LoadBalancer.</li>
+          </ul>
+        </li>
+      </ol>
+      <button data-open="l3flow" class="text-ibm-blue font-semibold underline">Worked example: empty endpoints</button>
+
+      <div class="bg-ibm-help border-l-4 border-ibm-blue p-4">
+        <p class="font-semibold text-ibm-navy">Tutor rule</p>
+        <p class="mt-1">Service exists ≠ traffic works. Ask: “Who is on the Endpoints list, are they Ready, and is the targetPort the real door?”</p>
+      </div>
+      <p>
+        <a class="text-ibm-blue font-semibold underline" href="https://kubernetes.io/docs/concepts/services-networking/service/" target="_blank" rel="noopener">Official: Services</a> ·
+        <a class="text-ibm-blue font-semibold underline" href="https://kubernetes.io/docs/tasks/debug/debug-application/debug-service/" target="_blank" rel="noopener">Official: debug Services</a> ·
+        <a class="text-ibm-blue font-semibold underline" href="https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/" target="_blank" rel="noopener">Official: DNS</a> ·
+        <a class="text-ibm-blue font-semibold underline" href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/" target="_blank" rel="noopener">Official: probes</a>
+      </p>
+    </section>
+
+    <!-- QUIZZES -->
+    <section id="quiz1" class="space-y-4">
+      <p class="text-sm font-semibold uppercase tracking-wide text-ibm-blue">Practice</p>
+      <h2 class="text-3xl font-semibold text-ibm-navy">Quiz 1 · Commands</h2>
+      <p class="text-ibm-muted">Two tries each. First miss shows a hint. Second miss shows the answer and another example. Scores save on this browser.</p>
+      <div id="quiz1-root" class="space-y-4"></div>
+    </section>
+
+    <section id="quiz2" class="space-y-4">
+      <h2 class="text-3xl font-semibold text-ibm-navy">Quiz 2 · Broken pods</h2>
+      <div id="quiz2-root" class="space-y-4"></div>
+    </section>
+
+    <section id="quiz3" class="space-y-4">
+      <h2 class="text-3xl font-semibold text-ibm-navy">Quiz 3 · Services</h2>
+      <div id="quiz3-root" class="space-y-4"></div>
+    </section>
+
+    <section id="scoreboard" class="space-y-4 border border-ibm-line p-5">
+      <h2 class="text-3xl font-semibold text-ibm-navy">Scoreboard and certificate</h2>
+      <p class="text-ibm-muted">You earn a certificate when every quiz is at least 70% correct (a question counts if you get it right on try 1 or try 2).</p>
+      <label class="block font-medium">Your name on the certificate
+        <input id="studentName" type="text" class="mt-1 w-full max-w-md border border-ibm-ink px-3 py-2" placeholder="Jordan Lee" />
+      </label>
+      <div id="scoreCards" class="grid sm:grid-cols-3 gap-3"></div>
+      <p id="passMsg" class="font-semibold"></p>
+      <div class="flex flex-wrap gap-3">
+        <button id="printBtn" class="bg-ibm-blue text-white px-4 py-2 font-semibold hover:bg-ibm-hover disabled:opacity-40" disabled>Print certificate</button>
+        <button id="resetBtn" class="border border-ibm-danger text-ibm-danger px-4 py-2 font-semibold">Reset scores</button>
+      </div>
+      <div id="certificate-print" class="mt-6 border-4 border-ibm-navy p-8 hidden print:block">
+        <p class="uppercase tracking-widest text-ibm-blue font-semibold">K8s + Helm Classroom</p>
+        <h3 class="text-3xl font-semibold mt-2">Certificate of Completion</h3>
+        <p class="mt-4">This certifies that</p>
+        <p id="certName" class="text-2xl font-semibold text-ibm-navy my-3">Student</p>
+        <p>completed Lessons 1–3 and passed all quizzes (two tries allowed, with hints).</p>
+        <p id="certScores" class="mt-4"></p>
+        <p id="certDate" class="mt-6 text-ibm-muted"></p>
+        <p class="mt-8 font-semibold text-ibm-navy">Tutor goal: look first, then describe, then logs. Service exists is not the same as traffic works.</p>
+      </div>
+    </section>
+
+    <section id="refs" class="space-y-3 pb-16">
+      <h2 class="text-3xl font-semibold text-ibm-navy">Official docs and references</h2>
+      <ul class="list-disc pl-6 space-y-2">
+        <li><a class="text-ibm-blue underline" href="https://kubernetes.io/docs/home/" target="_blank" rel="noopener">Kubernetes documentation home</a></li>
+        <li><a class="text-ibm-blue underline" href="https://kubernetes.io/docs/reference/kubectl/quick-reference/" target="_blank" rel="noopener">kubectl quick reference</a></li>
+        <li><a class="text-ibm-blue underline" href="https://kubernetes.io/docs/concepts/workloads/pods/" target="_blank" rel="noopener">Pods</a></li>
+        <li><a class="text-ibm-blue underline" href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/" target="_blank" rel="noopener">Deployments</a></li>
+        <li><a class="text-ibm-blue underline" href="https://kubernetes.io/docs/concepts/services-networking/service/" target="_blank" rel="noopener">Services</a></li>
+        <li><a class="text-ibm-blue underline" href="https://kubernetes.io/docs/tasks/debug/debug-application/debug-service/" target="_blank" rel="noopener">Debug Services</a></li>
+        <li><a class="text-ibm-blue underline" href="https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/" target="_blank" rel="noopener">DNS for Services and Pods</a></li>
+        <li><a class="text-ibm-blue underline" href="https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/" target="_blank" rel="noopener">EndpointSlices</a></li>
+        <li><a class="text-ibm-blue underline" href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/" target="_blank" rel="noopener">Liveness, readiness, startup probes</a></li>
+        <li><a class="text-ibm-blue underline" href="https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/" target="_blank" rel="noopener">Labels and selectors</a></li>
+        <li><a class="text-ibm-blue underline" href="https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/" target="_blank" rel="noopener">Debug Pods</a></li>
+        <li><a class="text-ibm-blue underline" href="https://kubernetes.io/docs/concepts/containers/images/" target="_blank" rel="noopener">Container images</a></li>
+        <li><a class="text-ibm-blue underline" href="https://helm.sh/docs/" target="_blank" rel="noopener">Helm docs</a></li>
+        <li><a class="text-ibm-blue underline" href="https://helm.sh/docs/intro/cheatsheet/" target="_blank" rel="noopener">Helm cheat sheet</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- MODALS -->
+  <div id="modalRoot"></div>
+
+  <dialog id="helpModal" class="w-[min(40rem,92vw)] p-0 border border-ibm-ink bg-white text-ibm-ink">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold text-ibm-navy">Popup help</h3>
+      <ul class="list-disc pl-5 space-y-2">
+        <li>Use the text slider (14px–36px). It saves on this device.</li>
+        <li>Blue “more” links open extra examples.</li>
+        <li>Each quiz item has two tries. Try 1 wrong → hint. Try 2 wrong → full answer.</li>
+        <li>Scores live in localStorage in this browser only.</li>
+        <li>Pass all three quizzes at 70%+ to print a certificate.</li>
+        <li>Reset scores does not reset text size.</li>
+      </ul>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2 font-semibold">Close</button>
+    </div>
+  </dialog>
+
+  <dialog id="howModal" class="w-[min(40rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold text-ibm-navy">How this class works</h3>
+      <p>Read a lesson. Open the extra popups. Take the matching quiz. You are allowed to look back at the lesson — that is how real operators work.</p>
+      <p>Do not practice delete commands on a shared live cluster unless a teacher says so.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2 font-semibold">Close</button>
+    </div>
+  </dialog>
+
+  <dialog id="mapModal" class="w-[min(40rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold text-ibm-navy">Picture of the kitchen</h3>
+      <p>Cluster = whole school. Node = a room with ovens. Pod = a lunch box in a room. Deployment = “keep three of these boxes.” Service = the pickup window number. Helm release = a meal cooked from a cookbook. Namespace = one team’s kitchen so soups do not mix.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2 font-semibold">Close</button>
+    </div>
+  </dialog>
+
+  <dialog id="l1words" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold">More on the kitchen words</h3>
+      <p>A container is the food inside the lunch box. A pod can hold more than one container that must sit together (app + helper). Replica means copy. Context is which school kitchen your walkie-talkie is aimed at. YAML files are written recipes kubectl can apply.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2">Close</button>
+    </div>
+  </dialog>
+  <dialog id="l1get" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold">More get examples</h3>
+      <pre class="bg-ibm-wash p-3 overflow-x-auto"><code>kubectl get po -A -o wide
+kubectl get deploy,svc -n web
+kubectl get pods -l app=shop
+kubectl get pod shop-abc -o yaml
+kubectl config get-contexts</code></pre>
+      <p>If you “cannot find” a pod, you may be in the wrong namespace. Try <span class="font-mono">-A</span>.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2">Close</button>
+    </div>
+  </dialog>
+  <dialog id="l1apply" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold">apply vs create vs delete</h3>
+      <p><span class="font-mono">apply -f</span> is GitOps-friendly and safe to run again. <span class="font-mono">create -f</span> is “make this new thing.” <span class="font-mono">delete namespace</span> can wipe everything inside that kitchen. Practice deletes only in a lab.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2">Close</button>
+    </div>
+  </dialog>
+  <dialog id="l1helm" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold">More Helm examples</h3>
+      <pre class="bg-ibm-wash p-3 overflow-x-auto"><code>helm install my-web bitnami/nginx --set replicaCount=3
+helm install my-web bitnami/nginx --dry-run --debug
+helm get values my-web
+helm show values bitnami/nginx</code></pre>
+      <p><span class="font-mono">--dry-run --debug</span> practices without changing the cluster. <span class="font-mono">upgrade --install</span> creates the release if it is missing.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2">Close</button>
+    </div>
+  </dialog>
+  <dialog id="l2kit" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold">Why the detective order matters</h3>
+      <p>Pending and ImagePull pods often have no useful app logs. Describe Events speak first. CrashLoop pods often have empty current logs because the new container just started — that is why <span class="font-mono">--previous</span> exists.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2">Close</button>
+    </div>
+  </dialog>
+  <dialog id="l2pending" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold">Pending examples</h3>
+      <p>Event: <span class="font-mono">0/3 nodes are available: 3 Insufficient memory</span>. Meaning: every node is too full for this pod’s memory request. Fix: lower requests, free pods, or add nodes.</p>
+      <p>Event: <span class="font-mono">unbound immediate PersistentVolumeClaims</span>. Check <span class="font-mono">kubectl get pvc</span>. If the PVC is Pending, fix storage first.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2">Close</button>
+    </div>
+  </dialog>
+  <dialog id="l2image" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold">Image pull examples</h3>
+      <p><span class="font-mono">manifest unknown</span> usually means the tag does not exist. <span class="font-mono">unauthorized</span> means the cluster is not logged in. Create a docker-registry secret and set <span class="font-mono">imagePullSecrets</span> on the pod or service account.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2">Close</button>
+    </div>
+  </dialog>
+  <dialog id="l2crash" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold">CrashLoop examples</h3>
+      <p>Exit 137 + Reason OOMKilled: raise memory limit or fix a leak. Probe events + “Killing”: give a larger <span class="font-mono">initialDelaySeconds</span> or fix the health URL. Command <span class="font-mono">echo hello</span> exits 0 and loops — that belongs in a Job, not a Deployment.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2">Close</button>
+    </div>
+  </dialog>
+  <dialog id="l3svc" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold">Service types in plain words</h3>
+      <p><strong>ClusterIP</strong> (default): only phones inside the school work. <strong>NodePort</strong>: also opens a high door number on each node. <strong>LoadBalancer</strong>: cloud gives you a public pickup number. <strong>ExternalName</strong>: a DNS alias, not a proxy to pods.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2">Close</button>
+    </div>
+  </dialog>
+  <dialog id="l3labels" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold">Label matching examples</h3>
+      <p>Selector <span class="font-mono">app=shop,tier=front</span> needs BOTH stickers. A pod with only <span class="font-mono">app=shop</span> will not join. Test with <span class="font-mono">kubectl get pods -l app=shop,tier=front</span>. If that command prints nothing, the Service will have empty endpoints.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2">Close</button>
+    </div>
+  </dialog>
+  <dialog id="l3probes" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold">Probe examples</h3>
+      <p>Readiness HTTP GET <span class="font-mono">/ready</span> on port 8080 fails because the app serves <span class="font-mono">/healthz</span> only. Pod stays Running. Service endpoints stay empty. Fix the path, not the Service name.</p>
+      <p>Liveness hitting a slow page can restart a healthy-but-busy app and cause CrashLoopBackOff. That is a probe bug, not always an app bug.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2">Close</button>
+    </div>
+  </dialog>
+  <dialog id="l3flow" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 class="text-xl font-semibold">Worked example: empty endpoints</h3>
+      <p>1. <span class="font-mono">get svc shop</span> works. 2. <span class="font-mono">get endpoints shop</span> shows <span class="font-mono">&lt;none&gt;</span>. 3. describe says selector <span class="font-mono">app=shop</span>. 4. <span class="font-mono">get pods --show-labels</span> shows <span class="font-mono">app=store</span>. 5. Change the Deployment labels or the Service selector so they match. 6. Endpoints fill. 7. Then test DNS and the port.</p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2">Close</button>
+    </div>
+  </dialog>
+
+  <dialog id="hintModal" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 id="hintTitle" class="text-xl font-semibold text-ibm-navy">Hint</h3>
+      <p id="hintBody"></p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2 font-semibold">Try again</button>
+    </div>
+  </dialog>
+  <dialog id="answerModal" class="w-[min(42rem,92vw)] p-0 border border-ibm-ink bg-white">
+    <div class="p-5 space-y-3">
+      <h3 id="answerTitle" class="text-xl font-semibold text-ibm-navy">Answer</h3>
+      <p id="answerBody" class="font-medium"></p>
+      <p id="answerWhy" class="text-ibm-muted"></p>
+      <p id="answerEx" class="bg-ibm-help p-3"></p>
+      <button class="close-dialog bg-ibm-blue text-white px-4 py-2 font-semibold">Close</button>
+    </div>
+  </dialog>
+
+  <script>
+    const STORAGE_KEY = "k8sClassroom.v1";
+    const defaultState = () => ({
+      font: 18,
+      name: "",
+      quizzes: { quiz1: {}, quiz2: {}, quiz3: {} }
+    });
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return defaultState();
+        const parsed = JSON.parse(raw);
+        return { ...defaultState(), ...parsed, quizzes: { ...defaultState().quizzes, ...(parsed.quizzes || {}) } };
+      } catch {
+        return defaultState();
+      }
+    }
+    function saveState(state) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+    let state = loadState();
+
+    function applyFont(px) {
+      const n = Math.min(36, Math.max(14, Number(px) || 18));
+      document.documentElement.style.setProperty("--lesson-size", n + "px");
+      ["fontRange", "fontRangeMobile"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = n;
+      });
+      ["fontValue", "fontValueMobile"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = n + "px";
+      });
+      state.font = n;
+      saveState(state);
+    }
+    applyFont(state.font);
+    document.getElementById("fontRange").addEventListener("input", (e) => applyFont(e.target.value));
+    document.getElementById("fontRangeMobile").addEventListener("input", (e) => applyFont(e.target.value));
+
+    const menuBtn = document.getElementById("menuBtn");
+    const mobileNav = document.getElementById("mobileNav");
+    menuBtn.addEventListener("click", () => {
+      const open = mobileNav.classList.toggle("hidden") === false;
+      menuBtn.setAttribute("aria-expanded", String(open));
+    });
+    mobileNav.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => {
+      mobileNav.classList.add("hidden");
+      menuBtn.setAttribute("aria-expanded", "false");
+    }));
+
+    document.querySelectorAll("[data-open]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const dlg = document.getElementById(btn.getAttribute("data-open"));
+        if (dlg) dlg.showModal();
+      });
+    });
+    document.querySelectorAll("dialog").forEach((dlg) => {
+      dlg.addEventListener("click", (e) => {
+        if (e.target === dlg) dlg.close();
+      });
+      dlg.querySelectorAll(".close-dialog").forEach((b) => b.addEventListener("click", () => dlg.close()));
+    });
+
+    const quizzes = {
+      quiz1: [
+        {
+          q: "Which command lists pods in every namespace?",
+          choices: ["kubectl get pods", "kubectl get pods -A", "kubectl describe pods", "helm list"],
+          answer: 1,
+          hint: "Think ‘all kitchens,’ not just the one you are standing in.",
+          why: " -A (or --all-namespaces) searches every namespace.",
+          example: "Example: kubectl get po -A -o wide also shows which node each pod sits on."
+        },
+        {
+          q: "A pod looks sick. Which command usually gives the most ‘why’ details first?",
+          choices: ["kubectl logs", "kubectl delete pod", "kubectl describe pod NAME", "helm status"],
+          answer: 2,
+          hint: "You want Events and the report card, not just the app diary.",
+          why: "describe prints conditions, last state, and Events.",
+          example: "Example: kubectl describe pod shop-abc -n web and scroll to Events."
+        },
+        {
+          q: "What is the big everyday difference between kubectl create -f and kubectl apply -f?",
+          choices: ["create can update existing things; apply cannot", "apply creates or updates; create usually fails if it already exists", "they are identical", "apply only works with Helm"],
+          answer: 1,
+          hint: "Which one is safe to run again and again from the same file?",
+          why: "apply is idempotent for daily YAML work.",
+          example: "Example: kubectl apply -f app.yaml on Monday and again on Tuesday after you change replicas."
+        },
+        {
+          q: "Which flag follows logs like a live chat?",
+          choices: ["-o yaml", "-A", "-f", "--previous"],
+          answer: 2,
+          hint: "Follow. Not ‘previous crash’ and not ‘all namespaces.’",
+          why: "-f streams new lines as they appear.",
+          example: "Example: kubectl logs -f deploy/shop -n web"
+        },
+        {
+          q: "Scale Deployment shop to 4 copies. Which command?",
+          choices: ["kubectl scale deployment shop --replicas=4", "helm scale shop 4", "kubectl replicas shop 4", "kubectl apply shop --four"],
+          answer: 0,
+          hint: "The verb is scale and the flag is --replicas.",
+          why: "Deployments are scaled with kubectl scale or by changing replicas in YAML and applying.",
+          example: "Example: kubectl scale deploy shop --replicas=4 -n web"
+        },
+        {
+          q: "In Helm, a chart is the recipe. What is a release?",
+          choices: ["A Kubernetes node", "One installed copy of that recipe", "A namespace", "A kubectl context"],
+          answer: 1,
+          hint: "You cook the same cookbook more than once under different meal names.",
+          why: "helm install NAME chart creates a named release.",
+          example: "Example: helm install store bitnami/nginx creates release ‘store’."
+        },
+        {
+          q: "An upgrade went badly. Which Helm command goes back?",
+          choices: ["helm undo", "helm rollback RELEASE REVISION", "kubectl rollout helm", "helm delete --undo"],
+          answer: 1,
+          hint: "Look at history first, then go back to a revision number.",
+          why: "helm history then helm rollback my-web 1.",
+          example: "Example: helm rollback store 2 -n web"
+        },
+        {
+          q: "True or false: after helm install you never need kubectl again.",
+          choices: ["True", "False"],
+          answer: 1,
+          hint: "Who looks at pods and logs?",
+          why: "Helm packages. kubectl inspects the running objects.",
+          example: "Example: helm install then kubectl get pods -n web and kubectl logs."
+        }
+      ],
+      quiz2: [
+        {
+          q: "A pod is Pending with 0 restarts. Why is kubectl logs usually a weak first move?",
+          choices: ["Logs are secret", "There is often no running container yet", "Pending pods always have huge logs", "You must use Helm logs"],
+          answer: 1,
+          hint: "Pending means the scheduler may not have placed it.",
+          why: "Start with describe Events for FailedScheduling.",
+          example: "Example event: 0/3 nodes are available: 3 Insufficient cpu"
+        },
+        {
+          q: "Events: 0/4 nodes available: 2 Insufficient memory, 2 had untolerated taint dedicated=gpu. Why still Pending?",
+          choices: ["DNS is down", "Every node is blocked for one reason or the other", "The image name is wrong", "The probe path is wrong"],
+          answer: 1,
+          hint: "Add the two groups of nodes. Is any node left?",
+          why: "2 fail memory, 2 fail taint. Zero nodes remain.",
+          example: "Fix by lowering memory requests and/or adding a GPU toleration — only if that pod should sit on GPU nodes."
+        },
+        {
+          q: "The scheduler decides ‘enough room’ using which number?",
+          choices: ["limits", "requests", "restarts", "Helm chart version"],
+          answer: 1,
+          hint: "What gets reserved on the node before the app even runs?",
+          why: "Requests are reservations. Limits later cap or throttle.",
+          example: "A pod requesting 8Gi stays Pending on 4Gi nodes even if the app would only use 200Mi."
+        },
+        {
+          q: "ImagePullBackOff and empty logs. Is the app crashing?",
+          choices: ["Yes, always", "Probably not — the image never started", "Only if exit code is 0", "Only in Helm"],
+          answer: 1,
+          hint: "Did the lunch box even get filled?",
+          why: "Read describe Events for pull errors.",
+          example: "manifest unknown often means a bad tag. unauthorized often means a missing pull secret."
+        },
+        {
+          q: "docker pull works on your laptop, cluster says unauthorized. Most likely missing piece?",
+          choices: ["A readiness probe", "A registry pull secret on the cluster", "More CPU requests", "helm repo update"],
+          answer: 1,
+          hint: "Your laptop is logged in. The nodes may not be.",
+          why: "Create a docker-registry secret and set imagePullSecrets.",
+          example: "kubectl create secret docker-registry regcred --docker-server=... then reference it on the pod."
+        },
+        {
+          q: "CrashLoopBackOff, current logs empty, 12 restarts. Which flag?",
+          choices: ["-A", "-o wide", "--previous", "--dry-run"],
+          answer: 2,
+          hint: "You want the diary of the container that already died.",
+          why: "The new container may not have printed yet.",
+          example: "kubectl logs shop-abc -n web --previous"
+        },
+        {
+          q: "Last State Reason OOMKilled, exit 137. What kind of problem?",
+          choices: ["Image name typo", "Scheduler / Pending", "Memory limit (or leak)", "Wrong Service selector"],
+          answer: 2,
+          hint: "137 is the classic ‘kernel killed you for RAM’ code.",
+          why: "Raise limits and/or fix the leak. Keep requests small enough to schedule.",
+          example: "describe will show Last State: Terminated, Reason: OOMKilled."
+        },
+        {
+          q: "Events: Liveness probe failed, then Killing. App needs 40s to boot. What is impatient?",
+          choices: ["The Service selector", "The liveness probe timing or path", "Helm repo list", "nodeSelector"],
+          answer: 1,
+          hint: "Which check restarts a container?",
+          why: "Increase initialDelaySeconds or use a startup probe.",
+          example: "A probe on /ready every 1s with no delay can kill a slow JVM."
+        },
+        {
+          q: "PVC data-pvc is Pending. Pod db-0 is Pending with unbound claim. What first?",
+          choices: ["Delete the pod in a loop", "Fix storage / the PVC", "Change the image tag", "helm uninstall"],
+          answer: 1,
+          hint: "The pod is only waiting on its backpack.",
+          why: "A bound volume is required before that pod can run.",
+          example: "kubectl describe pvc data-pvc and check StorageClass."
+        },
+        {
+          q: "Match: ‘manifest unknown’ is usually which status family?",
+          choices: ["Pending / scheduling", "ImagePullBackOff / ErrImagePull", "CrashLoopBackOff", "Service endpoints empty"],
+          answer: 1,
+          hint: "Unknown manifest is a registry/tag sentence.",
+          why: "The image reference cannot be downloaded.",
+          example: "myapp:v3 was never pushed; only myapp:v2 exists."
+        }
+      ],
+      quiz3: [
+        {
+          q: "A Service exists, but Endpoints show none. What is the most common first cause?",
+          choices: ["The cluster has no nodes", "Selector labels do not match any Ready pods", "Helm is not installed", "You forgot kubectl version"],
+          answer: 1,
+          hint: "Stickers vs the front-desk rule.",
+          why: "Test with kubectl get pods -l KEY=VALUE using the Service selector.",
+          example: "Service wants app=shop, pods wear app=store."
+        },
+        {
+          q: "Pod is Running but READY 0/1 and missing from the Service. Which check is the usual villain?",
+          choices: ["Liveness only", "Readiness probe failing", "helm lint", "kubectl scale"],
+          answer: 1,
+          hint: "Which probe removes you from the call list without always restarting you?",
+          why: "Failed readiness drops the pod from Endpoints.",
+          example: "Probe path /ready but the app only has /healthz."
+        },
+        {
+          q: "From a pod in namespace default, the short name ‘shop’ does not resolve. The Service lives in namespace web. What should you try?",
+          choices: ["shop.web.svc.cluster.local", "shop.com", "localhost", "helm repo add shop"],
+          answer: 0,
+          hint: "Short names search your own namespace first.",
+          why: "Cross-namespace needs a longer DNS name.",
+          example: "nslookup shop.web.svc.cluster.local from a debug pod."
+        },
+        {
+          q: "Service port=80, targetPort=80, app listens on 8080. What happens?",
+          choices: ["Everything works because 80 is magic", "Callers hit the wrong door on the pod", "The pod becomes Pending", "Helm rolls back"],
+          answer: 1,
+          hint: "Two doors: the number you dial vs the number the app answers.",
+          why: "Set targetPort to 8080 (or name the port).",
+          example: "port: 80, targetPort: 8080 is a normal pattern."
+        },
+        {
+          q: "You open http://shop.web.svc.cluster.local in Chrome on your laptop. Why might that fail even if the Service is healthy?",
+          choices: ["Chrome cannot do HTTP", "Cluster DNS names are for inside the cluster", "Services never work", "You must use XML"],
+          answer: 1,
+          hint: "Your laptop is outside the school kitchen.",
+          why: "Use port-forward, Ingress, or LoadBalancer from outside.",
+          example: "kubectl port-forward svc/shop 8080:80 -n web then visit localhost:8080"
+        },
+        {
+          q: "Which command best tests ‘which pods match this Service selector?’",
+          choices: ["kubectl logs -A", "kubectl get pods -n web -l app=shop", "helm history shop", "kubectl delete svc shop"],
+          answer: 1,
+          hint: "Replay the selector as a get filter.",
+          why: "If that list is empty, endpoints will be empty.",
+          example: "Copy selector lines from describe svc, then get pods -l ..."
+        },
+        {
+          q: "App binds only to 127.0.0.1:8080 inside the container. Service and endpoints look perfect. Symptom?",
+          choices: ["Pending forever", "Other pods cannot reach it on the pod IP", "ImagePullBackOff", "The node disappears"],
+          answer: 1,
+          hint: "127.0.0.1 is only the container talking to itself.",
+          why: "Listen on 0.0.0.0 so other pods and the Service can connect.",
+          example: "A Flask default can bite you if it binds localhost only."
+        },
+        {
+          q: "Liveness vs readiness: which sentence is true?",
+          choices: ["Readiness restarts the container; liveness only removes Endpoints", "Liveness restarts; readiness removes from Service endpoints", "They are the same probe", "Neither ever runs after startup"],
+          answer: 1,
+          hint: "Alive vs open for customers.",
+          why: "That split is the whole point of two probes.",
+          example: "A pod can be Running + not Ready during a warm-up."
+        },
+        {
+          q: "Best first split: port-forward to the pod works, calling the Service fails. Where is the bug?",
+          choices: ["The application code only", "The Service path (selector, endpoints, ports, kube-proxy)", "The laptop battery", "The image tag"],
+          answer: 1,
+          hint: "You already proved the app can answer if you skip the front desk.",
+          why: "Compare describe svc, endpoints, and targetPort.",
+          example: "Empty endpoints or wrong targetPort are the usual suspects."
+        },
+        {
+          q: "True or false: kubectl get svc looking healthy is enough proof that traffic works.",
+          choices: ["True", "False"],
+          answer: 1,
+          hint: "A phone number can exist with nobody on staff.",
+          why: "Always check Endpoints, Ready, and a real request.",
+          example: "get svc is green, get endpoints is none, labels do not match."
+        }
+      ]
+    };
+
+    function qState(quizId, idx) {
+      const pack = state.quizzes[quizId] || {};
+      return pack[idx] || { attempts: 0, correct: false, locked: false, choice: null };
+    }
+    function setQState(quizId, idx, next) {
+      state.quizzes[quizId] = state.quizzes[quizId] || {};
+      state.quizzes[quizId][idx] = next;
+      saveState(state);
+      renderScoreboard();
+    }
+
+    function renderQuiz(quizId, rootId) {
+      const root = document.getElementById(rootId);
+      const items = quizzes[quizId];
+      root.innerHTML = items.map((item, idx) => {
+        const st = qState(quizId, idx);
+        const locked = st.locked;
+        const options = item.choices.map((c, i) => {
+          const selected = st.choice === i;
+          let extra = "border-ibm-line";
+          if (locked && i === item.answer) extra = "border-ibm-ok bg-green-50";
+          else if (locked && selected && i !== item.answer) extra = "border-ibm-danger bg-red-50";
+          else if (selected) extra = "border-ibm-blue";
+          return `<label class="block border ${extra} p-3 cursor-pointer">
+            <input type="radio" class="mr-2 accent-[#0f62fe]" name="${quizId}-${idx}" value="${i}" ${selected ? "checked" : ""} ${locked ? "disabled" : ""} />
+            ${c}
+          </label>`;
+        }).join("");
+        const status = locked
+          ? (st.correct ? `<p class="text-ibm-ok font-semibold">Correct${st.attempts === 1 ? " on try 1" : " on try 2"}.</p>` : `<p class="text-ibm-danger font-semibold">Used both tries. See the official idea in the answer popup.</p>`)
+          : `<p class="text-ibm-muted">Try ${st.attempts + 1} of 2</p>`;
+        return `<article class="border border-ibm-line p-4 space-y-3" data-q="${quizId}-${idx}">
+          <p class="font-semibold">${idx + 1}. ${item.q}</p>
+          <div class="grid gap-2">${options}</div>
+          <div class="flex flex-wrap gap-2 items-center">
+            <button class="check-btn bg-ibm-blue text-white px-3 py-2 font-semibold disabled:opacity-40" data-quiz="${quizId}" data-idx="${idx}" ${locked ? "disabled" : ""}>Check answer</button>
+            ${status}
+          </div>
+        </article>`;
+      }).join("");
+
+      root.querySelectorAll("input[type=radio]").forEach((input) => {
+        input.addEventListener("change", () => {
+          const [quiz, idx] = input.name.split("-");
+          const st = qState(quiz, Number(idx));
+          if (st.locked) return;
+          setQState(quiz, Number(idx), { ...st, choice: Number(input.value) });
+        });
+      });
+      root.querySelectorAll(".check-btn").forEach((btn) => {
+        btn.addEventListener("click", () => checkAnswer(btn.dataset.quiz, Number(btn.dataset.idx)));
+      });
+    }
+
+    function checkAnswer(quizId, idx) {
+      const item = quizzes[quizId][idx];
+      const st = qState(quizId, idx);
+      if (st.locked) return;
+      if (st.choice === null || st.choice === undefined) {
+        document.getElementById("hintTitle").textContent = "Pick an answer";
+        document.getElementById("hintBody").textContent = "Choose one option first. You still have your tries.";
+        document.getElementById("hintModal").showModal();
+        return;
+      }
+      const attempts = st.attempts + 1;
+      const correct = Number(st.choice) === item.answer;
+      if (correct) {
+        setQState(quizId, idx, { ...st, attempts, correct: true, locked: true });
+        document.getElementById("answerTitle").textContent = attempts === 1 ? "Correct on try 1" : "Correct on try 2";
+        document.getElementById("answerBody").textContent = item.choices[item.answer];
+        document.getElementById("answerWhy").textContent = item.why;
+        document.getElementById("answerEx").textContent = item.example;
+        document.getElementById("answerModal").showModal();
+      } else if (attempts === 1) {
+        setQState(quizId, idx, { ...st, attempts, correct: false, locked: false });
+        document.getElementById("hintTitle").textContent = "Not yet — hint (try 2 is left)";
+        document.getElementById("hintBody").textContent = item.hint;
+        document.getElementById("hintModal").showModal();
+      } else {
+        setQState(quizId, idx, { ...st, attempts, correct: false, locked: true });
+        document.getElementById("answerTitle").textContent = "Answer after two tries";
+        document.getElementById("answerBody").textContent = "Correct choice: " + item.choices[item.answer];
+        document.getElementById("answerWhy").textContent = item.why;
+        document.getElementById("answerEx").textContent = item.example;
+        document.getElementById("answerModal").showModal();
+      }
+      renderQuiz(quizId, quizId + "-root");
+    }
+
+    function quizStats(quizId) {
+      const items = quizzes[quizId];
+      let correct = 0;
+      let answered = 0;
+      items.forEach((_, idx) => {
+        const st = qState(quizId, idx);
+        if (st.locked) answered += 1;
+        if (st.correct) correct += 1;
+      });
+      const pct = items.length ? Math.round((correct / items.length) * 100) : 0;
+      const complete = answered === items.length;
+      return { correct, total: items.length, pct, complete };
+    }
+
+    function renderScoreboard() {
+      const cards = document.getElementById("scoreCards");
+      const ids = ["quiz1", "quiz2", "quiz3"];
+      const labels = ["Quiz 1 Commands", "Quiz 2 Pods", "Quiz 3 Services"];
+      const stats = ids.map(quizStats);
+      cards.innerHTML = stats.map((s, i) => `
+        <div class="border border-ibm-line p-3">
+          <p class="font-semibold">${labels[i]}</p>
+          <p class="text-2xl text-ibm-navy">${s.correct}/${s.total}</p>
+          <p>${s.pct}% ${s.complete ? (s.pct >= 70 ? "· passed" : "· needs 70%") : "· in progress"}</p>
+        </div>`).join("");
+      const allDone = stats.every((s) => s.complete);
+      const allPass = stats.every((s) => s.complete && s.pct >= 70);
+      const msg = document.getElementById("passMsg");
+      const printBtn = document.getElementById("printBtn");
+      if (allPass) {
+        msg.textContent = "You passed all three quizzes. Print your certificate.";
+        msg.className = "font-semibold text-ibm-ok";
+        printBtn.disabled = false;
+      } else if (allDone) {
+        msg.textContent = "Quizzes finished, but one is under 70%. Review the lesson and reset that quiz by resetting scores.";
+        msg.className = "font-semibold text-ibm-danger";
+        printBtn.disabled = true;
+      } else {
+        msg.textContent = "Finish every question (two tries each) to unlock the certificate check.";
+        msg.className = "font-semibold text-ibm-muted";
+        printBtn.disabled = true;
+      }
+      document.getElementById("certScores").textContent = stats.map((s, i) => `${labels[i]}: ${s.correct}/${s.total} (${s.pct}%)`).join(" · ");
+    }
+
+    document.getElementById("studentName").value = state.name || "";
+    document.getElementById("studentName").addEventListener("input", (e) => {
+      state.name = e.target.value;
+      saveState(state);
+    });
+    document.getElementById("printBtn").addEventListener("click", () => {
+      document.getElementById("certName").textContent = state.name.trim() || "Kubernetes student";
+      document.getElementById("certDate").textContent = "Date: " + new Date().toLocaleDateString();
+      document.getElementById("certificate-print").classList.remove("hidden");
+      window.print();
+    });
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      if (!confirm("Reset all quiz scores on this browser? Text size and name stay.")) return;
+      state.quizzes = { quiz1: {}, quiz2: {}, quiz3: {} };
+      saveState(state);
+      renderQuiz("quiz1", "quiz1-root");
+      renderQuiz("quiz2", "quiz2-root");
+      renderQuiz("quiz3", "quiz3-root");
+      renderScoreboard();
+    });
+
+    renderQuiz("quiz1", "quiz1-root");
+    renderQuiz("quiz2", "quiz2-root");
+    renderQuiz("quiz3", "quiz3-root");
+    renderScoreboard();
+  </script>
+</body>
+</html>
